@@ -40,6 +40,37 @@ function enablePointerTilt(cards) {
   });
 }
 
+function enableScrollMediaReveal() {
+  const media = document.querySelectorAll(
+    ".dashboard-preview, .product-showcase, .feature-visual",
+  );
+  const isMobile = window.matchMedia("(max-width: 760px)").matches;
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  media.forEach((item) => item.classList.add("scroll-reveal-media"));
+
+  if (!isMobile || reducedMotion || !("IntersectionObserver" in window)) {
+    media.forEach((item) => item.classList.add("is-visible"));
+    return;
+  }
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add("is-visible");
+        observer.unobserve(entry.target);
+      });
+    },
+    {
+      rootMargin: "0px 0px -12% 0px",
+      threshold: 0.18,
+    },
+  );
+
+  media.forEach((item) => observer.observe(item));
+}
+
 tabButtons.forEach((button) => {
   button.addEventListener("click", () => {
     const tab = button.dataset.tab;
@@ -52,6 +83,7 @@ tabButtons.forEach((button) => {
 });
 
 enablePointerTilt(document.querySelectorAll(".pricing-grid article"));
+enableScrollMediaReveal();
 
 const checkoutButtons = document.querySelectorAll("[data-checkout-plan]");
 const checkoutFeedback = document.querySelector("#checkoutFeedback");
