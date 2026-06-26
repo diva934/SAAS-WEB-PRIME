@@ -1764,6 +1764,247 @@ h1 span,
   }
 }
 
+@media (max-width: 560px) {
+  body {
+    overflow-x: hidden;
+  }
+
+  .site-header {
+    height: 72px;
+    padding: 0 14px;
+  }
+
+  .header-inner {
+    gap: 14px;
+  }
+
+  .brand img {
+    width: 118px;
+  }
+
+  .header-cta {
+    min-height: 42px;
+    padding: 0 13px;
+    font-size: 12px;
+  }
+
+  main {
+    padding-top: 112px;
+  }
+
+  .hero {
+    padding: 36px 16px 68px;
+  }
+
+  .hero-shell {
+    gap: 0;
+  }
+
+  .hero .eyebrow {
+    margin-bottom: 16px;
+    font-size: 11px;
+    line-height: 1.4;
+  }
+
+  h1 {
+    margin-bottom: 22px;
+    font-size: 38px;
+    line-height: 1.08;
+    letter-spacing: 0;
+  }
+
+  .hero-copy {
+    margin-bottom: 28px;
+    font-size: 15px;
+    line-height: 1.58;
+  }
+
+  .hero-actions,
+  .final-cta div {
+    width: 100%;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .hero-actions .btn,
+  .final-cta .btn {
+    width: min(100%, 360px);
+    min-height: 52px;
+  }
+
+  .hero-creator-proof {
+    margin: 26px auto 38px;
+    padding-inline: 8px;
+  }
+
+  .creator-avatars img {
+    width: 36px;
+    height: 36px;
+    margin-left: -9px;
+  }
+
+  .hero-creator-proof p {
+    max-width: 340px;
+    font-size: 13px;
+  }
+
+  .value-cards {
+    gap: 12px;
+    margin-top: 0;
+  }
+
+  .value-cards article {
+    min-height: 0;
+    padding: 22px;
+    border-radius: 18px;
+  }
+
+  .icon {
+    width: 44px;
+    height: 44px;
+    margin-bottom: 16px;
+    border-radius: 12px;
+  }
+
+  .section-heading {
+    padding: 64px 18px 30px;
+  }
+
+  .section-heading .eyebrow {
+    margin-bottom: 12px;
+  }
+
+  .section-heading h2 {
+    font-size: 30px;
+    line-height: 1.16;
+  }
+
+  .product-grid {
+    gap: 26px;
+    padding: 0 16px 68px;
+  }
+
+  .dashboard-preview {
+    border-radius: 16px;
+  }
+
+  .product-copy h3 {
+    font-size: 25px;
+  }
+
+  .product-copy li {
+    padding-block: 12px;
+  }
+
+  .product-showcase {
+    margin-bottom: 18px;
+    padding: 0 10px 12px;
+  }
+
+  .feature-cards {
+    gap: 14px;
+    padding: 0 16px 72px;
+  }
+
+  .feature-cards article {
+    min-height: 0;
+    padding-bottom: 22px;
+    border-radius: 18px;
+  }
+
+  .feature-visual {
+    height: 164px;
+    margin-bottom: 20px;
+  }
+
+  .feature-cards h3,
+  .feature-cards p,
+  .feature-cards a {
+    margin-inline: 20px;
+  }
+
+  .comparison {
+    padding-bottom: 68px;
+  }
+
+  .comparison-table {
+    padding-inline: 12px;
+  }
+
+  .comparison-row {
+    gap: 8px;
+    padding: 16px;
+  }
+
+  .pricing-section {
+    padding-bottom: 72px;
+  }
+
+  .pricing-section .section-heading {
+    padding-bottom: 40px;
+  }
+
+  .pricing-grid {
+    gap: 18px;
+    padding-inline: 14px;
+  }
+
+  .pricing-card {
+    min-height: 0;
+    padding: 20px;
+    border-radius: 20px;
+  }
+
+  .pricing-card.featured {
+    margin-top: 12px;
+  }
+
+  .plan-price strong {
+    font-size: 42px;
+  }
+
+  .pricing-intro,
+  .checkout-feedback {
+    padding-inline: 18px;
+  }
+
+  .roadmap {
+    padding-bottom: 72px;
+  }
+
+  .roadmap-grid {
+    gap: 10px;
+    padding-inline: 14px;
+  }
+
+  .roadmap-grid article {
+    min-height: 82px;
+    padding: 16px;
+    border-radius: 16px;
+  }
+
+  .final-cta {
+    padding: 72px 18px;
+  }
+
+  .final-cta h2 {
+    margin-bottom: 26px;
+    font-size: 31px;
+  }
+
+  .footer {
+    min-height: 0;
+    gap: 28px;
+    padding: 38px 20px max(38px, env(safe-area-inset-bottom));
+  }
+
+  .footer nav {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 14px 22px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .product-showcase img {
     transition: none;
