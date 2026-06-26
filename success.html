@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Paiement confirmé · Expertly</title>
+    <link rel="stylesheet" href="./access.css" />
+  </head>
+  <body data-surface="payment_success">
+    <main class="access-card">
+      <span class="success">✓</span>
+      <p class="eyebrow">Paiement confirmé</p>
+      <h1>Ton produit est débloqué</h1>
+      <p>L’email d’accès est envoyé immédiatement à l’adresse utilisée lors du paiement.</p>
+      <a href="./store.html">Retourner à la boutique</a>
+    </main>
+    <script src="./analytics.js"></script>
+    <script>
+      window.ExpertlyTracking?.track("payment_success_page_viewed", {
+        order_id: new URLSearchParams(location.search).get("order")
+      });
+    </script>
+  </body>
+</html>

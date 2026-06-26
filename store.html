@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Expertly · Boutique</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./store.css" />
+  </head>
+  <body data-surface="creator_store">
+    <main class="store-shell">
+      <header class="creator-header">
+        <div class="creator-avatar" id="creatorAvatar">EX</div>
+        <div class="creator-copy">
+          <span class="verified">Créatrice vérifiée <b>✓</b></span>
+          <h1 id="creatorName">Boutique Expertly</h1>
+          <p class="creator-role" id="creatorRole">Business coach</p>
+          <p class="creator-bio" id="creatorBio"></p>
+          <div class="social-links"><a href="#" aria-label="Instagram">Instagram</a><a href="#" aria-label="YouTube">YouTube</a></div>
+        </div>
+      </header>
+
+      <section class="featured-banner">
+        <span>Ressource gratuite</span>
+        <div>
+          <p>La checklist d’une offre qui se vend</p>
+          <button id="leadButton">La recevoir gratuitement →</button>
+        </div>
+      </section>
+
+      <section class="catalogue">
+        <div class="catalogue-heading">
+          <div><span>Catalogue</span><h2>Choisis ton prochain niveau.</h2></div>
+          <small id="offerCount">0 offres</small>
+        </div>
+        <div class="offer-list" id="publicOffers"></div>
+      </section>
+    </main>
+
+    <footer><span class="mini-mark">E</span> Propulsé par <strong>Expertly</strong></footer>
+
+    <div class="modal" id="checkoutModal" aria-hidden="true">
+      <div class="modal-card">
+        <button class="close-button" data-close-checkout>×</button>
+        <div id="checkoutContent"></div>
+      </div>
+    </div>
+
+    <div class="modal" id="leadModal" aria-hidden="true">
+      <div class="modal-card small">
+        <button class="close-button" data-close-lead>×</button>
+        <span class="modal-eyebrow">Ressource offerte</span>
+        <h2>Reçois la checklist maintenant.</h2>
+        <p>Entre tes informations pour obtenir le PDF dans ta boîte mail.</p>
+        <form id="leadForm">
+          <label>Prénom<input name="name" required placeholder="Alex" /></label>
+          <label>Email<input name="email" type="email" required placeholder="claire@email.com" /></label>
+          <button type="submit">Recevoir la checklist</button>
+        </form>
+      </div>
+    </div>
+    <div class="store-toast" id="storeToast"></div>
+    <script src="./analytics.js"></script>
+    <script src="./store.js"></script>
+  </body>
+</html>

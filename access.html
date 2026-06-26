@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Accès au produit · Expertly</title>
+    <link rel="stylesheet" href="./access.css" />
+  </head>
+  <body data-surface="customer_access">
+    <main class="access-card">
+      <span class="brand">E</span>
+      <p class="eyebrow">Accès client Expertly</p>
+      <h1 id="title">Vérification de ton accès…</h1>
+      <p id="message">Nous vérifions que le paiement a bien été confirmé.</p>
+      <a id="accessButton" hidden target="_blank" rel="noopener">Ouvrir mon produit →</a>
+    </main>
+    <script src="./analytics.js"></script>
+    <script>
+      const token = new URLSearchParams(location.search).get("token");
+      const title = document.querySelector("#title");
+      const message = document.querySelector("#message");
+      const button = document.querySelector("#accessButton");
+      fetch(`/api/access?token=${encodeURIComponent(token || "")}`)
+        .then(async (response) => {
+          const data = await response.json();
+          if (!response.ok) throw new Error(data.error || "Accès invalide.");
+          title.textContent = data.productTitle;
+          message.textContent = `Paiement confirmé · commande ${data.orderId}`;
+          button.href = data.access;
+          button.hidden = false;
+          window.ExpertlyTracking?.track("product_accessed", {
+            product_title: data.productTitle,
+            order_id: data.orderId
+          });
+        })
+        .catch((error) => {
+          title.textContent = "Accès indisponible";
+          message.textContent = error.message;
+        });
+    </script>
+  </body>
+</html>

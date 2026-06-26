@@ -1,0 +1,81 @@
+{
+  "profile": {
+    "firstName": "",
+    "creatorName": "",
+    "creatorRole": "Infopreneur",
+    "bio": "Bienvenue dans ma boutique de produits digitaux.",
+    "slug": "JJB",
+    "accent": "#6558f5"
+  },
+  "products": [],
+  "pages": [],
+  "contacts": [],
+  "orders": [],
+  "analytics": {
+    "visits": 3,
+    "leads": 0,
+    "checkouts": 0,
+    "purchases": 0,
+    "revenueSeries": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "sources": [
+      {
+        "name": "Instagram",
+        "value": 0
+      },
+      {
+        "name": "YouTube",
+        "value": 0
+      },
+      {
+        "name": "Email",
+        "value": 0
+      },
+      {
+        "name": "Direct",
+        "value": 0
+      }
+    ]
+  },
+  "emails": [
+    {
+      "id": "em1",
+      "name": "Livraison post-achat",
+      "description": "Envoie automatiquement le lien d’accès au client après le paiement.",
+      "trigger": "Achat confirmé",
+      "sent": 0,
+      "openRate": 0,
+      "active": true
+    },
+    {
+      "id": "em2",
+      "name": "Relance panier abandonné",
+      "description": "Relance les prospects qui ont commencé leur paiement sans le terminer.",
+      "trigger": "Checkout abandonné",
+      "sent": 41,
+      "openRate": 52,
+      "active": true
+    },
+    {
+      "id": "em3",
+      "name": "Bienvenue nouveau lead",
+      "description": "Livre la ressource gratuite et présente ton offre principale.",
+      "trigger": "Nouveau contact",
+      "sent": 624,
+      "openRate": 71,
+      "active": true
+    }
+  ]
+}
