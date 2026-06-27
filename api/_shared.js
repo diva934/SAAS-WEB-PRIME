@@ -180,6 +180,30 @@ export async function saveSubscription({ userId, plan, status }) {
   }
 }
 
+export async function saveCreatorBillingMetadata({ userId, plan, stripeSubscriptionId, stripeCustomerId }) {
+  if (!userId || !plans[plan] || !stripeSubscriptionId) return;
+  const { url, serviceKey } = supabaseConfig();
+  const response = await fetch(`${url}/auth/v1/admin/users/${encodeURIComponent(userId)}`, {
+    method: "PUT",
+    headers: {
+      apikey: serviceKey,
+      Authorization: `Bearer ${serviceKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      app_metadata: {
+        expertly_plan: plan,
+        stripe_subscription_id: stripeSubscriptionId,
+        stripe_customer_id: stripeCustomerId || "",
+      },
+    }),
+  });
+  if (!response.ok) {
+    await parseResponse(response);
+    throw new ApiError("L’abonnement est actif, mais son contrôle automatique n’a pas pu être configuré.", 502);
+  }
+}
+
 export function publicError(error) {
   if (error instanceof SyntaxError) return { status: 400, message: "Requête invalide." };
   return {

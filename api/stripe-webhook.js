@@ -1,5 +1,5 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
-import { plans, readRawBody, saveSubscription, sendJson } from "./_shared.js";
+import { plans, readRawBody, saveCreatorBillingMetadata, saveSubscription, sendJson } from "./_shared.js";
 
 export const config = { api: { bodyParser: false } };
 
@@ -40,6 +40,12 @@ export default async function handler(req, res) {
 
     if (event.type === "checkout.session.completed" && object.payment_status === "paid") {
       await saveSubscription({ userId, plan, status: "active" });
+      await saveCreatorBillingMetadata({
+        userId,
+        plan,
+        stripeSubscriptionId: object.subscription,
+        stripeCustomerId: object.customer,
+      });
     }
 
     if (["customer.subscription.updated", "customer.subscription.deleted"].includes(event.type) && plans[plan]) {
