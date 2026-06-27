@@ -38,6 +38,70 @@ body.auth-locked .app-shell {
   display: none;
 }
 
+.demo-banner {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 90;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 8px 18px;
+  color: #fff;
+  background: #17172b;
+  font-size: 12px;
+  line-height: 1.3;
+}
+
+.demo-banner strong {
+  color: #c9c5ff;
+}
+
+.demo-banner span {
+  color: #d7d7e2;
+}
+
+.demo-banner a {
+  padding: 6px 10px;
+  border-radius: 7px;
+  color: #17172b;
+  background: #fff;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+body.demo-mode .app-shell {
+  padding-top: 44px;
+}
+
+body.demo-mode .sidebar {
+  inset: 44px auto 0 0;
+}
+
+body.demo-mode .topbar {
+  top: 44px;
+}
+
+body.demo-mode [data-action="new-product"],
+body.demo-mode [data-action="new-page"],
+body.demo-mode [data-action="new-email"],
+body.demo-mode [data-edit-product],
+body.demo-mode [data-toggle-product],
+body.demo-mode [data-delete-product],
+body.demo-mode [data-edit-page],
+body.demo-mode [data-toggle-page],
+body.demo-mode [data-preview-page],
+body.demo-mode [data-resend-access],
+body.demo-mode [data-toggle-email],
+body.demo-mode #copyStoreLink,
+body.demo-mode #settingsForm button[type="submit"],
+body.demo-mode .integration-card button,
+body.demo-mode .plan-card button {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
 .auth-gate {
   min-height: 100vh;
   display: grid;
@@ -2937,6 +3001,16 @@ td,
 }
 
 @media (max-width: 620px) {
+  .demo-banner {
+    justify-content: space-between;
+    gap: 8px;
+    padding-inline: 12px;
+  }
+
+  .demo-banner span {
+    display: none;
+  }
+
   .content {
     padding: 27px 15px 60px;
   }

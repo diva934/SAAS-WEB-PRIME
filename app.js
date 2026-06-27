@@ -1,4 +1,5 @@
 const STORAGE_KEY = "expertly_client_v2";
+const DEMO_MODE = new URLSearchParams(window.location.search).get("demo") === "1";
 let publicConfig = window.EXPERTLY_CONFIG || {};
 let supabaseClient = null;
 let activeSupabaseSession = null;
@@ -123,6 +124,15 @@ const seedState = {
   ],
 };
 
+const demoState = JSON.parse(JSON.stringify(seedState));
+demoState.profile = {
+  ...demoState.profile,
+  firstName: "Léa",
+  creatorName: "Atelier Nova",
+  creatorRole: "Coach business",
+  slug: "atelier-nova",
+};
+
 // Un nouveau compte démarre sans catalogue ni données commerciales.
 seedState.products = [];
 seedState.pages = [];
@@ -230,7 +240,7 @@ function loadState() {
   }
 }
 
-let state = loadState();
+let state = DEMO_MODE ? normalizeState(demoState) : loadState();
 let activeView = "overview";
 let integrationConfig = {
   stripe: false,
@@ -262,10 +272,11 @@ const emailStatusLabels = {
 };
 
 function trackEvent(name, properties = {}) {
+  if (DEMO_MODE) return;
   window.ExpertlyTracking?.track(name, properties);
 }
 
-if (!localStorage.getItem(STORAGE_KEY)) {
+if (!DEMO_MODE && !localStorage.getItem(STORAGE_KEY)) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 }
 
@@ -451,6 +462,11 @@ function showCreatorAccessGate({ title, message }) {
 }
 
 async function ensureCreatorAccess() {
+  if (DEMO_MODE) {
+    document.querySelector("#creatorAccessGate")?.remove();
+    document.body.classList.remove("auth-pending", "auth-locked");
+    return true;
+  }
   if (!supabaseClient) {
     document.body.classList.remove("auth-pending");
     return true;
@@ -490,6 +506,10 @@ async function fileToDataUrl(file) {
 }
 
 function saveState() {
+  if (DEMO_MODE) {
+    showToast("Mode démo : les modifications sont désactivées.");
+    return;
+  }
   state = normalizeState(state);
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   document.querySelector("#productCount").textContent = String(state.products.length);
@@ -511,6 +531,41 @@ function showToast(message) {
   document.querySelector("#toastRegion").append(toast);
   setTimeout(() => toast.remove(), 2800);
 }
+
+function enableDemoMode() {
+  if (!DEMO_MODE) return;
+  document.body.classList.add("demo-mode");
+  const banner = document.createElement("div");
+  banner.className = "demo-banner";
+  banner.innerHTML = `
+    <strong>Démo interactive</strong>
+    <span>Données fictives · modifications désactivées</span>
+    <a href="${escapeHtml(marketingUrl())}#pricing">Créer mon espace</a>
+  `;
+  document.body.prepend(banner);
+  document.querySelectorAll("#settingsForm input, #settingsForm textarea, #settingsForm select").forEach((field) => {
+    field.disabled = true;
+  });
+}
+
+const demoBlockedClickSelector = [
+  '[data-action="new-product"]',
+  '[data-action="new-page"]',
+  '[data-action="new-email"]',
+  "[data-edit-product]",
+  "[data-toggle-product]",
+  "[data-delete-product]",
+  "[data-edit-page]",
+  "[data-toggle-page]",
+  "[data-preview-page]",
+  "[data-resend-access]",
+  "[data-toggle-email]",
+  "#copyStoreLink",
+  "#topStoreLink",
+  "#settingsForm button[type='submit']",
+  ".integration-card button",
+  ".plan-card button",
+].join(",");
 
 function paidOrders() {
   return state.orders.filter((order) => order.status === "paid");
@@ -1260,6 +1315,26 @@ function renderSettings() {
 }
 
 async function renderPaymentConfiguration() {
+  if (DEMO_MODE) {
+    integrationConfig = {
+      stripe: true,
+      stripeWebhook: true,
+      email: true,
+      umami: { enabled: true },
+    };
+    const stripeStatus = document.querySelector("#stripeStatus");
+    const emailStatus = document.querySelector("#emailStatus");
+    if (stripeStatus) {
+      stripeStatus.textContent = "Connecté (démo)";
+      stripeStatus.classList.add("connected");
+    }
+    if (emailStatus) {
+      emailStatus.textContent = "Connecté (démo)";
+      emailStatus.classList.add("connected");
+    }
+    renderLaunchProgress();
+    return;
+  }
   if (!location.protocol.startsWith("http")) {
     renderLaunchProgress();
     return;
@@ -1553,6 +1628,28 @@ function exportCsv(filename, rows) {
   URL.revokeObjectURL(link.href);
 }
 
+document.addEventListener(
+  "click",
+  (event) => {
+    if (!DEMO_MODE || !event.target.closest(demoBlockedClickSelector)) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    showToast("Mode démo : cette action est disponible après inscription.");
+  },
+  true,
+);
+
+document.addEventListener(
+  "submit",
+  (event) => {
+    if (!DEMO_MODE) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    showToast("Mode démo : les modifications sont désactivées.");
+  },
+  true,
+);
+
 document.addEventListener("click", (event) => {
   const navButton = event.target.closest("[data-view]");
   const viewTarget = event.target.closest("[data-view-target]");
@@ -1803,6 +1900,7 @@ window.addEventListener("keydown", (event) => {
 });
 
 async function hydrateServerState() {
+  if (DEMO_MODE) return;
   if (!location.protocol.startsWith("http")) return;
   try {
     const response = await authenticatedFetch("/api/state", { cache: "no-store" });
@@ -1817,6 +1915,7 @@ async function hydrateServerState() {
 async function startApp() {
   await loadPublicConfig();
   if (!(await ensureCreatorAccess())) return;
+  enableDemoMode();
   await hydrateServerState();
   await renderPaymentConfiguration();
   document.querySelector("#productCount").textContent = String(state.products.length);
