@@ -82,7 +82,9 @@ input {
 
 .brand {
   display: inline-flex;
-  align-items: center;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
 }
 
 .brand img {
@@ -478,6 +480,19 @@ h1 span,
   box-shadow: 0 26px 70px rgba(1, 17, 84, 0.28);
   backdrop-filter: blur(14px);
   color: var(--ink);
+}
+
+.brand span {
+  color: #dbe6ff;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+section[id] {
+  scroll-margin-top: 140px;
 }
 
 .value-card-visual {
@@ -1173,11 +1188,14 @@ h1 span,
   max-width: 1040px;
   margin: 0 auto;
   padding: 0 24px;
+  overflow-x: auto;
+  scrollbar-width: thin;
 }
 
 .comparison-row {
   display: grid;
-  grid-template-columns: 1fr 1.25fr 1.25fr;
+  min-width: 920px;
+  grid-template-columns: 0.8fr repeat(3, 1.2fr);
   gap: 18px;
   padding: 20px 24px;
   border: 1px solid #dfe7f6;
@@ -1210,6 +1228,23 @@ h1 span,
 
 .comparison-row.head span {
   color: white;
+}
+
+.comparison-sources {
+  max-width: 992px;
+  margin: 18px auto 0;
+  padding: 0 24px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
+  text-align: center;
+}
+
+.comparison-sources a {
+  color: var(--blue);
+  font-weight: 750;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .pricing-section {
@@ -1850,6 +1885,17 @@ body.dialog-open {
   opacity: 0.68;
 }
 
+.checkout-demo-link {
+  display: block;
+  color: var(--blue);
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.45;
+  text-align: center;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 @media (max-width: 1040px) {
   .hero-shell {
     grid-template-columns: 1fr;
@@ -1904,8 +1950,34 @@ body.dialog-open {
     width: 126px;
   }
 
+  .site-header {
+    height: 112px;
+  }
+
+  .header-inner {
+    flex-wrap: wrap;
+    align-content: center;
+    gap: 8px 14px;
+  }
+
   .nav-links {
-    display: none;
+    order: 3;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 10px 2px 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.16);
+    font-size: 12px;
+    overflow-x: auto;
+  }
+
+  main {
+    padding-top: 152px;
+  }
+
+  section[id] {
+    scroll-margin-top: 164px;
   }
 
   .header-cta {
@@ -1931,8 +2003,7 @@ body.dialog-open {
 
   .dashboard-layout,
   .store-builder,
-  .crm-board,
-  .comparison-row {
+  .crm-board {
     grid-template-columns: 1fr;
   }
 
@@ -2027,12 +2098,22 @@ body.dialog-open {
   }
 
   .site-header {
-    height: 72px;
+    height: 112px;
     padding: 0 14px;
   }
 
   .header-inner {
     gap: 14px;
+  }
+
+  .brand,
+  .header-actions {
+    min-width: 0;
+  }
+
+  .header-actions {
+    flex-shrink: 0;
+    margin-left: auto;
   }
 
   .brand img {
@@ -2046,7 +2127,7 @@ body.dialog-open {
   }
 
   main {
-    padding-top: 112px;
+    padding-top: 152px;
   }
 
   .hero {
@@ -2054,7 +2135,14 @@ body.dialog-open {
   }
 
   .hero-shell {
+    width: 100%;
+    min-width: 0;
     gap: 0;
+  }
+
+  .hero-content {
+    width: 100%;
+    min-width: 0;
   }
 
   .hero .eyebrow {
@@ -2064,10 +2152,12 @@ body.dialog-open {
   }
 
   h1 {
+    max-width: 100%;
     margin-bottom: 22px;
-    font-size: 38px;
+    font-size: clamp(33px, 9.5vw, 38px);
     line-height: 1.08;
     letter-spacing: 0;
+    overflow-wrap: break-word;
   }
 
   .hero-copy {
@@ -2209,7 +2299,8 @@ body.dialog-open {
   }
 
   .comparison-row:not(.head) {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    min-width: 0;
+    grid-template-columns: 1fr;
     gap: 10px;
     padding: 16px;
     border: 1px solid #dfe7f6;
@@ -2253,7 +2344,7 @@ body.dialog-open {
   }
 
   .comparison-row:not(.head) span:nth-child(2)::before {
-    content: "Store bio";
+    content: "Stan Store";
   }
 
   .comparison-row:not(.head) span:nth-child(3) {
@@ -2262,8 +2353,18 @@ body.dialog-open {
   }
 
   .comparison-row:not(.head) span:nth-child(3)::before {
-    content: "Expertly";
+    content: "Systeme.io";
     color: #1749df;
+  }
+
+  .comparison-row:not(.head) span:nth-child(4) {
+    background: #eef9f4;
+    color: #174c39;
+  }
+
+  .comparison-row:not(.head) span:nth-child(4)::before {
+    content: "Expertly";
+    color: #14845f;
   }
 
   .pricing-section {

@@ -85,6 +85,12 @@ tabButtons.forEach((button) => {
 enablePointerTilt(document.querySelectorAll(".pricing-grid article"));
 enableScrollMediaReveal();
 
+if (["localhost", "127.0.0.1"].includes(window.location.hostname)) {
+  document.querySelectorAll('a[href="https://expertly-client-app.vercel.app/?demo=1"]').forEach((link) => {
+    link.href = "http://127.0.0.1:4310/?demo=1";
+  });
+}
+
 const checkoutButtons = document.querySelectorAll("[data-checkout-plan]");
 const checkoutFeedback = document.querySelector("#checkoutFeedback");
 const checkoutDialog = document.querySelector("#checkoutDialog");

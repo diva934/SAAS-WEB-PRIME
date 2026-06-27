@@ -61,6 +61,7 @@
       <div class="header-inner">
         <a class="brand" href="#top" aria-label="Expertly accueil">
           <img src="./assets/expertly-logo.webp" alt="Expertly" width="512" height="120" />
+          <span>Le Shopify des infopreneurs</span>
         </a>
 
         <nav class="nav-links" aria-label="Navigation principale">
@@ -105,7 +106,9 @@
                 Créer ma boutique
                 <span aria-hidden="true">→</span>
               </a>
-              <a class="btn btn-secondary" href="#product">Voir le CRM en action</a>
+              <a class="btn btn-secondary" href="https://expertly-client-app.vercel.app/?demo=1">
+                Explorer la démo CRM
+              </a>
             </div>
           </div>
 
@@ -118,21 +121,6 @@
               alt=""
             />
           </div>
-        </div>
-
-        <div class="creator-proof hero-creator-proof" aria-label="Profils pour lesquels Expertly est conçu">
-          <div class="creator-avatars">
-            <img src="./assets/social-proof/charles.jpg" alt="Charles" />
-            <img src="./assets/social-proof/victor.webp" alt="Victor" />
-            <img src="./assets/social-proof/adscei_fun.webp" alt="Adscei" />
-            <img src="./assets/social-proof/bakir.webp" alt="Bakir" />
-            <img src="./assets/social-proof/sallahudin.webp" alt="Sallahudin" />
-            <img src="./assets/social-proof/tona.webp" alt="Tona" />
-            <img src="./assets/social-proof/andrei.webp" alt="Andrei" />
-            <img src="./assets/social-proof/cruz.webp" alt="Cruz" />
-            <img src="./assets/social-proof/alan.webp" alt="Alan" />
-          </div>
-          <p><strong>Conçu pour les coachs, formateurs</strong> et créateurs de contenu</p>
         </div>
 
         <div class="value-cards">
@@ -180,6 +168,93 @@
           </article>
         </div>
 
+      </section>
+
+      <section class="section-blue pricing-section" id="pricing">
+        <div class="section-heading">
+          <p class="eyebrow">Tarifs</p>
+          <h2>Choisis l’offre adaptée à ton activité.</h2>
+        </div>
+        <div class="pricing-grid">
+          <article class="pricing-card plan-launch">
+            <div class="plan-visual">
+              <span class="plan-icon" aria-hidden="true">↗</span>
+              <span class="plan-audience">Pour débuter</span>
+            </div>
+            <div class="pricing-card-head">
+              <span class="plan-name">Launch</span>
+              <p>Pour lancer ta première offre.</p>
+            </div>
+            <div class="plan-price">
+              <strong>19 €</strong>
+              <span>/ mois</span>
+            </div>
+            <p class="plan-includes">Tout le nécessaire pour commencer :</p>
+            <ul class="plan-features">
+              <li>1 boutique personnalisable</li>
+              <li>Jusqu’à 5 produits</li>
+              <li>Lead magnets et collecte d’emails</li>
+              <li>3 % de commission par vente</li>
+            </ul>
+            <button class="pricing-checkout" type="button" data-checkout-plan="launch" aria-haspopup="dialog">
+              Démarrer avec Launch
+            </button>
+            <small class="plan-note">Idéal pour tester ton marché</small>
+          </article>
+          <article class="pricing-card featured plan-scale">
+            <span class="recommended-badge">Le plus choisi</span>
+            <div class="plan-visual">
+              <span class="plan-icon" aria-hidden="true">✦</span>
+              <span class="plan-audience">Pour accélérer</span>
+            </div>
+            <div class="pricing-card-head">
+              <span class="plan-name">Scale</span>
+              <p>Pour développer des ventes régulières.</p>
+            </div>
+            <div class="plan-price">
+              <strong>49 €</strong>
+              <span>/ mois</span>
+            </div>
+            <p class="plan-includes">Tout dans Launch, plus :</p>
+            <ul class="plan-features">
+              <li>Produits et offres illimités</li>
+              <li>Upsells et order bumps</li>
+              <li>Emails automatisés</li>
+              <li>Domaine personnalisé</li>
+            </ul>
+            <button class="pricing-checkout" type="button" data-checkout-plan="scale" aria-haspopup="dialog">
+              Choisir Scale
+            </button>
+            <small class="plan-note">Pour les créateurs qui vendent déjà</small>
+          </article>
+          <article class="pricing-card plan-studio">
+            <div class="plan-visual">
+              <span class="plan-icon" aria-hidden="true">◆</span>
+              <span class="plan-audience">Pour les équipes</span>
+            </div>
+            <div class="pricing-card-head">
+              <span class="plan-name">Studio</span>
+              <p>Pour gérer plusieurs marques ou clients.</p>
+            </div>
+            <div class="plan-price">
+              <strong>149 €</strong>
+              <span>/ mois</span>
+            </div>
+            <p class="plan-includes">Tout dans Scale, plus :</p>
+            <ul class="plan-features">
+              <li>Espaces multi-marques</li>
+              <li>Affiliation avancée</li>
+              <li>Exports comptables détaillés</li>
+              <li>Support prioritaire</li>
+            </ul>
+            <button class="pricing-checkout" type="button" data-checkout-plan="studio" aria-haspopup="dialog">
+              Passer à Studio
+            </button>
+            <small class="plan-note">Conçu pour les équipes et agences</small>
+          </article>
+        </div>
+        <p class="pricing-intro">Paiement mensuel · Annulation à tout moment · Paiement sécurisé par Stripe</p>
+        <p class="checkout-feedback" id="checkoutFeedback" role="status" aria-live="polite"></p>
       </section>
 
       <section class="section-white" id="product">
@@ -297,137 +372,52 @@
       <section class="section-white comparison">
         <div class="section-heading">
           <p class="eyebrow">Positionnement</p>
-          <h2>Une alternative plus verticale qu’un store bio généraliste.</h2>
+          <h2>Choisis l’outil adapté à ta façon de vendre.</h2>
         </div>
         <div class="comparison-table">
           <div class="comparison-row head">
-            <span>Usage</span>
-            <span>Store bio généraliste</span>
+            <span>Critère</span>
+            <span>Stan Store</span>
+            <span>Systeme.io</span>
             <span>Expertly</span>
           </div>
           <div class="comparison-row">
             <span>Produit principal</span>
-            <span>Liens et produits simples</span>
-            <span>Formations, coaching, cohortes</span>
+            <span>Store créateur et produits digitaux</span>
+            <span>Suite marketing tout-en-un</span>
+            <span>Boutique + CRM pour infopreneurs</span>
           </div>
           <div class="comparison-row">
             <span>Conversion</span>
-            <span>Checkout + upsell</span>
-            <span>Lead magnet + nurturing + upsell</span>
+            <span>Lead magnets, funnels et upsells</span>
+            <span>Funnels, campagnes et automatisations</span>
+            <span>Lead magnet, CRM, nurturing et upsell</span>
           </div>
           <div class="comparison-row">
             <span>Marché cible</span>
-            <span>Créateurs tous secteurs</span>
+            <span>Créateurs internationaux</span>
+            <span>Entrepreneurs et TPE</span>
             <span>Infopreneurs francophones / Europe</span>
           </div>
           <div class="comparison-row">
-            <span>Avantage</span>
-            <span>Simple et rapide</span>
-            <span>Un système de vente complet</span>
+            <span>TVA / Europe</span>
+            <span>Fiscalité gérée selon la configuration de paiement</span>
+            <span>TVA automatique selon le pays de l’acheteur</span>
+            <span>Suivi EUR, TVA et exports dans le CRM</span>
+          </div>
+          <div class="comparison-row">
+            <span>Point fort</span>
+            <span>Mise en ligne rapide</span>
+            <span>Profondeur fonctionnelle</span>
+            <span>Expérience verticale et francophone</span>
           </div>
         </div>
-      </section>
-
-      <section class="section-blue pricing-section" id="pricing">
-        <div class="section-heading">
-          <p class="eyebrow">Tarifs</p>
-          <h2>Choisis l’offre adaptée à ton activité.</h2>
-        </div>
-        <div class="pricing-grid">
-          <article class="pricing-card plan-launch">
-            <div class="plan-visual">
-              <span class="plan-icon" aria-hidden="true">↗</span>
-              <span class="plan-audience">Pour débuter</span>
-            </div>
-            <div class="pricing-card-head">
-              <span class="plan-name">Launch</span>
-              <p>Pour lancer ta première offre.</p>
-            </div>
-            <div class="plan-price">
-              <strong>19 €</strong>
-              <span>/ mois</span>
-            </div>
-            <p class="plan-includes">Tout le nécessaire pour commencer :</p>
-            <ul class="plan-features">
-              <li>1 boutique personnalisable</li>
-              <li>Jusqu’à 5 produits</li>
-              <li>Lead magnets et collecte d’emails</li>
-              <li>3 % de commission par vente</li>
-            </ul>
-            <button class="pricing-checkout" type="button" data-checkout-plan="launch" aria-haspopup="dialog">
-              Démarrer avec Launch
-            </button>
-            <small class="plan-note">Idéal pour tester ton marché</small>
-          </article>
-          <article class="pricing-card featured plan-scale">
-            <span class="recommended-badge">Le plus choisi</span>
-            <div class="plan-visual">
-              <span class="plan-icon" aria-hidden="true">✦</span>
-              <span class="plan-audience">Pour accélérer</span>
-            </div>
-            <div class="pricing-card-head">
-              <span class="plan-name">Scale</span>
-              <p>Pour développer des ventes régulières.</p>
-            </div>
-            <div class="plan-price">
-              <strong>49 €</strong>
-              <span>/ mois</span>
-            </div>
-            <p class="plan-includes">Tout dans Launch, plus :</p>
-            <ul class="plan-features">
-              <li>Produits et offres illimités</li>
-              <li>Upsells et order bumps</li>
-              <li>Emails automatisés</li>
-              <li>Domaine personnalisé</li>
-            </ul>
-            <button class="pricing-checkout" type="button" data-checkout-plan="scale" aria-haspopup="dialog">
-              Choisir Scale
-            </button>
-            <small class="plan-note">Pour les créateurs qui vendent déjà</small>
-          </article>
-          <article class="pricing-card plan-studio">
-            <div class="plan-visual">
-              <span class="plan-icon" aria-hidden="true">◆</span>
-              <span class="plan-audience">Pour les équipes</span>
-            </div>
-            <div class="pricing-card-head">
-              <span class="plan-name">Studio</span>
-              <p>Pour gérer plusieurs marques ou clients.</p>
-            </div>
-            <div class="plan-price">
-              <strong>149 €</strong>
-              <span>/ mois</span>
-            </div>
-            <p class="plan-includes">Tout dans Scale, plus :</p>
-            <ul class="plan-features">
-              <li>Espaces multi-marques</li>
-              <li>Affiliation avancée</li>
-              <li>Exports comptables détaillés</li>
-              <li>Support prioritaire</li>
-            </ul>
-            <button class="pricing-checkout" type="button" data-checkout-plan="studio" aria-haspopup="dialog">
-              Passer à Studio
-            </button>
-            <small class="plan-note">Conçu pour les équipes et agences</small>
-          </article>
-        </div>
-        <p class="pricing-intro">Paiement mensuel · Annulation à tout moment · Paiement sécurisé par Stripe</p>
-        <p class="checkout-feedback" id="checkoutFeedback" role="status" aria-live="polite"></p>
-      </section>
-
-      <section class="section-white roadmap" id="included">
-        <div class="section-heading">
-          <p class="eyebrow">Inclus dans Expertly</p>
-          <h2>Tout ce qu’il faut pour transformer ton audience en clients.</h2>
-        </div>
-        <div class="roadmap-grid">
-          <article><strong>1</strong><span>Boutique personnalisable prête à publier</span></article>
-          <article><strong>2</strong><span>Vente de formations et produits numériques</span></article>
-          <article><strong>3</strong><span>Réservations de coaching et sessions en direct</span></article>
-          <article><strong>4</strong><span>Paiements sécurisés et abonnements avec Stripe</span></article>
-          <article><strong>5</strong><span>Livraison automatique et emails clients</span></article>
-          <article><strong>6</strong><span>Contacts, ventes et statistiques centralisés</span></article>
-        </div>
+        <p class="comparison-sources">
+          Comparaison fonctionnelle vérifiée en juin 2026 —
+          <a href="https://help.stan.store/article/19-my-funnels-product" target="_blank" rel="noopener">documentation Stan Store</a>
+          et
+          <a href="https://help.systeme.io/article/281-how-vat-is-managed-in-systeme-io" target="_blank" rel="noopener">documentation Systeme.io</a>.
+        </p>
       </section>
 
       <section class="section-white faq-section" id="faq">
@@ -463,7 +453,7 @@
         <h2>Transforme ton audience en système de vente.</h2>
         <div>
           <a class="btn btn-primary" href="#pricing">Créer ma boutique</a>
-          <a class="btn btn-secondary" href="#product">Voir le produit</a>
+          <a class="btn btn-secondary" href="https://expertly-client-app.vercel.app/?demo=1">Explorer la démo CRM</a>
         </div>
       </section>
     </main>
@@ -471,7 +461,7 @@
     <footer class="footer">
       <div>
         <img class="footer-logo" src="./assets/expertly-logo.webp" alt="Expertly" width="512" height="120" />
-        <p>Le système de vente vertical pour infopreneurs.</p>
+        <p>Le Shopify des infopreneurs.</p>
       </div>
       <nav aria-label="Footer">
         <a href="#product">Produit</a>
@@ -503,6 +493,9 @@
             <small>8 caractères minimum. Il servira à ouvrir ton CRM.</small>
           </label>
           <p class="checkout-dialog-note">Abonnement mensuel, annulable à tout moment. Paiement sécurisé par Stripe.</p>
+          <a class="checkout-demo-link" href="https://expertly-client-app.vercel.app/?demo=1">
+            Pas encore prêt ? Explorer la démo sans inscription
+          </a>
           <p class="checkout-dialog-error" id="checkoutDialogError" role="alert"></p>
           <button class="checkout-dialog-submit" type="submit">Continuer vers le paiement</button>
         </form>
