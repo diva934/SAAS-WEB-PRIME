@@ -87,15 +87,42 @@ enableScrollMediaReveal();
 
 const checkoutButtons = document.querySelectorAll("[data-checkout-plan]");
 const checkoutFeedback = document.querySelector("#checkoutFeedback");
+const checkoutDialog = document.querySelector("#checkoutDialog");
+const checkoutForm = document.querySelector("#checkoutAccountForm");
+const checkoutDialogError = document.querySelector("#checkoutDialogError");
+const checkoutPlanSummary = document.querySelector("#checkoutPlanSummary");
+const planLabels = {
+  launch: "Launch · 19 € / mois",
+  scale: "Scale · 49 € / mois",
+  studio: "Studio · 149 € / mois",
+};
 
-async function redirectToStripe(button) {
-  const originalLabel = button.textContent;
-  checkoutButtons.forEach((item) => {
-    item.disabled = true;
-  });
-  button.textContent = "Redirection...";
+function openCheckoutDialog(plan) {
+  checkoutForm.elements.plan.value = plan;
+  checkoutPlanSummary.textContent = planLabels[plan] || "Formule Expertly";
+  checkoutDialogError.textContent = "";
   checkoutFeedback.textContent = "";
   checkoutFeedback.classList.remove("success");
+  checkoutDialog.classList.add("open");
+  checkoutDialog.setAttribute("aria-hidden", "false");
+  document.body.classList.add("dialog-open");
+  window.setTimeout(() => checkoutForm.elements.firstName.focus(), 50);
+}
+
+function closeCheckoutDialog() {
+  checkoutDialog.classList.remove("open");
+  checkoutDialog.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("dialog-open");
+}
+
+async function redirectToStripe(event) {
+  event.preventDefault();
+  const submitButton = checkoutForm.querySelector("button[type='submit']");
+  const originalLabel = submitButton.textContent;
+  const formData = new FormData(checkoutForm);
+  submitButton.disabled = true;
+  submitButton.textContent = "Ouverture du paiement…";
+  checkoutDialogError.textContent = "";
 
   try {
     const endpoint =
@@ -105,9 +132,14 @@ async function redirectToStripe(button) {
     const response = await fetch(endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ plan: button.dataset.checkoutPlan }),
+      body: JSON.stringify({
+        plan: formData.get("plan"),
+        firstName: formData.get("firstName"),
+        email: formData.get("email"),
+        password: formData.get("password"),
+      }),
     });
-    const payload = await response.json();
+    const payload = await response.json().catch(() => ({}));
 
     if (!response.ok || !payload.url) {
       throw new Error(payload.error || "Impossible de démarrer le paiement.");
@@ -115,25 +147,30 @@ async function redirectToStripe(button) {
 
     window.location.assign(payload.url);
   } catch (error) {
-    checkoutFeedback.textContent =
-      error instanceof TypeError
-        ? "Le serveur de paiement n’est pas démarré. Lance « npm start », puis ouvre http://localhost:4242."
-        : error.message;
-    checkoutButtons.forEach((item) => {
-      item.disabled = false;
-    });
-    button.textContent = originalLabel;
+    checkoutDialogError.textContent = error.message || "Le paiement ne peut pas être ouvert pour le moment.";
+    submitButton.disabled = false;
+    submitButton.textContent = originalLabel;
   }
 }
 
 checkoutButtons.forEach((button) => {
-  button.addEventListener("click", () => redirectToStripe(button));
+  button.addEventListener("click", () => openCheckoutDialog(button.dataset.checkoutPlan));
+});
+
+checkoutForm.addEventListener("submit", redirectToStripe);
+checkoutDialog.addEventListener("click", (event) => {
+  if (event.target === checkoutDialog || event.target.closest("[data-close-checkout]")) closeCheckoutDialog();
+});
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && checkoutDialog.classList.contains("open")) closeCheckoutDialog();
 });
 
 const paymentStatus = new URLSearchParams(location.search).get("payment");
 if (paymentStatus === "success") {
-  checkoutFeedback.textContent = "Paiement confirmé. Merci pour ton abonnement.";
+  checkoutFeedback.textContent = "Paiement confirmé. Ton accès Expertly est actif.";
   checkoutFeedback.classList.add("success");
 } else if (paymentStatus === "cancelled") {
   checkoutFeedback.textContent = "Paiement annulé. Aucun prélèvement n’a été effectué.";
+} else if (paymentStatus === "provisioning_error") {
+  checkoutFeedback.textContent = "Le paiement n’a pas pu activer ton accès. Contacte le support avant de réessayer.";
 }

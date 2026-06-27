@@ -3,11 +3,31 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Expertly - Boutique SaaS pour infopreneurs</title>
+    <title>Expertly — Boutique, CRM et tunnels pour infopreneurs</title>
     <meta
       name="description"
-      content="Expertly aide les infopreneurs à vendre formations, coachings, masterclass et lead magnets depuis une boutique bio optimisée conversion."
+      content="Vends tes formations, coachings et ressources depuis une boutique qui capture, convertit et relance automatiquement avec Expertly."
     />
+    <link rel="canonical" href="https://saas-web-prime.vercel.app/" />
+    <meta name="theme-color" content="#073bd9" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="fr_FR" />
+    <meta property="og:site_name" content="Expertly" />
+    <meta property="og:title" content="Expertly — Transforme ton audience en système de vente" />
+    <meta
+      property="og:description"
+      content="Boutique, mini-CRM, tunnels courts et automatisations pour infopreneurs."
+    />
+    <meta property="og:url" content="https://saas-web-prime.vercel.app/" />
+    <meta property="og:image" content="https://saas-web-prime.vercel.app/assets/expertly-dashboard-hq.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Expertly — Boutique et CRM pour infopreneurs" />
+    <meta
+      name="twitter:description"
+      content="Vends, livre et relance depuis un seul espace pensé pour l’expertise."
+    />
+    <meta name="twitter:image" content="https://saas-web-prime.vercel.app/assets/expertly-dashboard-hq.png" />
+    <link rel="icon" href="./assets/expertly-logo.webp" type="image/webp" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -15,6 +35,22 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="./styles.css" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "Expertly",
+        "applicationCategory": "BusinessApplication",
+        "operatingSystem": "Web",
+        "url": "https://saas-web-prime.vercel.app/",
+        "description": "Boutique, CRM et tunnels de vente pour infopreneurs.",
+        "offers": [
+          { "@type": "Offer", "name": "Launch", "price": "19", "priceCurrency": "EUR" },
+          { "@type": "Offer", "name": "Scale", "price": "49", "priceCurrency": "EUR" },
+          { "@type": "Offer", "name": "Studio", "price": "149", "priceCurrency": "EUR" }
+        ]
+      }
+    </script>
   </head>
   <body>
     <div class="announcement-bar">
@@ -24,19 +60,19 @@
     <header class="site-header">
       <div class="header-inner">
         <a class="brand" href="#top" aria-label="Expertly accueil">
-          <img src="./assets/expertly-logo.png" alt="Expertly" />
+          <img src="./assets/expertly-logo.webp" alt="Expertly" width="512" height="120" />
         </a>
 
         <nav class="nav-links" aria-label="Navigation principale">
           <a href="#product">Produit</a>
-          <a href="#features">Fonctions</a>
+          <a href="#how-it-works">Fonctionnement</a>
           <a href="#pricing">Tarifs</a>
-          <a href="#included">Inclus</a>
+          <a href="#faq">FAQ</a>
         </nav>
 
         <div class="header-actions">
-          <a class="header-login" href="./app.html">Connectez-vous</a>
-          <a class="header-cta" href="#pricing">Commencez</a>
+          <a class="header-login" href="https://expertly-client-app.vercel.app/">Connexion</a>
+          <a class="header-cta" href="#pricing">Créer ma boutique</a>
         </div>
       </div>
     </header>
@@ -47,41 +83,44 @@
           <div class="side-mockup side-mockup-left" aria-hidden="true">
             <img
               class="hero-side-image hero-dashboard-image"
-              src="./assets/expertly-hero-dashboard-hq.png"
+              src="./assets/expertly-hero-dashboard.webp"
+              width="800"
+              height="922"
               alt=""
             />
           </div>
 
           <div class="hero-content">
-            <p class="eyebrow">Boutique tout-en-un pour infopreneurs</p>
+            <p class="eyebrow">Le système de vente des infopreneurs</p>
             <h1>
-              Vends tes <span>formations</span><br />
-              comme une machine
+              Vends ton <span>expertise</span><br />
+              sans empiler les outils
             </h1>
             <p class="hero-copy">
-              Expertly transforme ton audience en clients avec une boutique bio,
-              des tunnels courts, des upsells et une livraison automatique adaptee
-              aux coachs, formateurs et createurs de contenu.
+              Vends tes formations, coachings et ressources depuis une boutique qui
+              capture les prospects, encaisse, livre et relance automatiquement.
             </p>
             <div class="hero-actions">
               <a class="btn btn-primary" href="#pricing">
-                Creer une boutique
-                <span aria-hidden="true">-></span>
+                Créer ma boutique
+                <span aria-hidden="true">→</span>
               </a>
-              <a class="btn btn-secondary" href="#features">Explorer le produit</a>
+              <a class="btn btn-secondary" href="#product">Voir le CRM en action</a>
             </div>
           </div>
 
           <div class="side-mockup side-mockup-right" aria-hidden="true">
             <img
               class="hero-side-image hero-phone-image"
-              src="./assets/expertly-hero-phone-hq.png"
+              src="./assets/expertly-hero-phone.webp"
+              width="720"
+              height="998"
               alt=""
             />
           </div>
         </div>
 
-        <div class="creator-proof hero-creator-proof" aria-label="Créateurs accompagnés par Expertly">
+        <div class="creator-proof hero-creator-proof" aria-label="Profils pour lesquels Expertly est conçu">
           <div class="creator-avatars">
             <img src="./assets/social-proof/charles.jpg" alt="Charles" />
             <img src="./assets/social-proof/victor.webp" alt="Victor" />
@@ -93,7 +132,7 @@
             <img src="./assets/social-proof/cruz.webp" alt="Cruz" />
             <img src="./assets/social-proof/alan.webp" alt="Alan" />
           </div>
-          <p><strong>Des créateurs ambitieux</strong> développent leur activité avec Expertly</p>
+          <p><strong>Conçu pour les coachs, formateurs</strong> et créateurs de contenu</p>
         </div>
 
         <div class="value-cards">
@@ -105,7 +144,7 @@
                 decoding="async"
               />
             </div>
-            <h3>Offres structurees</h3>
+            <h3>Offres structurées</h3>
             <p>
               Templates pour lead magnet, mini-formation, coaching premium,
               abonnement et bundle.
@@ -135,7 +174,7 @@
             </div>
             <h3>CRM audience</h3>
             <p>
-              Segments par interet, score d'achat et sequences emails pretes
+              Segments par intérêt, score d’achat et séquences emails prêtes
               pour relancer les prospects.
             </p>
           </article>
@@ -146,29 +185,32 @@
       <section class="section-white" id="product">
         <div class="section-heading">
           <p class="eyebrow">Produit</p>
-          <h2>Une boutique, un mini-CRM et un tunnel de vente dans le meme outil.</h2>
+          <h2>Une boutique, un mini-CRM et un tunnel de vente dans le même outil.</h2>
         </div>
 
         <div class="product-grid">
           <figure class="dashboard-preview dashboard-image">
             <img
               src="./assets/expertly-dashboard-hq.png"
+              width="2048"
+              height="1673"
+              loading="lazy"
               alt="Dashboard créateur Expertly présentant le chiffre d’affaires, les commandes, les clients et les statistiques."
             />
           </figure>
 
           <div class="product-copy">
-            <h3>Optimise pour vendre de l'expertise, pas des t-shirts.</h3>
+            <h3>Optimisé pour vendre de l’expertise, pas des t-shirts.</h3>
             <p>
-              La logique produit est pensee pour les infopreneurs : capturer un
+              La logique produit est pensée pour les infopreneurs : capturer un
               lead, le qualifier, vendre une offre simple, proposer un upsell et
               suivre la valeur client.
             </p>
             <ul>
               <li>Pages bio avec blocs offres, preuves et FAQ.</li>
-              <li>Livraison automatique de fichiers, videos et liens prives.</li>
-              <li>Calendrier integre pour audits, calls et coaching.</li>
-              <li>Factures, TVA et domaines personnalises pour le marche europeen.</li>
+              <li>Livraison automatique de fichiers, vidéos et liens privés.</li>
+              <li>Calendrier intégré pour audits, appels et coaching.</li>
+              <li>Factures, TVA et domaines personnalisés pour le marché européen.</li>
             </ul>
           </div>
         </div>
@@ -181,27 +223,30 @@
         </div>
         <figure class="product-showcase">
           <img
-            src="./assets/offerlab-product-showcase-repaired.png"
+            src="./assets/expertly-product-showcase.webp"
+            width="1541"
+            height="1005"
+            loading="lazy"
             alt="Interface de boutique créateur sur ordinateur et mobile avec réservations, formations, téléchargements, sessions en direct et liens."
           />
         </figure>
         <div class="feature-cards">
           <article>
             <div class="feature-visual funnel"></div>
-            <h3>Tunnel Bio -> Lead -> Vente</h3>
+            <h3>Tunnel Bio → Lead → Vente</h3>
             <p>Capture email, page de vente courte, checkout et upsell post-achat.</p>
             <a href="#pricing">Accéder au service</a>
           </article>
           <article>
             <div class="feature-visual course"></div>
-            <h3>Bibliotheque de formations</h3>
-            <p>Modules, fichiers, liens prives et acces client sans LMS lourd.</p>
+            <h3>Bibliothèque de formations</h3>
+            <p>Modules, fichiers, liens privés et accès client sans LMS lourd.</p>
             <a href="#pricing">Accéder au service</a>
           </article>
           <article>
             <div class="feature-visual email"></div>
             <h3>Emails de conversion</h3>
-            <p>Sequences pretes pour webinar, panier abandonne et relance coaching.</p>
+            <p>Séquences prêtes pour webinar, panier abandonné et relance coaching.</p>
             <a href="#pricing">Accéder au service</a>
           </article>
           <article>
@@ -213,14 +258,38 @@
           <article>
             <div class="feature-visual ai"></div>
             <h3>Assistant d'offre IA</h3>
-            <p>Genere promesse, structure, prix, FAQ et email de lancement.</p>
+            <p>Génère promesse, structure, prix, FAQ et email de lancement.</p>
             <a href="#pricing">Accéder au service</a>
           </article>
           <article>
             <div class="feature-visual affiliate"></div>
-            <h3>Affiliation createur</h3>
+            <h3>Affiliation créateur</h3>
             <p>Liens partenaires, commissions et tracking des ambassadeurs.</p>
             <a href="#pricing">Accéder au service</a>
+          </article>
+        </div>
+      </section>
+
+      <section class="section-white how-it-works" id="how-it-works">
+        <div class="section-heading">
+          <p class="eyebrow">Mise en route</p>
+          <h2>De ton idée à ta première vente en trois étapes.</h2>
+        </div>
+        <div class="steps-grid">
+          <article>
+            <span>01</span>
+            <h3>Structure ton offre</h3>
+            <p>Choisis un modèle, pose ta promesse, ton prix et ce que le client reçoit.</p>
+          </article>
+          <article>
+            <span>02</span>
+            <h3>Publie ta boutique</h3>
+            <p>Personnalise ta page, connecte Stripe et partage un lien unique à ton audience.</p>
+          </article>
+          <article>
+            <span>03</span>
+            <h3>Pilote tes ventes</h3>
+            <p>Suis les contacts, commandes et conversions depuis le CRM Expertly.</p>
           </article>
         </div>
       </section>
@@ -228,12 +297,12 @@
       <section class="section-white comparison">
         <div class="section-heading">
           <p class="eyebrow">Positionnement</p>
-          <h2>Une alternative plus verticale qu'un store bio generaliste.</h2>
+          <h2>Une alternative plus verticale qu’un store bio généraliste.</h2>
         </div>
         <div class="comparison-table">
           <div class="comparison-row head">
             <span>Usage</span>
-            <span>Store bio generaliste</span>
+            <span>Store bio généraliste</span>
             <span>Expertly</span>
           </div>
           <div class="comparison-row">
@@ -247,14 +316,14 @@
             <span>Lead magnet + nurturing + upsell</span>
           </div>
           <div class="comparison-row">
-            <span>Marche cible</span>
-            <span>Createurs tous secteurs</span>
+            <span>Marché cible</span>
+            <span>Créateurs tous secteurs</span>
             <span>Infopreneurs francophones / Europe</span>
           </div>
           <div class="comparison-row">
             <span>Avantage</span>
             <span>Simple et rapide</span>
-            <span>Plus proche d'un systeme de vente complet</span>
+            <span>Un système de vente complet</span>
           </div>
         </div>
       </section>
@@ -285,7 +354,7 @@
               <li>Lead magnets et collecte d’emails</li>
               <li>3 % de commission par vente</li>
             </ul>
-            <button class="pricing-checkout" type="button" data-checkout-plan="launch">
+            <button class="pricing-checkout" type="button" data-checkout-plan="launch" aria-haspopup="dialog">
               Démarrer avec Launch
             </button>
             <small class="plan-note">Idéal pour tester ton marché</small>
@@ -311,7 +380,7 @@
               <li>Emails automatisés</li>
               <li>Domaine personnalisé</li>
             </ul>
-            <button class="pricing-checkout" type="button" data-checkout-plan="scale">
+            <button class="pricing-checkout" type="button" data-checkout-plan="scale" aria-haspopup="dialog">
               Choisir Scale
             </button>
             <small class="plan-note">Pour les créateurs qui vendent déjà</small>
@@ -336,7 +405,7 @@
               <li>Exports comptables détaillés</li>
               <li>Support prioritaire</li>
             </ul>
-            <button class="pricing-checkout" type="button" data-checkout-plan="studio">
+            <button class="pricing-checkout" type="button" data-checkout-plan="studio" aria-haspopup="dialog">
               Passer à Studio
             </button>
             <small class="plan-note">Conçu pour les équipes et agences</small>
@@ -361,26 +430,84 @@
         </div>
       </section>
 
+      <section class="section-white faq-section" id="faq">
+        <div class="section-heading">
+          <p class="eyebrow">Questions fréquentes</p>
+          <h2>Ce qu’il faut savoir avant de lancer ta boutique.</h2>
+        </div>
+        <div class="faq-list">
+          <details>
+            <summary>Quels produits puis-je vendre avec Expertly ?</summary>
+            <p>Formations, coachings, audits, ressources numériques, abonnements et bundles.</p>
+          </details>
+          <details>
+            <summary>Ai-je besoin d’un autre outil pour encaisser ?</summary>
+            <p>Non. Tu connectes Stripe et Expertly centralise le checkout, les commandes et l’accès client.</p>
+          </details>
+          <details>
+            <summary>Puis-je utiliser mon propre domaine ?</summary>
+            <p>Oui, le domaine personnalisé est inclus à partir de la formule Scale.</p>
+          </details>
+          <details>
+            <summary>Que se passe-t-il après le paiement ?</summary>
+            <p>Ton compte est activé et tu es redirigé vers le CRM pour te connecter avec l’email et le mot de passe choisis.</p>
+          </details>
+          <details>
+            <summary>Puis-je arrêter mon abonnement ?</summary>
+            <p>Oui. Les formules sont mensuelles et sans engagement annuel.</p>
+          </details>
+        </div>
+      </section>
+
       <section class="final-cta section-blue">
-        <h2>Transforme une audience en systeme de vente.</h2>
+        <h2>Transforme ton audience en système de vente.</h2>
         <div>
-          <a class="btn btn-primary" href="#pricing">Choisir mon offre</a>
-          <a class="btn btn-secondary" href="#pricing">Voir les offres</a>
+          <a class="btn btn-primary" href="#pricing">Créer ma boutique</a>
+          <a class="btn btn-secondary" href="#product">Voir le produit</a>
         </div>
       </section>
     </main>
 
     <footer class="footer">
       <div>
-        <img class="footer-logo" src="./assets/expertly-logo.png" alt="Expertly" />
-        <p>Creator commerce vertical pour infopreneurs.</p>
+        <img class="footer-logo" src="./assets/expertly-logo.webp" alt="Expertly" width="512" height="120" />
+        <p>Le système de vente vertical pour infopreneurs.</p>
       </div>
       <nav aria-label="Footer">
         <a href="#product">Produit</a>
         <a href="#features">Fonctions</a>
-        <a href="#pricing">Pricing</a>
+        <a href="#pricing">Tarifs</a>
+        <a href="#faq">FAQ</a>
       </nav>
     </footer>
+
+    <div class="checkout-dialog" id="checkoutDialog" aria-hidden="true">
+      <div class="checkout-dialog-card" role="dialog" aria-modal="true" aria-labelledby="checkoutDialogTitle">
+        <button class="checkout-dialog-close" type="button" data-close-checkout aria-label="Fermer">×</button>
+        <p class="eyebrow">Créer ton espace Expertly</p>
+        <h2 id="checkoutDialogTitle">Finalise ton compte avant le paiement</h2>
+        <p id="checkoutPlanSummary">Formule sélectionnée</p>
+        <form id="checkoutAccountForm">
+          <input type="hidden" name="plan" />
+          <label>
+            Prénom
+            <input name="firstName" autocomplete="given-name" required maxlength="80" />
+          </label>
+          <label>
+            Email
+            <input name="email" type="email" autocomplete="email" required maxlength="180" />
+          </label>
+          <label>
+            Mot de passe
+            <input name="password" type="password" autocomplete="new-password" minlength="8" required />
+            <small>8 caractères minimum. Il servira à ouvrir ton CRM.</small>
+          </label>
+          <p class="checkout-dialog-note">Abonnement mensuel, annulable à tout moment. Paiement sécurisé par Stripe.</p>
+          <p class="checkout-dialog-error" id="checkoutDialogError" role="alert"></p>
+          <button class="checkout-dialog-submit" type="submit">Continuer vers le paiement</button>
+        </form>
+      </div>
+    </div>
 
     <script src="./script.js"></script>
   </body>

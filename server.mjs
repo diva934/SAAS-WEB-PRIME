@@ -28,17 +28,17 @@ await loadLocalEnv();
 const port = Number(process.env.PORT || 4242);
 const plans = {
   launch: {
-    name: "OfferLab Launch",
+    name: "Expertly Launch",
     description: "1 boutique, 5 produits et lead magnets.",
     amount: 1900,
   },
   scale: {
-    name: "OfferLab Scale",
+    name: "Expertly Scale",
     description: "Produits illimités, upsells et emails automatisés.",
     amount: 4900,
   },
   studio: {
-    name: "OfferLab Studio",
+    name: "Expertly Studio",
     description: "Multi-marques, affiliation avancée et support prioritaire.",
     amount: 14900,
   },
@@ -66,7 +66,7 @@ function sendJson(response, status, body) {
 }
 
 function accessSecret() {
-  return process.env.ACCESS_TOKEN_SECRET || process.env.STRIPE_SECRET_KEY || "offerlab-local-only";
+  return process.env.ACCESS_TOKEN_SECRET || process.env.STRIPE_SECRET_KEY || "expertly-local-only";
 }
 
 function signAccessToken(sessionId) {
@@ -88,7 +88,7 @@ function hasValidAccess(request) {
       .map((part) => part.trim().split("="))
       .filter(([key, value]) => key && value),
   );
-  const token = cookies.offerlab_access;
+  const token = cookies.expertly_access;
   if (!token) return false;
 
   try {
@@ -213,7 +213,7 @@ async function completeCheckout(request, response) {
   const secureCookie = (process.env.APP_URL || "").startsWith("https://") ? "; Secure" : "";
   response.writeHead(302, {
     Location: "/app.html?payment=success",
-    "Set-Cookie": `offerlab_access=${signAccessToken(session.id)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=2592000${secureCookie}`,
+    "Set-Cookie": `expertly_access=${signAccessToken(session.id)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=2592000${secureCookie}`,
     "Cache-Control": "no-store",
   });
   response.end();
@@ -283,5 +283,5 @@ const server = createServer(async (request, response) => {
 });
 
 server.listen(port, () => {
-  console.log(`OfferLab disponible sur http://localhost:${port}`);
+  console.log(`Expertly disponible sur http://localhost:${port}`);
 });

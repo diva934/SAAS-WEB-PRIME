@@ -1,21 +1,10 @@
 {
-  "name": "offerlab-remotion-hero",
+  "name": "expertly-marketing-site",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "start": "node server.mjs",
-    "studio": "remotion studio src/index.ts",
-    "render:hero": "remotion still src/index.ts OfferLabHero out/offerlab-hero.png --image-format=png",
-    "check": "tsc --noEmit"
-  },
-  "dependencies": {
-    "@remotion/cli": "4.0.463",
-    "react": "19.2.3",
-    "react-dom": "19.2.3",
-    "remotion": "4.0.463"
-  },
-  "devDependencies": {
-    "@types/react": "19.2.7",
-    "typescript": "5.9.3"
+    "check": "node --check script.js && node --check server.mjs && node --check api/_shared.js && node --check api/health.js && node --check api/create-checkout-session.js && node --check api/checkout-success.js && node --check api/stripe-webhook.js"
   }
 }

@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://saas-web-prime.vercel.app/sitemap.xml
