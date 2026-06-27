@@ -5,6 +5,6 @@
   "type": "module",
   "scripts": {
     "start": "node server.mjs",
-    "check": "node --check app.js && node --check store.js && node --check server.mjs"
+    "check": "node --check app.js && node --check store.js && node --check sales.js && node --check server.mjs && node --check api/_shared.js && node --check api/state.js && node --check api/store.js && node --check api/checkout.js && node --check api/subscription-status.js"
   }
 }

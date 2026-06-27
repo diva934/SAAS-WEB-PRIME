@@ -464,16 +464,12 @@ async function ensureCreatorAccess() {
     });
     return false;
   }
-  const { data: subscription, error } = await supabaseClient
-    .from("subscriptions")
-    .select("status,plan")
-    .eq("user_id", activeSupabaseSession.user.id)
-    .eq("status", "active")
-    .maybeSingle();
-  if (error || !subscription) {
+  const subscriptionResponse = await authenticatedFetch("/api/subscription-status", { cache: "no-store" });
+  const subscription = await subscriptionResponse.json().catch(() => ({}));
+  if (!subscriptionResponse.ok || !subscription.active) {
     showCreatorAccessGate({
       title: "Abonnement requis",
-      message: "Ce compte n'a pas encore d'abonnement actif. Termine le paiement sur le site Expertly, puis reconnecte-toi ici.",
+      message: "Ce compte n'a pas d'abonnement actif. Termine le paiement sur le site Expertly, puis reconnecte-toi ici.",
     });
     return false;
   }
@@ -1841,6 +1837,10 @@ async function startApp() {
     page_count: state.pages.length,
     order_count: state.orders.length,
   });
+  if (new URLSearchParams(location.search).get("checkout") === "success") {
+    showToast("Paiement confirmé : ton espace Expertly est actif.");
+    history.replaceState({}, "", `${location.pathname}${location.hash}`);
+  }
   const initialView = location.hash.replace("#", "");
   setView(viewNames[initialView] ? initialView : "overview");
 }
