@@ -1,0 +1,387 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Expertly Studio, le système de vente des infopreneurs." />
+    <title>Expertly Studio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./app.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" id="sidebar">
+        <a class="app-brand" href="./index.html" aria-label="Retour à Expertly">
+          <img src="./assets/expertly-logo.png" alt="Expertly" />
+        </a>
+
+        <div class="workspace-switcher">
+          <div class="workspace-avatar">CM</div>
+          <div>
+            <strong>Claire Mentor</strong>
+            <span>Workspace principal</span>
+          </div>
+          <button class="icon-button compact" title="Changer d’espace" aria-label="Changer d’espace">⌄</button>
+        </div>
+
+        <nav class="side-nav" aria-label="Navigation principale">
+          <button class="nav-item active" data-view="dashboard"><span>⌂</span>Vue d’ensemble</button>
+          <button class="nav-item" data-view="offers"><span>▣</span>Offres</button>
+          <button class="nav-item" data-view="store"><span>◫</span>Boutique</button>
+          <button class="nav-item" data-view="contacts"><span>◎</span>Contacts</button>
+          <button class="nav-item" data-view="orders"><span>↗</span>Commandes</button>
+          <button class="nav-item" data-view="analytics"><span>⌁</span>Analytics</button>
+        </nav>
+
+        <div class="nav-label">Configuration</div>
+        <nav class="side-nav">
+          <button class="nav-item" data-view="settings"><span>⚙</span>Réglages</button>
+        </nav>
+
+        <div class="plan-card">
+          <div>
+            <span class="status-dot"></span>
+            <strong>Plan Scale</strong>
+          </div>
+          <p>8 offres sur un nombre illimité</p>
+          <button data-view-trigger="settings">Gérer le plan</button>
+        </div>
+      </aside>
+
+      <div class="main-column">
+        <header class="topbar">
+          <button class="icon-button menu-button" id="menuButton" aria-label="Ouvrir le menu">☰</button>
+          <div class="topbar-title">
+            <span id="breadcrumb">Studio</span>
+            <strong id="viewTitle">Vue d’ensemble</strong>
+          </div>
+          <div class="topbar-actions">
+            <a class="store-link" href="./store.html" target="_blank">Voir ma boutique ↗</a>
+            <button class="icon-button" id="notificationButton" title="Notifications" aria-label="Notifications">●</button>
+            <div class="user-avatar">CM</div>
+          </div>
+        </header>
+
+        <main class="content">
+          <section class="view active" id="dashboardView">
+            <div class="page-heading">
+              <div>
+                <p class="eyebrow">Mardi 23 juin</p>
+                <h1>Bonjour Claire, voici ce qui convertit.</h1>
+                <p>Une lecture rapide de ton activité et des prochaines actions utiles.</p>
+              </div>
+              <button class="primary-button" data-action="new-offer">＋ Nouvelle offre</button>
+            </div>
+
+            <div class="metrics-grid" id="metricsGrid"></div>
+
+            <div class="dashboard-grid">
+              <article class="panel revenue-panel">
+                <div class="panel-heading">
+                  <div>
+                    <span class="panel-label">Chiffre d’affaires</span>
+                    <h2 id="revenueTotal">0 €</h2>
+                  </div>
+                  <select id="revenuePeriod" aria-label="Période du chiffre d’affaires">
+                    <option value="30">30 derniers jours</option>
+                    <option value="7">7 derniers jours</option>
+                  </select>
+                </div>
+                <div class="chart-wrap">
+                  <div class="chart-grid-lines"></div>
+                  <svg id="revenueChart" viewBox="0 0 700 240" role="img" aria-label="Évolution du chiffre d’affaires"></svg>
+                </div>
+                <div class="chart-axis"><span>1 juin</span><span>8 juin</span><span>15 juin</span><span>22 juin</span><span>30 juin</span></div>
+              </article>
+
+              <article class="panel action-panel">
+                <div class="panel-heading">
+                  <div>
+                    <span class="panel-label">À faire maintenant</span>
+                    <h2>3 actions à impact</h2>
+                  </div>
+                </div>
+                <div class="action-list">
+                  <button data-view-target="contacts">
+                    <span class="action-icon coral">1</span>
+                    <span><strong>Relancer 18 prospects chauds</strong><small>Ils ont consulté l’offre 2 fois cette semaine.</small></span>
+                    <b>→</b>
+                  </button>
+                  <button data-view-target="offers">
+                    <span class="action-icon mint">2</span>
+                    <span><strong>Ajouter un order bump</strong><small>+12 % de panier moyen estimé.</small></span>
+                    <b>→</b>
+                  </button>
+                  <button data-view-target="store">
+                    <span class="action-icon blue">3</span>
+                    <span><strong>Publier la nouvelle preuve</strong><small>Ton dernier témoignage est encore en brouillon.</small></span>
+                    <b>→</b>
+                  </button>
+                </div>
+              </article>
+            </div>
+
+            <div class="dashboard-grid lower-grid">
+              <article class="panel">
+                <div class="panel-heading">
+                  <div>
+                    <span class="panel-label">Offres actives</span>
+                    <h2>Performance par offre</h2>
+                  </div>
+                  <button class="text-button" data-view-target="offers">Tout voir →</button>
+                </div>
+                <div class="offer-performance" id="offerPerformance"></div>
+              </article>
+
+              <article class="panel">
+                <div class="panel-heading">
+                  <div>
+                    <span class="panel-label">Activité récente</span>
+                    <h2>Dernières conversions</h2>
+                  </div>
+                </div>
+                <div class="activity-list" id="activityList"></div>
+              </article>
+            </div>
+          </section>
+
+          <section class="view" id="offersView">
+            <div class="page-heading compact-heading">
+              <div>
+                <p class="eyebrow">Catalogue</p>
+                <h1>Tes offres</h1>
+                <p>Structure, publie et optimise chaque produit depuis un seul endroit.</p>
+              </div>
+              <button class="primary-button" data-action="new-offer">＋ Nouvelle offre</button>
+            </div>
+            <div class="toolbar">
+              <label class="search-field">
+                <span>⌕</span>
+                <input id="offerSearch" type="search" placeholder="Rechercher une offre" />
+              </label>
+              <select id="offerFilter" aria-label="Filtrer les offres">
+                <option value="all">Tous les statuts</option>
+                <option value="published">Publiées</option>
+                <option value="draft">Brouillons</option>
+              </select>
+            </div>
+            <div class="offer-grid" id="offerGrid"></div>
+          </section>
+
+          <section class="view" id="storeView">
+            <div class="page-heading compact-heading">
+              <div>
+                <p class="eyebrow">Boutique publique</p>
+                <h1>Éditeur de boutique</h1>
+                <p>Personnalise le message, les couleurs et les offres visibles par ton audience.</p>
+              </div>
+              <div class="heading-actions">
+                <a class="secondary-button" href="./store.html" target="_blank">Aperçu ↗</a>
+                <button class="primary-button" id="saveStoreButton">Publier les changements</button>
+              </div>
+            </div>
+
+            <div class="editor-layout">
+              <form class="panel editor-panel" id="storeForm">
+                <div class="form-section">
+                  <h2>Identité</h2>
+                  <div class="field-row">
+                    <label>Nom public<input name="creatorName" required /></label>
+                    <label>Métier<input name="creatorRole" required /></label>
+                  </div>
+                  <label>Promesse<textarea name="bio" rows="3" required></textarea></label>
+                </div>
+                <div class="form-section">
+                  <h2>Apparence</h2>
+                  <div class="color-options" id="colorOptions">
+                    <button type="button" data-color="#5965f2" style="--swatch:#5965f2" aria-label="Bleu"></button>
+                    <button type="button" data-color="#151922" style="--swatch:#151922" aria-label="Noir"></button>
+                    <button type="button" data-color="#e65050" style="--swatch:#e65050" aria-label="Rouge"></button>
+                    <button type="button" data-color="#159b78" style="--swatch:#159b78" aria-label="Vert"></button>
+                  </div>
+                  <label class="toggle-row">
+                    <span><strong>Afficher la preuve sociale</strong><small>Nombre de clients et note moyenne</small></span>
+                    <input type="checkbox" name="showProof" />
+                  </label>
+                  <label class="toggle-row">
+                    <span><strong>Capturer les emails</strong><small>Formulaire gratuit avant les offres</small></span>
+                    <input type="checkbox" name="showLeadMagnet" />
+                  </label>
+                </div>
+                <div class="form-section">
+                  <h2>Réseaux</h2>
+                  <label>Instagram<input name="instagram" placeholder="@clairementor" /></label>
+                  <label>YouTube<input name="youtube" placeholder="youtube.com/@clairementor" /></label>
+                </div>
+              </form>
+
+              <div class="preview-column">
+                <div class="preview-toolbar">
+                  <strong>Aperçu en direct</strong>
+                  <div class="device-switch">
+                    <button class="active" data-device="mobile" title="Aperçu mobile">▯</button>
+                    <button data-device="desktop" title="Aperçu ordinateur">▭</button>
+                  </div>
+                </div>
+                <div class="store-preview-frame mobile" id="storePreviewFrame">
+                  <iframe id="storePreview" src="./store.html?preview=1" title="Aperçu de la boutique"></iframe>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="view" id="contactsView">
+            <div class="page-heading compact-heading">
+              <div>
+                <p class="eyebrow">Audience</p>
+                <h1>Contacts</h1>
+                <p>Identifie les prospects engagés et les clients à forte valeur.</p>
+              </div>
+              <button class="secondary-button" id="exportContacts">Exporter CSV</button>
+            </div>
+            <div class="metrics-grid small-metrics" id="contactMetrics"></div>
+            <div class="panel table-panel">
+              <div class="toolbar table-toolbar">
+                <label class="search-field"><span>⌕</span><input id="contactSearch" type="search" placeholder="Nom ou email" /></label>
+                <select id="contactFilter">
+                  <option value="all">Tous les segments</option>
+                  <option value="Client">Clients</option>
+                  <option value="Prospect chaud">Prospects chauds</option>
+                  <option value="Lead">Leads</option>
+                </select>
+              </div>
+              <div class="data-table-wrap">
+                <table class="data-table">
+                  <thead><tr><th>Contact</th><th>Segment</th><th>Dernière activité</th><th>Valeur</th><th></th></tr></thead>
+                  <tbody id="contactTable"></tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          <section class="view" id="ordersView">
+            <div class="page-heading compact-heading">
+              <div>
+                <p class="eyebrow">Transactions</p>
+                <h1>Commandes</h1>
+                <p>Suis les paiements, remboursements et livraisons.</p>
+              </div>
+              <button class="secondary-button" id="simulateOrder">Simuler une vente</button>
+            </div>
+            <div class="panel table-panel">
+              <div class="data-table-wrap">
+                <table class="data-table">
+                  <thead><tr><th>Commande</th><th>Client</th><th>Offre</th><th>Date</th><th>Montant</th><th>Statut</th></tr></thead>
+                  <tbody id="orderTable"></tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          <section class="view" id="analyticsView">
+            <div class="page-heading compact-heading">
+              <div>
+                <p class="eyebrow">Performance</p>
+                <h1>Analytics</h1>
+                <p>Comprends le parcours complet entre la visite et l’achat.</p>
+              </div>
+              <select><option>30 derniers jours</option><option>7 derniers jours</option></select>
+            </div>
+            <div class="metrics-grid" id="analyticsMetrics"></div>
+            <div class="analytics-layout">
+              <article class="panel funnel-panel">
+                <div class="panel-heading"><div><span class="panel-label">Tunnel global</span><h2>Conversion par étape</h2></div></div>
+                <div class="funnel" id="funnel"></div>
+              </article>
+              <article class="panel">
+                <div class="panel-heading"><div><span class="panel-label">Acquisition</span><h2>Sources de trafic</h2></div></div>
+                <div class="source-list" id="sourceList"></div>
+              </article>
+            </div>
+          </section>
+
+          <section class="view" id="settingsView">
+            <div class="page-heading compact-heading">
+              <div>
+                <p class="eyebrow">Configuration</p>
+                <h1>Réglages</h1>
+                <p>Gère le workspace, les paiements et les notifications.</p>
+              </div>
+            </div>
+            <div class="settings-layout">
+              <nav class="settings-nav">
+                <button class="active">Compte</button>
+                <button>Paiements</button>
+                <button>Domaines</button>
+                <button>Notifications</button>
+              </nav>
+              <form class="panel settings-form" id="settingsForm">
+                <div class="form-section">
+                  <h2>Informations du compte</h2>
+                  <div class="field-row">
+                    <label>Prénom<input value="Claire" /></label>
+                    <label>Nom<input value="Martin" /></label>
+                  </div>
+                  <label>Email<input type="email" value="claire@offerlab.demo" /></label>
+                </div>
+                <div class="form-section">
+                  <h2>Paiements</h2>
+                  <div class="integration-row">
+                    <span class="integration-icon">S</span>
+                    <span><strong>Stripe</strong><small>Compte connecté · paiements actifs</small></span>
+                    <span class="connected-badge">Connecté</span>
+                  </div>
+                </div>
+                <button class="primary-button" type="submit">Enregistrer</button>
+              </form>
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
+
+    <div class="modal-backdrop" id="offerModal" aria-hidden="true">
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="offerModalTitle">
+        <div class="modal-header">
+          <div><span class="panel-label">Catalogue</span><h2 id="offerModalTitle">Créer une offre</h2></div>
+          <button class="icon-button" data-close-modal aria-label="Fermer">×</button>
+        </div>
+        <form id="offerForm">
+          <input type="hidden" name="id" />
+          <label>Nom de l’offre<input name="title" required placeholder="Ex. Bootcamp Offre Signature" /></label>
+          <div class="field-row">
+            <label>Type
+              <select name="type"><option>Formation</option><option>Coaching</option><option>Produit digital</option><option>Abonnement</option></select>
+            </label>
+            <label>Prix (€)<input name="price" type="number" min="0" step="1" required /></label>
+          </div>
+          <label>Description<textarea name="description" rows="4" required></textarea></label>
+          <div class="field-row">
+            <label>Statut
+              <select name="status"><option value="published">Publiée</option><option value="draft">Brouillon</option></select>
+            </label>
+            <label>Couleur
+              <select name="color"><option value="#5965f2">Bleu</option><option value="#159b78">Vert</option><option value="#e65050">Rouge</option><option value="#151922">Noir</option></select>
+            </label>
+          </div>
+          <label class="toggle-row">
+            <span><strong>Mettre en avant</strong><small>Affichée en premier dans la boutique</small></span>
+            <input type="checkbox" name="featured" />
+          </label>
+          <div class="modal-actions">
+            <button type="button" class="secondary-button" data-close-modal>Annuler</button>
+            <button type="submit" class="primary-button">Enregistrer l’offre</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="toast-region" id="toastRegion" aria-live="polite"></div>
+    <script src="./app.js"></script>
+  </body>
+</html>

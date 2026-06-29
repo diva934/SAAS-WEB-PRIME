@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Expertly - Activation du compte</title>
+    <meta name="description" content="Active ton compte Expertly apres ton paiement Stripe." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="icon" href="./assets/expertly-logo.png" />
+    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./activation.css" />
+    <script>
+      window.EXPERTLY_CONFIG = {
+        supabaseUrl: "%SUPABASE_URL%",
+        supabaseAnonKey: "%SUPABASE_ANON_KEY%",
+        crmUrl: "%CRM_APP_URL%"
+      };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  </head>
+  <body class="activation-page">
+    <main class="activation-shell">
+      <section class="activation-card">
+        <img class="activation-logo" src="./assets/expertly-logo.png" alt="Expertly" />
+        <p class="eyebrow">Paiement confirme</p>
+        <h1>Active ton acces au CRM</h1>
+        <p class="activation-copy">
+          Cree ton compte ou connecte-toi avec ton email. Ton abonnement sera lie a ce compte,
+          puis tu seras redirige vers le produit Expertly.
+        </p>
+
+        <div class="activation-tabs" role="tablist" aria-label="Mode d'authentification">
+          <button class="active" type="button" data-auth-mode="signup">Inscription</button>
+          <button type="button" data-auth-mode="login">Connexion</button>
+        </div>
+
+        <form id="activationForm" class="activation-form">
+          <label>
+            Email
+            <input name="email" type="email" autocomplete="email" required placeholder="toi@email.com" />
+          </label>
+          <label>
+            Mot de passe
+            <input
+              name="password"
+              type="password"
+              autocomplete="current-password"
+              minlength="6"
+              required
+              placeholder="6 caracteres minimum"
+            />
+          </label>
+          <button type="submit" id="activationSubmit">Activer mon acces</button>
+          <p class="activation-feedback" id="activationFeedback" role="status" aria-live="polite"></p>
+        </form>
+
+        <a href="./index.html#pricing">Retour aux offres</a>
+      </section>
+    </main>
+
+    <script src="./activation.js"></script>
+  </body>
+</html>

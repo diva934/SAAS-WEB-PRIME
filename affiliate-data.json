@@ -1,0 +1,51 @@
+{
+  "affiliates": [
+    {
+      "id": "aff_demo",
+      "name": "Influenceur Demo",
+      "slug": "demo",
+      "email": "affiliate@example.com",
+      "commissionRate": 0.3,
+      "commissionType": "recurring_6_months",
+      "status": "active",
+      "payoutStatus": "manual",
+      "createdAt": "2026-06-26T00:00:00.000Z"
+    }
+  ],
+  "clicks": [
+    {
+      "id": "clk_1782491285594_65huu7",
+      "affiliateSlug": "demo",
+      "visitorId": "test_visitor",
+      "landingPage": "/?ref=demo",
+      "referrer": "",
+      "createdAt": "2026-06-26T16:28:05.594Z"
+    },
+    {
+      "id": "clk_1782491293909_8boxgr",
+      "affiliateSlug": "demo",
+      "visitorId": "test_visitor",
+      "landingPage": "/?ref=demo",
+      "referrer": "",
+      "createdAt": "2026-06-26T16:28:13.909Z"
+    },
+    {
+      "id": "clk_1782491307961_s8y92p",
+      "affiliateSlug": "demo",
+      "visitorId": "vis_mqv5avna_mysf8f2w",
+      "landingPage": "/?ref=demo",
+      "referrer": "",
+      "createdAt": "2026-06-26T16:28:27.961Z"
+    },
+    {
+      "id": "clk_1782491351925_4h8m2l",
+      "affiliateSlug": "demo",
+      "visitorId": "vis_mqv5btki_fbo6byyk",
+      "landingPage": "/?ref=demo",
+      "referrer": "",
+      "createdAt": "2026-06-26T16:29:11.925Z"
+    }
+  ],
+  "customers": [],
+  "commissions": []
+}

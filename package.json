@@ -1,0 +1,21 @@
+{
+  "name": "offerlab-remotion-hero",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node server.mjs",
+    "studio": "remotion studio src/index.ts",
+    "render:hero": "remotion still src/index.ts OfferLabHero out/offerlab-hero.png --image-format=png",
+    "check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.463",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "remotion": "4.0.463"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.7",
+    "typescript": "5.9.3"
+  }
+}
