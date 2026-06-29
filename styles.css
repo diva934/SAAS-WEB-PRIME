@@ -1533,6 +1533,20 @@ section[id] {
   color: var(--muted);
 }
 
+.plan-trial {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 16px;
+  padding: 7px 13px;
+  border-radius: 999px;
+  background: var(--plan-soft, #edf5ff);
+  color: var(--plan-accent-2, #073bd9);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
 .plan-includes {
   margin: 0 0 14px;
   color: #3d475d;
