@@ -44,6 +44,7 @@ export default async function handler(req, res) {
       "metadata[first_name]": account.firstName,
       "subscription_data[metadata][user_id]": account.user.id,
       "subscription_data[metadata][expertly_plan]": planId,
+      "subscription_data[trial_period_days]": "14",
     });
 
     const session = await stripeRequest("/checkout/sessions", {
