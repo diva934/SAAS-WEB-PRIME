@@ -193,8 +193,14 @@ if (new URLSearchParams(location.search).get("embed") === "1") document.body.cla
 
 fetch(`/api/page?slug=${encodeURIComponent(currentSlug())}`)
   .then(async (response) => {
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.error);
+    const raw = await response.text();
+    let data = {};
+    try {
+      data = raw ? JSON.parse(raw) : {};
+    } catch {
+      data = {};
+    }
+    if (!response.ok) throw new Error(data.error || "Cette page n’est pas disponible.");
     applyPage(data);
   })
   .catch((error) => {
