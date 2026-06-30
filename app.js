@@ -177,6 +177,7 @@ function normalizeState(input = {}) {
       bumpProductId: "",
       upsellProductId: "",
       coverUrl: "",
+      cardSize: "m",
       ...product,
     }))
     : base.products;
@@ -1848,6 +1849,7 @@ function openProductModal(product = null) {
   form.elements.bumpProductId.value = product?.bumpProductId || "";
   form.elements.upsellProductId.value = product?.upsellProductId || "";
   form.elements.coverUrl.value = product?.coverUrl || "";
+  form.elements.cardSize.value = product?.cardSize || "m";
   form.elements.fileName.value = product?.fileName || "";
   document.querySelector("#productModalTitle").textContent = product ? "Modifier le produit" : "Créer un produit";
   modal.classList.add("open");
@@ -1881,6 +1883,7 @@ function submitProduct(event) {
     bumpProductId: data.get("bumpProductId") || "",
     upsellProductId: data.get("upsellProductId") || "",
     coverUrl: data.get("coverUrl").trim(),
+    cardSize: data.get("cardSize") || "m",
     fileName: data.get("fileName").trim(),
     featured: existing?.featured || false,
     sales: existing?.sales || 0,

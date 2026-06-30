@@ -70,22 +70,32 @@ function renderStore() {
     .sort((a, b) => Number(b.featured) - Number(a.featured));
 
   document.querySelector("#offerCount").textContent = `${products.length} offre${products.length > 1 ? "s" : ""}`;
+  const singleProduct = products.length === 1;
   document.querySelector("#publicOffers").innerHTML =
     products
-      .map((product) => `
-        <article class="public-offer ${product.featured ? "featured" : ""}" style="--offer-color:${product.color}">
-          ${product.featured ? '<span class="featured-label">Recommandé</span>' : ""}
-          <div class="public-offer-icon">${initials(product.title)}</div>
-          <div>
-            <h3>${escapeHtml(product.title)}</h3>
-            <p>${escapeHtml(product.description)}</p>
+      .map((product) => {
+        const requested = ["s", "m", "l", "xl"].includes(product.cardSize) ? product.cardSize : "m";
+        const size = singleProduct ? "l" : requested;
+        const cover = (product.coverUrl || "").trim();
+        const hasCover = /^https?:\/\//i.test(cover) || /^data:image\//i.test(cover);
+        const media = hasCover
+          ? `<img class="offer-cover" src="${escapeHtml(cover)}" alt="${escapeHtml(product.title)}" loading="lazy" />`
+          : `<div class="offer-cover offer-cover-fallback"><span>${initials(product.title)}</span></div>`;
+        return `
+        <article class="public-offer size-${size} ${product.featured ? "featured" : ""}" style="--offer-color:${product.color || "#6558f5"}">
+          <div class="offer-media">
+            ${media}
+            ${product.featured ? '<span class="featured-label">★ Recommandé</span>' : ""}
+            <span class="offer-price">${product.price ? euro.format(product.price) : "Gratuit"}</span>
           </div>
-          <div class="offer-buy">
-            <strong>${product.price ? euro.format(product.price) : "Gratuit"}</strong>
+          <div class="offer-body">
+            ${product.type ? `<span class="offer-type">${escapeHtml(product.type)}</span>` : ""}
+            <h3>${escapeHtml(product.title)}</h3>
+            <p>${escapeHtml(product.description || "")}</p>
             <button data-buy="${product.id}">${product.price ? "Acheter" : "Accéder"}</button>
           </div>
-        </article>
-      `)
+        </article>`;
+      })
       .join("") || "<p>Aucun produit publié pour le moment.</p>";
   window.ExpertlyTracking?.track("store_viewed", {
     product_count: products.length,
