@@ -673,6 +673,12 @@ async function handleApi(request, response) {
     });
     return true;
   }
+  if (request.method === "GET" && request.url?.startsWith("/api/slug-available")) {
+    // Dev local mono-boutique : aucun conflit possible, le slug est toujours dispo.
+    const slug = new URL(request.url, appUrl).searchParams.get("slug") || "";
+    sendJson(response, 200, { slug, available: true });
+    return true;
+  }
   if (request.method === "GET" && request.url?.startsWith("/api/access?")) {
     const token = new URL(request.url, appUrl).searchParams.get("token");
     const state = await readState();
@@ -822,6 +828,8 @@ async function serveStatic(request, response) {
       ? "index.html"
       : url.pathname.startsWith("/b/")
         ? "store.html"
+      : url.pathname.startsWith("/go/")
+        ? "open.html"
       : url.pathname.startsWith("/p/")
         ? "sales.html"
         : url.pathname.replace(/^\/+/, "");

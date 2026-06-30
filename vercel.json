@@ -12,6 +12,7 @@
     { "src": "/api/(.*)", "dest": "/api/$1.js" },
     { "src": "/", "dest": "/index.html" },
     { "src": "/b/([a-z0-9-]+)", "dest": "/store.html?slug=$1" },
+    { "src": "/go/([a-z0-9-]+)", "dest": "/open.html?slug=$1" },
     { "src": "/p/(.*)", "dest": "/sales.html" },
     { "src": "/(.*)", "dest": "/$1" }
   ]

@@ -12,6 +12,7 @@ const seedState = {
     bio: "J’aide les indépendants à transformer leur expertise en une offre claire, désirable et rentable.",
     slug: "boutique",
     accent: "#6558f5",
+    logo: "",
   },
   products: [
     {
@@ -353,6 +354,47 @@ function storePreviewPath() {
   return `${storePublicPath()}?embed=1&t=${Date.now()}`;
 }
 
+function goPublicPath() {
+  const slug = slugify(state.profile.slug || state.profile.creatorName || "boutique");
+  return `/go/${slug}`;
+}
+
+// Lien « bio Instagram » : redirecteur intelligent qui sort du navigateur in-app.
+// Utilise un domaine court si SHORT_LINK_BASE est configuré, sinon l'origine courante.
+function goPublicUrl() {
+  const base = (publicConfig.shortLinkBase || "").replace(/\/+$/, "");
+  const origin = base || (location.protocol.startsWith("http") ? location.origin : "http://127.0.0.1:4310");
+  return `${origin}${goPublicPath()}`;
+}
+
+// Dessine le QR du lien de bio sur un <canvas>. La lib qrcode-generator tourne
+// côté client : l'URL ne quitte jamais le navigateur. Échoue en silence si
+// indisponible — le lien copiable reste l'option principale.
+function renderBioQr(canvas, text) {
+  if (!canvas || typeof qrcode === "undefined" || !text) return;
+  try {
+    const qr = qrcode(0, "M");
+    qr.addData(text);
+    qr.make();
+    const count = qr.getModuleCount();
+    const ctx = canvas.getContext("2d");
+    const size = canvas.width;
+    const cell = Math.floor(size / (count + 4));
+    const offset = Math.floor((size - cell * count) / 2);
+    ctx.clearRect(0, 0, size, size);
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, size, size);
+    ctx.fillStyle = "#17172a";
+    for (let r = 0; r < count; r += 1) {
+      for (let c = 0; c < count; c += 1) {
+        if (qr.isDark(r, c)) ctx.fillRect(offset + c * cell, offset + r * cell, cell, cell);
+      }
+    }
+  } catch {
+    // QR indisponible : on ignore.
+  }
+}
+
 function orderAccessUrl(order) {
   if (!order?.accessToken) return "";
   return location.protocol.startsWith("http")
@@ -597,6 +639,380 @@ function updatePublicStoreLinks() {
   if (topStoreLink) topStoreLink.href = path;
   if (publicStoreUrl) publicStoreUrl.textContent = url;
   if (previewOpen && previewOpen.getAttribute("href") === "./store.html") previewOpen.href = path;
+  const bioUrlEl = document.querySelector("#instagramBioUrl");
+  if (bioUrlEl) bioUrlEl.textContent = goPublicUrl();
+  if (typeof renderBioQr === "function") renderBioQr(document.querySelector("#bioQr"), goPublicUrl());
+}
+
+/* ---------------- Assistant d'onboarding boutique ---------------- */
+
+const wizardSteps = ["identity", "slug", "color", "logo", "product", "recap"];
+let wizardStep = 0;
+let wizardDraft = null;
+let wizardSlugTouched = false;
+let wizardSlugState = "idle"; // idle | checking | ok | taken
+let wizardSlugTimer = null;
+
+function storeNeedsSetup() {
+  const p = state.profile || {};
+  return (
+    !DEMO_MODE &&
+    !(p.creatorName || "").trim() &&
+    (!p.slug || p.slug === "boutique") &&
+    !(state.products || []).length
+  );
+}
+
+function openOnboardingWizard() {
+  if (DEMO_MODE || document.querySelector("#onboardingWizard")) return;
+  wizardStep = 0;
+  wizardSlugTouched = Boolean(state.profile.slug && state.profile.slug !== "boutique");
+  wizardSlugState = "idle";
+  wizardDraft = {
+    creatorName: state.profile.creatorName || "",
+    creatorRole: state.profile.creatorRole || "",
+    bio: state.profile.bio || "",
+    slug: state.profile.slug && state.profile.slug !== "boutique" ? state.profile.slug : "",
+    accent: state.profile.accent || "#6558f5",
+    logo: state.profile.logo || "",
+    product: { title: "", price: "", description: "", fileName: "" },
+  };
+  const overlay = document.createElement("div");
+  overlay.id = "onboardingWizard";
+  overlay.className = "wizard-overlay";
+  overlay.innerHTML = `
+    <div class="wizard-card" role="dialog" aria-modal="true" aria-labelledby="wizardTitle">
+      <div class="wizard-progress" id="wizardProgress"></div>
+      <div class="wizard-body" id="wizardBody"></div>
+      <div class="wizard-footer">
+        <button type="button" class="secondary-button" id="wizardBack">Retour</button>
+        <button type="button" class="primary-button" id="wizardNext">Continuer</button>
+      </div>
+    </div>`;
+  document.body.append(overlay);
+  document.body.classList.add("wizard-open");
+  overlay.querySelector("#wizardBack").addEventListener("click", wizardBack);
+  overlay.querySelector("#wizardNext").addEventListener("click", wizardNext);
+  renderWizard();
+}
+
+function closeOnboardingWizard() {
+  document.querySelector("#onboardingWizard")?.remove();
+  document.body.classList.remove("wizard-open");
+}
+
+function renderWizard() {
+  const overlay = document.querySelector("#onboardingWizard");
+  if (!overlay) return;
+  const step = wizardSteps[wizardStep];
+  overlay.querySelector("#wizardProgress").innerHTML = wizardSteps
+    .map((_, i) => `<span class="${i === wizardStep ? "active" : i < wizardStep ? "done" : ""}"></span>`)
+    .join("");
+  overlay.querySelector("#wizardBody").innerHTML = wizardStepHtml(step);
+  bindWizardStep(step);
+  const back = overlay.querySelector("#wizardBack");
+  const next = overlay.querySelector("#wizardNext");
+  back.style.visibility = wizardStep === 0 || step === "recap" ? "hidden" : "visible";
+  next.textContent = step === "recap" ? "Aller à mon tableau de bord" : "Continuer";
+  updateWizardNextState();
+}
+
+function wizardStepHtml(step) {
+  const d = wizardDraft;
+  if (step === "identity") {
+    return `
+      <span class="wizard-eyebrow">Étape 1 · Identité</span>
+      <h2 id="wizardTitle">Crée ta boutique</h2>
+      <p class="wizard-lead">Comment veux-tu apparaître auprès de ton audience ?</p>
+      <label class="wizard-label">Nom public<input id="wzName" value="${escapeHtml(d.creatorName)}" placeholder="Ex. Claire Mentor" /></label>
+      <label class="wizard-label">Ton activité<input id="wzRole" value="${escapeHtml(d.creatorRole)}" placeholder="Ex. Business coach" /></label>`;
+  }
+  if (step === "slug") {
+    return `
+      <span class="wizard-eyebrow">Étape 2 · Identifiant</span>
+      <h2 id="wizardTitle">Choisis ton @identifiant</h2>
+      <p class="wizard-lead">Il sert à construire ton lien de bio Instagram.</p>
+      <label class="wizard-label">Identifiant
+        <div class="slug-field"><span>@</span><input id="wzSlug" value="${escapeHtml(d.slug)}" placeholder="claire-mentor" /></div>
+      </label>
+      <p class="wizard-slug-status" id="wzSlugStatus"></p>
+      <div class="wizard-linkpreview">Ton lien de bio : <strong id="wzLinkPreview"></strong></div>`;
+  }
+  if (step === "color") {
+    return `
+      <span class="wizard-eyebrow">Étape 3 · Couleur</span>
+      <h2 id="wizardTitle">Ta couleur de marque</h2>
+      <p class="wizard-lead">Elle colore ta boutique et tes boutons.</p>
+      <div class="wizard-color-row">
+        <input id="wzAccent" type="color" value="${escapeHtml(d.accent)}" />
+        <div class="wizard-color-preview" id="wzColorPreview">
+          <span class="wizard-swatch" style="background:${escapeHtml(d.accent)}"></span>
+          <button type="button" class="wizard-fake-btn" style="background:${escapeHtml(d.accent)}">Acheter</button>
+        </div>
+      </div>`;
+  }
+  if (step === "logo") {
+    return `
+      <span class="wizard-eyebrow">Étape 4 · Logo (optionnel)</span>
+      <h2 id="wizardTitle">Ajoute ton logo</h2>
+      <p class="wizard-lead">Une image carrée fonctionne le mieux. Sinon, tes initiales seront utilisées.</p>
+      <div class="wizard-logo-row">
+        <div class="wizard-logo-preview" id="wzLogoPreview">${logoPreviewHtml(d)}</div>
+        <div class="wizard-logo-fields">
+          <label class="wizard-label">URL d'image<input id="wzLogoUrl" type="url" value="${escapeHtml(/^https?:/i.test(d.logo) ? d.logo : "")}" placeholder="https://…/logo.png" /></label>
+          <label class="wizard-label media-upload">Ou importer un fichier<input id="wzLogoFile" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" /></label>
+        </div>
+      </div>`;
+  }
+  if (step === "product") {
+    const p = d.product;
+    return `
+      <span class="wizard-eyebrow">Étape 5 · Premier produit (optionnel)</span>
+      <h2 id="wizardTitle">Ajoute une première offre</h2>
+      <p class="wizard-lead">Tu pourras en ajouter d'autres plus tard. Laisse vide pour passer.</p>
+      <label class="wizard-label">Nom de l'offre<input id="wzPTitle" value="${escapeHtml(p.title)}" placeholder="Ex. Masterclass Offre Signature" /></label>
+      <label class="wizard-label">Prix en euros (0 = gratuit)<input id="wzPPrice" type="number" min="0" step="1" value="${escapeHtml(String(p.price))}" placeholder="49" /></label>
+      <label class="wizard-label">Description courte<textarea id="wzPDesc" rows="2" placeholder="Le résultat obtenu par ton client.">${escapeHtml(p.description)}</textarea></label>
+      <label class="wizard-label">Lien d'accès à livrer<input id="wzPFile" type="url" value="${escapeHtml(p.fileName)}" placeholder="https://…/acces" /></label>`;
+  }
+  // recap
+  const bio = goPublicUrl();
+  const store = storePublicUrl();
+  return `
+    <span class="wizard-eyebrow">C'est prêt 🎉</span>
+    <h2 id="wizardTitle">Ta boutique est en ligne</h2>
+    <p class="wizard-lead">Copie ce lien dans ta bio Instagram. Il ouvre ta boutique dans le vrai navigateur du téléphone (et non dans Instagram).</p>
+    <div class="wizard-bio-block">
+      <span class="wizard-bio-label">Lien de bio Instagram</span>
+      <div class="url-row">
+        <input id="wzBioUrl" readonly value="${escapeHtml(bio)}" />
+        <button type="button" class="primary-button" id="wzCopyBio">Copier</button>
+      </div>
+      <canvas id="wizardQr" width="150" height="150" class="wizard-qr"></canvas>
+      <a class="wizard-secondary-link" href="${escapeHtml(storePublicPath())}" target="_blank" rel="noopener">Voir ma boutique : ${escapeHtml(store)}</a>
+    </div>`;
+}
+
+function logoPreviewHtml(d) {
+  const valid = /^https?:\/\//i.test(d.logo) || /^data:image\//i.test(d.logo);
+  if (valid) return `<img src="${escapeHtml(d.logo)}" alt="logo" />`;
+  return `<span>${escapeHtml(initials(d.creatorName) || "EX")}</span>`;
+}
+
+function bindWizardStep(step) {
+  const overlay = document.querySelector("#onboardingWizard");
+  if (!overlay) return;
+  if (step === "identity") {
+    const name = overlay.querySelector("#wzName");
+    name.addEventListener("input", () => {
+      wizardDraft.creatorName = name.value;
+      if (!wizardSlugTouched) wizardDraft.slug = slugify(name.value);
+      updateWizardNextState();
+    });
+    overlay.querySelector("#wzRole").addEventListener("input", (e) => {
+      wizardDraft.creatorRole = e.target.value;
+    });
+    name.focus();
+  } else if (step === "slug") {
+    const slug = overlay.querySelector("#wzSlug");
+    const refresh = () => {
+      const preview = overlay.querySelector("#wzLinkPreview");
+      if (preview) preview.textContent = `${shortLinkHost()}/go/${wizardDraft.slug || "…"}`;
+    };
+    refresh();
+    runSlugCheck(wizardDraft.slug);
+    slug.addEventListener("input", () => {
+      wizardSlugTouched = true;
+      wizardDraft.slug = slugify(slug.value);
+      if (slug.value !== wizardDraft.slug) slug.value = wizardDraft.slug;
+      refresh();
+      wizardSlugState = "checking";
+      updateWizardNextState();
+      clearTimeout(wizardSlugTimer);
+      wizardSlugTimer = setTimeout(() => runSlugCheck(wizardDraft.slug), 350);
+    });
+  } else if (step === "color") {
+    overlay.querySelector("#wzAccent").addEventListener("input", (e) => {
+      wizardDraft.accent = e.target.value;
+      const swatch = overlay.querySelector(".wizard-swatch");
+      const btn = overlay.querySelector(".wizard-fake-btn");
+      if (swatch) swatch.style.background = e.target.value;
+      if (btn) btn.style.background = e.target.value;
+    });
+  } else if (step === "logo") {
+    overlay.querySelector("#wzLogoUrl").addEventListener("input", (e) => {
+      wizardDraft.logo = e.target.value.trim();
+      overlay.querySelector("#wzLogoPreview").innerHTML = logoPreviewHtml(wizardDraft);
+    });
+    overlay.querySelector("#wzLogoFile").addEventListener("change", async (e) => {
+      try {
+        const dataUrl = await fileToDataUrl(e.target.files[0]);
+        if (dataUrl) {
+          wizardDraft.logo = dataUrl;
+          overlay.querySelector("#wzLogoPreview").innerHTML = logoPreviewHtml(wizardDraft);
+        }
+      } catch (error) {
+        showToast(error.message || "Image trop lourde.");
+      }
+    });
+  } else if (step === "product") {
+    const p = wizardDraft.product;
+    overlay.querySelector("#wzPTitle").addEventListener("input", (e) => { p.title = e.target.value; });
+    overlay.querySelector("#wzPPrice").addEventListener("input", (e) => { p.price = e.target.value; });
+    overlay.querySelector("#wzPDesc").addEventListener("input", (e) => { p.description = e.target.value; });
+    overlay.querySelector("#wzPFile").addEventListener("input", (e) => { p.fileName = e.target.value; });
+  } else if (step === "recap") {
+    if (typeof renderBioQr === "function") renderBioQr(overlay.querySelector("#wizardQr"), goPublicUrl());
+    overlay.querySelector("#wzCopyBio")?.addEventListener("click", () => {
+      const url = goPublicUrl();
+      navigator.clipboard?.writeText(url)
+        .then(() => showToast("Lien de bio copié ✓"))
+        .catch(() => showToast(url));
+    });
+  }
+}
+
+function shortLinkHost() {
+  const base = (publicConfig.shortLinkBase || "").replace(/\/+$/, "");
+  if (base) return base.replace(/^https?:\/\//, "");
+  return location.protocol.startsWith("http") ? location.host : "127.0.0.1:4310";
+}
+
+function updateWizardNextState() {
+  const overlay = document.querySelector("#onboardingWizard");
+  if (!overlay) return;
+  const step = wizardSteps[wizardStep];
+  const next = overlay.querySelector("#wizardNext");
+  let disabled = false;
+  if (step === "identity") disabled = !wizardDraft.creatorName.trim();
+  if (step === "slug") disabled = !wizardDraft.slug || wizardSlugState === "checking" || wizardSlugState === "taken";
+  next.disabled = disabled;
+  next.classList.toggle("is-disabled", disabled);
+}
+
+async function runSlugCheck(slug) {
+  const overlay = document.querySelector("#onboardingWizard");
+  const statusEl = overlay?.querySelector("#wzSlugStatus");
+  slug = slugify(slug || "");
+  if (!slug) {
+    wizardSlugState = "idle";
+    if (statusEl) { statusEl.textContent = "Choisis un identifiant."; statusEl.className = "wizard-slug-status"; }
+    updateWizardNextState();
+    return;
+  }
+  wizardSlugState = "checking";
+  if (statusEl) { statusEl.textContent = "Vérification…"; statusEl.className = "wizard-slug-status checking"; }
+  updateWizardNextState();
+  let available = true;
+  if (location.protocol.startsWith("http")) {
+    try {
+      const response = await authenticatedFetch(`/api/slug-available?slug=${encodeURIComponent(slug)}`, { cache: "no-store" });
+      const data = await response.json().catch(() => ({ available: true }));
+      available = response.ok ? data.available !== false : true;
+    } catch {
+      available = true; // hors-ligne : on s'appuie sur la garde 409 au moment de la sauvegarde
+    }
+  }
+  if (slug !== wizardDraft.slug) return; // une frappe plus récente a eu lieu
+  wizardSlugState = available ? "ok" : "taken";
+  if (statusEl) {
+    statusEl.textContent = available ? "✓ Disponible" : "Déjà pris, essaie un autre identifiant.";
+    statusEl.className = `wizard-slug-status ${available ? "ok" : "taken"}`;
+  }
+  updateWizardNextState();
+}
+
+function validateWizardStep(step) {
+  if (step === "identity" && !wizardDraft.creatorName.trim()) {
+    showToast("Renseigne ton nom public.");
+    return false;
+  }
+  if (step === "slug" && (!wizardDraft.slug || wizardSlugState === "taken")) {
+    showToast("Choisis un identifiant disponible.");
+    return false;
+  }
+  return true;
+}
+
+async function wizardNext() {
+  const step = wizardSteps[wizardStep];
+  if (step === "recap") { finishWizard(); return; }
+  if (!validateWizardStep(step)) return;
+  if (step === "product") {
+    const next = document.querySelector("#wizardNext");
+    if (next) { next.disabled = true; next.textContent = "Création…"; }
+    const ok = await commitWizard();
+    if (next) next.textContent = "Continuer";
+    if (!ok) { updateWizardNextState(); return; }
+  }
+  wizardStep = Math.min(wizardStep + 1, wizardSteps.length - 1);
+  renderWizard();
+}
+
+function wizardBack() {
+  wizardStep = Math.max(wizardStep - 1, 0);
+  renderWizard();
+}
+
+async function commitWizard() {
+  state.profile = {
+    ...state.profile,
+    firstName: state.profile.firstName || wizardDraft.creatorName.trim().split(/\s+/)[0],
+    creatorName: wizardDraft.creatorName.trim(),
+    creatorRole: (wizardDraft.creatorRole || "").trim() || "Infopreneur",
+    bio: (wizardDraft.bio || "").trim() || state.profile.bio,
+    slug: slugify(wizardDraft.slug || wizardDraft.creatorName),
+    accent: wizardDraft.accent || "#6558f5",
+    logo: wizardDraft.logo || "",
+  };
+  const p = wizardDraft.product;
+  if (p && p.title.trim()) {
+    state.products.push({
+      id: `prod_${Date.now().toString(36)}`,
+      title: p.title.trim(),
+      type: "Produit digital",
+      price: Math.max(0, Number(p.price) || 0),
+      description: (p.description || "").trim(),
+      status: "published",
+      color: wizardDraft.accent || "#6558f5",
+      fileName: (p.fileName || "").trim(),
+    });
+  }
+  state = normalizeState(state);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  if (location.protocol.startsWith("http")) {
+    try {
+      const response = await authenticatedFetch("/api/state", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(state),
+      });
+      if (response.status === 409) {
+        wizardSlugState = "taken";
+        showToast("Cet identifiant est déjà pris. Choisis-en un autre.");
+        wizardStep = wizardSteps.indexOf("slug");
+        renderWizard();
+        return false;
+      }
+      if (response.ok) {
+        const saved = await response.json().catch(() => null);
+        if (saved?.state) state = normalizeState(saved.state);
+      }
+    } catch {
+      showToast("Synchronisation serveur impossible (sauvegarde locale conservée).");
+    }
+  }
+  document.querySelector("#productCount").textContent = String(state.products.length);
+  renderIdentity();
+  renderLaunchProgress();
+  return true;
+}
+
+function finishWizard() {
+  localStorage.setItem("expertly_onboarding_done", "1");
+  closeOnboardingWizard();
+  setView("overview");
+  showToast("Bienvenue dans ton espace Expertly 🎉");
 }
 
 function launchSteps() {
@@ -1865,16 +2281,43 @@ document.querySelector("#settingsForm").addEventListener("submit", (event) => {
     bio: data.get("bio").trim(),
     slug: slugify(data.get("slug")),
     accent: data.get("accent"),
+    logo: (event.currentTarget.dataset.logo || data.get("logo") || "").trim(),
   };
   saveState();
   renderIdentity();
   showToast("Identité de la boutique enregistrée.");
 });
 
+document.querySelector("#settingsForm").addEventListener("change", async (event) => {
+  if (event.target.name !== "logoFile") return;
+  try {
+    const dataUrl = await fileToDataUrl(event.target.files[0]);
+    if (dataUrl) {
+      event.currentTarget.dataset.logo = dataUrl;
+      const urlField = event.currentTarget.elements.namedItem("logo");
+      if (urlField) urlField.value = "";
+      showToast("Logo importé. Enregistre pour l’appliquer.");
+    }
+  } catch (error) {
+    showToast(error.message || "Image trop lourde.");
+  }
+});
+
+document.querySelector("#copyInstagramLink")?.addEventListener("click", () => {
+  const url = goPublicUrl();
+  navigator.clipboard
+    ?.writeText(url)
+    .then(() => showToast("Lien de bio Instagram copié ✓"))
+    .catch(() => showToast(url));
+});
+
 document.querySelector("#settingsForm").addEventListener("input", (event) => {
   const form = event.currentTarget;
   if (event.target.name === "slug") {
     event.target.value = slugify(event.target.value);
+  }
+  if (event.target.name === "logo" && event.target.value.trim()) {
+    delete form.dataset.logo;
   }
   const previewProfile = {
     ...state.profile,
@@ -1942,6 +2385,10 @@ async function startApp() {
   }
   const initialView = location.hash.replace("#", "");
   setView(viewNames[initialView] ? initialView : "overview");
+  const forceSetup = new URLSearchParams(location.search).get("setup") === "1";
+  if (!DEMO_MODE && (forceSetup || (storeNeedsSetup() && !localStorage.getItem("expertly_onboarding_done")))) {
+    openOnboardingWizard();
+  }
 }
 
 startApp();

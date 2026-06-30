@@ -51,7 +51,16 @@ function renderStore() {
   const profile = state.profile;
   document.documentElement.style.setProperty("--accent", profile.accent || "#6558f5");
   document.title = `${profile.creatorName} · Boutique`;
-  document.querySelector("#creatorAvatar").textContent = initials(profile.creatorName);
+  const avatar = document.querySelector("#creatorAvatar");
+  const logo = (profile.logo || "").trim();
+  const validLogo = /^https?:\/\//i.test(logo) || /^data:image\//i.test(logo);
+  if (validLogo) {
+    avatar.classList.add("has-logo");
+    avatar.innerHTML = `<img class="creator-avatar-img" src="${escapeHtml(logo)}" alt="${escapeHtml(profile.creatorName)}" />`;
+  } else {
+    avatar.classList.remove("has-logo");
+    avatar.textContent = initials(profile.creatorName);
+  }
   document.querySelector("#creatorName").textContent = profile.creatorName;
   document.querySelector("#creatorRole").textContent = profile.creatorRole;
   document.querySelector("#creatorBio").textContent = profile.bio;

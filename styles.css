@@ -3071,3 +3071,88 @@ td,
     height: 510px;
   }
 }
+
+/* ---------------- Assistant d'onboarding ---------------- */
+body.wizard-open { overflow: hidden; }
+.wizard-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(17, 17, 42, 0.55);
+  backdrop-filter: blur(6px);
+}
+.wizard-card {
+  width: 100%;
+  max-width: 480px;
+  max-height: 92vh;
+  overflow-y: auto;
+  background: #fff;
+  border-radius: 26px;
+  padding: 26px 26px 22px;
+  box-shadow: 0 30px 80px rgba(17, 17, 42, 0.3);
+  animation: wizardRise 280ms ease;
+}
+@keyframes wizardRise { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+.wizard-progress { display: flex; gap: 6px; margin-bottom: 20px; }
+.wizard-progress span {
+  flex: 1; height: 5px; border-radius: 999px; background: #e7e4f6; transition: background 200ms ease;
+}
+.wizard-progress span.active { background: #6558f5; }
+.wizard-progress span.done { background: #b9b2f3; }
+.wizard-eyebrow { font-size: 12px; font-weight: 800; letter-spacing: 0.03em; color: #6558f5; text-transform: uppercase; }
+.wizard-body h2 { font-size: 23px; margin: 8px 0 6px; font-weight: 800; }
+.wizard-lead { color: #6b6c80; font-size: 14px; line-height: 1.5; margin: 0 0 18px; }
+.wizard-label { display: block; font-size: 13px; font-weight: 700; color: #3d475d; margin-bottom: 14px; }
+.wizard-label input,
+.wizard-label textarea {
+  display: block; width: 100%; margin-top: 6px; padding: 12px 13px;
+  border: 1px solid #e2e0ee; border-radius: 12px; font: inherit; font-size: 14px; color: #17172a;
+  background: #fbfbfe;
+}
+.wizard-label input:focus, .wizard-label textarea:focus { outline: none; border-color: #6558f5; }
+.wizard-label.media-upload input { padding: 9px; background: #f4f3fb; }
+.wizard-slug-status { font-size: 13px; font-weight: 700; margin: -6px 0 10px; min-height: 18px; color: #9a9bad; }
+.wizard-slug-status.checking { color: #9a9bad; }
+.wizard-slug-status.ok { color: #1f9d63; }
+.wizard-slug-status.taken { color: #d3455b; }
+.wizard-linkpreview { font-size: 13px; color: #6b6c80; }
+.wizard-linkpreview strong { color: #17172a; word-break: break-all; }
+.wizard-color-row { display: flex; align-items: center; gap: 18px; }
+.wizard-color-row input[type="color"] { width: 64px; height: 64px; border: none; border-radius: 16px; background: none; cursor: pointer; }
+.wizard-color-preview { display: flex; align-items: center; gap: 12px; }
+.wizard-swatch { width: 34px; height: 34px; border-radius: 10px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.05); }
+.wizard-fake-btn { border: none; color: #fff; font-weight: 800; padding: 10px 18px; border-radius: 11px; font-size: 14px; }
+.wizard-logo-row { display: flex; gap: 16px; align-items: flex-start; }
+.wizard-logo-preview {
+  flex: none; width: 78px; height: 78px; border-radius: 20px; overflow: hidden;
+  display: grid; place-items: center; color: #fff; font-weight: 800; font-size: 24px;
+  background: linear-gradient(145deg, #17182b, #5c5f80);
+}
+.wizard-logo-preview img { width: 100%; height: 100%; object-fit: cover; }
+.wizard-logo-fields { flex: 1; min-width: 0; }
+.wizard-bio-block { text-align: center; }
+.wizard-bio-label { display: block; font-size: 12px; font-weight: 800; color: #6558f5; text-transform: uppercase; margin-bottom: 10px; }
+.url-row {
+  display: flex; gap: 8px; align-items: center; background: #f4f3fb; border: 1px solid #e7e4f6;
+  border-radius: 13px; padding: 7px 7px 7px 13px; margin-bottom: 16px;
+}
+.url-row input { flex: 1; border: none; background: transparent; font: inherit; font-size: 13.5px; color: #17172a; min-width: 0; }
+.url-row input:focus { outline: none; }
+.url-row .primary-button { flex: none; padding: 9px 15px; }
+.wizard-qr { display: block; margin: 0 auto 16px; border-radius: 12px; background: #fff; }
+.wizard-secondary-link { display: inline-block; font-size: 12.5px; color: #6b6c80; word-break: break-all; }
+.wizard-footer { display: flex; justify-content: space-between; gap: 12px; margin-top: 22px; }
+.wizard-footer .primary-button { margin-left: auto; }
+.primary-button.is-disabled, .primary-button:disabled { opacity: 0.5; pointer-events: none; }
+
+/* Bloc lien de bio Instagram dans les Réglages */
+.public-bio-link em { font-style: normal; color: #9a9bad; font-weight: 600; }
+.public-bio-link #instagramBioUrl { display: block; margin: 6px 0 12px; word-break: break-all; color: #17172a; }
+.bio-actions { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.bio-qr { flex: none; width: 96px; height: 96px; border-radius: 12px; background: #fff; box-shadow: 0 0 0 1px #ece9fb; }
+.bio-store-line { display: block; margin-top: 12px; color: #9a9bad; font-size: 12px; word-break: break-all; }
+.link-button { border: none; background: none; color: #6558f5; font: inherit; font-weight: 700; cursor: pointer; padding: 0; }

@@ -6,6 +6,7 @@ const defaultState = {
     bio: "Bienvenue dans ma boutique de produits digitaux.",
     slug: "boutique",
     accent: "#073bd9",
+    logo: "",
   },
   products: [],
   pages: [],

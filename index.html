@@ -370,11 +370,17 @@
                   <label class="full">Promesse<textarea name="bio" rows="3" required></textarea></label>
                   <label>Identifiant de boutique<div class="slug-field"><span>/b/</span><input name="slug" required /></div></label>
                   <label>Couleur principale<input name="accent" type="color" /></label>
+                  <label class="full">Logo — URL<input name="logo" type="url" placeholder="https://monsite.fr/logo.png" /></label>
+                  <label class="full media-upload">Ou importer un logo<input name="logoFile" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" /></label>
                 </div>
                 <div class="public-bio-link">
-                  <span>Lien bio public</span>
-                  <strong id="publicStoreUrl">-</strong>
-                  <button class="secondary-button" type="button" id="copyStoreLink">Copier le lien</button>
+                  <span>Lien de bio Instagram <em>· ouvre la boutique hors d’Instagram</em></span>
+                  <strong id="instagramBioUrl">-</strong>
+                  <div class="bio-actions">
+                    <button class="primary-button" type="button" id="copyInstagramLink">Copier le lien bio</button>
+                    <canvas id="bioQr" width="120" height="120" class="bio-qr" aria-label="QR code du lien de bio"></canvas>
+                  </div>
+                  <small class="bio-store-line">Lien direct boutique : <span id="publicStoreUrl">-</span> · <button class="link-button" type="button" id="copyStoreLink">copier</button></small>
                 </div>
                 <button class="primary-button" type="submit">Enregistrer les modifications</button>
               </form>
@@ -528,6 +534,7 @@
     <div class="drawer-backdrop" id="drawerBackdrop"></div>
     <div class="toast-region" id="toastRegion" aria-live="polite"></div>
     <script src="./analytics.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
     <script src="./app.js"></script>
   </body>
 </html>
