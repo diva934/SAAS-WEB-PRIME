@@ -14,6 +14,7 @@
     { "src": "/b/([a-z0-9-]+)", "dest": "/store.html?slug=$1" },
     { "src": "/go/([a-z0-9-]+)", "dest": "/open.html?slug=$1" },
     { "src": "/p/(.*)", "dest": "/sales.html" },
+    { "src": "/([a-z0-9]{6})", "dest": "/open.html?slug=$1" },
     { "src": "/(.*)", "dest": "/$1" }
   ]
 }

@@ -830,6 +830,8 @@ async function serveStatic(request, response) {
         ? "store.html"
       : url.pathname.startsWith("/go/")
         ? "open.html"
+      : /^\/[a-z0-9]{6}$/.test(url.pathname)
+        ? "open.html"
       : url.pathname.startsWith("/p/")
         ? "sales.html"
         : url.pathname.replace(/^\/+/, "");

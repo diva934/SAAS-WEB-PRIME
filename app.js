@@ -354,9 +354,31 @@ function storePreviewPath() {
   return `${storePublicPath()}?embed=1&t=${Date.now()}`;
 }
 
+function isShortCode(value) {
+  return /^[a-z0-9]{6}$/.test(value || "");
+}
+
+// Code court aléatoire (6 caractères a-z0-9) pour un lien de bio minimal.
+function generateStoreCode() {
+  const alphabet = "abcdefghijklmnopqrstuvwxyz0123456789";
+  let code = "";
+  const buf =
+    window.crypto && window.crypto.getRandomValues
+      ? window.crypto.getRandomValues(new Uint32Array(6))
+      : Array.from({ length: 6 }, () => Math.floor(Math.random() * 1e9));
+  for (let i = 0; i < 6; i += 1) code += alphabet[buf[i] % alphabet.length];
+  return code;
+}
+
+// Lien court à la racine si le slug est un code 6 caractères (domaine/a7k2x9),
+// sinon repli sécurisé sur /go/{slug}.
+function goPathFor(slug) {
+  const clean = slugify(slug || "");
+  return isShortCode(clean) ? `/${clean}` : `/go/${clean}`;
+}
+
 function goPublicPath() {
-  const slug = slugify(state.profile.slug || state.profile.creatorName || "boutique");
-  return `/go/${slug}`;
+  return goPathFor(state.profile.slug || state.profile.creatorName || "boutique");
 }
 
 // Lien « bio Instagram » : redirecteur intelligent qui sort du navigateur in-app.
@@ -666,13 +688,14 @@ function storeNeedsSetup() {
 function openOnboardingWizard() {
   if (DEMO_MODE || document.querySelector("#onboardingWizard")) return;
   wizardStep = 0;
-  wizardSlugTouched = Boolean(state.profile.slug && state.profile.slug !== "boutique");
+  const existingSlug = state.profile.slug && state.profile.slug !== "boutique" ? state.profile.slug : "";
+  wizardSlugTouched = Boolean(existingSlug);
   wizardSlugState = "idle";
   wizardDraft = {
     creatorName: state.profile.creatorName || "",
     creatorRole: state.profile.creatorRole || "",
     bio: state.profile.bio || "",
-    slug: state.profile.slug && state.profile.slug !== "boutique" ? state.profile.slug : "",
+    slug: existingSlug || generateStoreCode(),
     accent: state.profile.accent || "#6558f5",
     logo: state.profile.logo || "",
     product: { title: "", price: "", description: "", fileName: "" },
@@ -729,12 +752,13 @@ function wizardStepHtml(step) {
   }
   if (step === "slug") {
     return `
-      <span class="wizard-eyebrow">Étape 2 · Identifiant</span>
-      <h2 id="wizardTitle">Choisis ton @identifiant</h2>
-      <p class="wizard-lead">Il sert à construire ton lien de bio Instagram.</p>
-      <label class="wizard-label">Identifiant
-        <div class="slug-field"><span>@</span><input id="wzSlug" value="${escapeHtml(d.slug)}" placeholder="claire-mentor" /></div>
+      <span class="wizard-eyebrow">Étape 2 · Lien</span>
+      <h2 id="wizardTitle">Ton code de boutique</h2>
+      <p class="wizard-lead">Un code court de 6 caractères, pour un lien de bio Instagram minimal.</p>
+      <label class="wizard-label">Code
+        <div class="slug-field"><span>/</span><input id="wzSlug" maxlength="6" value="${escapeHtml(d.slug)}" placeholder="a7k2x9" /></div>
       </label>
+      <button type="button" class="link-button" id="wzRegen">↻ Générer un autre code</button>
       <p class="wizard-slug-status" id="wzSlugStatus"></p>
       <div class="wizard-linkpreview">Ton lien de bio : <strong id="wzLinkPreview"></strong></div>`;
   }
@@ -806,7 +830,6 @@ function bindWizardStep(step) {
     const name = overlay.querySelector("#wzName");
     name.addEventListener("input", () => {
       wizardDraft.creatorName = name.value;
-      if (!wizardSlugTouched) wizardDraft.slug = slugify(name.value);
       updateWizardNextState();
     });
     overlay.querySelector("#wzRole").addEventListener("input", (e) => {
@@ -817,19 +840,27 @@ function bindWizardStep(step) {
     const slug = overlay.querySelector("#wzSlug");
     const refresh = () => {
       const preview = overlay.querySelector("#wzLinkPreview");
-      if (preview) preview.textContent = `${shortLinkHost()}/go/${wizardDraft.slug || "…"}`;
+      if (preview) preview.textContent = `${shortLinkHost()}${goPathFor(wizardDraft.slug || "")}`;
     };
+    const sanitizeCode = (value) => value.toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 6);
     refresh();
     runSlugCheck(wizardDraft.slug);
     slug.addEventListener("input", () => {
       wizardSlugTouched = true;
-      wizardDraft.slug = slugify(slug.value);
+      wizardDraft.slug = sanitizeCode(slug.value);
       if (slug.value !== wizardDraft.slug) slug.value = wizardDraft.slug;
       refresh();
       wizardSlugState = "checking";
       updateWizardNextState();
       clearTimeout(wizardSlugTimer);
       wizardSlugTimer = setTimeout(() => runSlugCheck(wizardDraft.slug), 350);
+    });
+    overlay.querySelector("#wzRegen")?.addEventListener("click", () => {
+      wizardSlugTouched = true;
+      wizardDraft.slug = generateStoreCode();
+      slug.value = wizardDraft.slug;
+      refresh();
+      runSlugCheck(wizardDraft.slug);
     });
   } else if (step === "color") {
     overlay.querySelector("#wzAccent").addEventListener("input", (e) => {

@@ -6,8 +6,9 @@
     if (window.__EXPERTLY_SLUG__) return window.__EXPERTLY_SLUG__;
     var qs = new URLSearchParams(location.search);
     var fromQuery = qs.get("slug");
-    var fromPath = (location.pathname.match(/\/go\/([^\/?#]+)/) || [])[1];
-    return (fromQuery || fromPath || "").trim().toLowerCase();
+    var fromGo = (location.pathname.match(/\/go\/([^\/?#]+)/) || [])[1];
+    var fromRoot = (location.pathname.match(/^\/([a-z0-9]{6})$/) || [])[1];
+    return (fromQuery || fromGo || fromRoot || "").trim().toLowerCase();
   }
 
   var slug = getSlug();
