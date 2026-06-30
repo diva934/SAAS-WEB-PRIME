@@ -418,6 +418,34 @@ function renderBioQr(canvas, text) {
   }
 }
 
+// Garantit qu'une boutique a toujours un code unique en fin de lien, même si
+// l'assistant d'onboarding n'a pas été utilisé (ex. produit créé avant).
+async function ensureStoreCode() {
+  if (DEMO_MODE) return;
+  const current = (state.profile.slug || "").trim();
+  // Déjà un code valide, ou un identifiant personnalisé choisi -> on garde.
+  if (isShortCode(current)) return;
+  if (current && current !== "boutique") return;
+
+  let code = generateStoreCode();
+  if (location.protocol.startsWith("http")) {
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      try {
+        const response = await authenticatedFetch(`/api/slug-available?slug=${encodeURIComponent(code)}`, { cache: "no-store" });
+        const data = await response.json().catch(() => ({ available: true }));
+        if (data.available !== false) break;
+      } catch {
+        break;
+      }
+      code = generateStoreCode();
+    }
+  }
+  state.profile.slug = code;
+  saveState();
+  renderIdentity();
+  showToast(`Ton lien de boutique est prêt : ${goPublicUrl()}`);
+}
+
 function orderAccessUrl(order) {
   if (!order?.accessToken) return "";
   return location.protocol.startsWith("http")
@@ -2479,6 +2507,8 @@ async function startApp() {
   const forceSetup = new URLSearchParams(location.search).get("setup") === "1";
   if (!DEMO_MODE && (forceSetup || (storeNeedsSetup() && !localStorage.getItem("expertly_onboarding_done")))) {
     openOnboardingWizard();
+  } else {
+    await ensureStoreCode();
   }
 }
 
