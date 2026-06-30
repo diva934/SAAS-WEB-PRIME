@@ -272,7 +272,11 @@ async function startStore() {
   const isEmbed = new URLSearchParams(location.search).get("embed") === "1";
   if (!isEmbed && location.protocol.startsWith("http") && !sessionStorage.getItem("expertly_visit_counted_v2")) {
     sessionStorage.setItem("expertly_visit_counted_v2", "1");
-    fetch("/api/events/visit", { method: "POST" }).catch(() => {});
+    fetch("/api/events/visit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ slug }),
+    }).catch(() => {});
   }
   renderStore();
 }

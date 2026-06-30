@@ -14,6 +14,7 @@ function publicSalesPage(state, slug) {
     page,
     product: publicProduct,
     profile: {
+      slug: state.profile.slug,
       creatorName: state.profile.creatorName,
       creatorRole: state.profile.creatorRole,
     },

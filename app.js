@@ -2266,6 +2266,63 @@ document.querySelector("#contactSearch").addEventListener("input", renderContact
 document.querySelector("#contactFilter").addEventListener("change", renderContacts);
 document.querySelector("#notificationButton").addEventListener("click", () => showToast("Tu n’as aucune nouvelle notification."));
 
+document.querySelector("#helpButton")?.addEventListener("click", () => {
+  window.open(marketingUrl(), "_blank", "noopener");
+});
+
+document.querySelector("#configureDomain")?.addEventListener("click", () => {
+  showToast("Domaine personnalisé : disponible sur demande. Écris-nous pour le brancher à ta boutique.");
+});
+
+document.querySelector("#manageSubscription")?.addEventListener("click", async (event) => {
+  if (DEMO_MODE) return;
+  const button = event.currentTarget;
+  const previous = button.textContent;
+  button.disabled = true;
+  button.textContent = "Ouverture…";
+  try {
+    const response = await authenticatedFetch("/api/billing-portal", { method: "POST" });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || !data.url) throw new Error(data.error || "Gestion d’abonnement indisponible.");
+    location.assign(data.url);
+  } catch (error) {
+    showToast(error.message || "Impossible d’ouvrir la gestion d’abonnement.");
+    button.disabled = false;
+    button.textContent = previous;
+  }
+});
+
+(function setupAccountMenu() {
+  const button = document.querySelector("#accountButton");
+  if (!button) return;
+  const menu = document.createElement("div");
+  menu.className = "account-menu";
+  menu.hidden = true;
+  menu.innerHTML = `
+    <p class="account-menu-email" id="accountMenuEmail">Connecté</p>
+    <button type="button" id="logoutButton">Se déconnecter</button>`;
+  (button.parentElement || document.body).appendChild(menu);
+  button.addEventListener("click", (event) => {
+    event.stopPropagation();
+    const email = activeSupabaseSession?.user?.email || state.profile.creatorName || "Connecté";
+    menu.querySelector("#accountMenuEmail").textContent = email;
+    menu.hidden = !menu.hidden;
+  });
+  menu.addEventListener("click", (event) => event.stopPropagation());
+  document.addEventListener("click", () => {
+    menu.hidden = true;
+  });
+  menu.querySelector("#logoutButton").addEventListener("click", async () => {
+    try {
+      await supabaseClient?.auth?.signOut();
+    } catch {
+      // on déconnecte quand même côté client
+    }
+    localStorage.removeItem(STORAGE_KEY);
+    location.reload();
+  });
+})();
+
 document.querySelector("#copyStoreLink")?.addEventListener("click", () => {
   navigator.clipboard
     ?.writeText(storePublicUrl())

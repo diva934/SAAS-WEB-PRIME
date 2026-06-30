@@ -86,7 +86,7 @@
           <button class="nav-item" data-view="settings">
             <span class="nav-icon">⚙</span><span>Réglages</span>
           </button>
-          <button class="help-button"><span>?</span> Centre d’aide</button>
+          <button class="help-button" id="helpButton"><span>?</span> Centre d’aide</button>
         </div>
       </aside>
 
@@ -106,7 +106,7 @@
             <button class="icon-button notification-button" id="notificationButton" aria-label="Notifications">
               ♢<i></i>
             </button>
-            <button class="account-button">
+            <button class="account-button" id="accountButton">
               <span id="accountInitials">EX</span><span class="account-copy"><strong id="accountName">Créateur</strong><small>Administrateur</small></span><b>⌄</b>
             </button>
           </div>
@@ -398,13 +398,13 @@
                 <article class="panel integration-card">
                   <span class="integration-icon domain">↗</span>
                   <span><strong>Domaine personnalisé</strong><small>Connecte ton domaine</small></span>
-                  <button>Configurer</button>
+                  <button type="button" id="configureDomain">Configurer</button>
                 </article>
                 <article class="panel plan-card">
                   <span class="panel-label">Abonnement</span>
                   <h3>Expertly Scale</h3>
                   <p>Produits illimités, emails automatisés et domaine personnalisé.</p>
-                  <button>Gérer mon abonnement</button>
+                  <button type="button" id="manageSubscription">Gérer mon abonnement</button>
                 </article>
               </div>
             </div>

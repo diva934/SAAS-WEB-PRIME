@@ -164,6 +164,7 @@ document.querySelector("#salesCheckoutForm").addEventListener("submit", async (e
         productId: salesData.product.id,
         customerName: data.get("name").trim(),
         customerEmail: data.get("email").trim(),
+        creatorSlug: salesData.profile.slug,
         distinctId: window.ExpertlyTracking?.getDistinctId(),
         salesPageSlug: salesData.page.slug,
         source: "sales_page",
