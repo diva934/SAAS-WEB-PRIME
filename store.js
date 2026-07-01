@@ -1,42 +1,32 @@
-const STORAGE_KEY = "offerlab_mvp_state_v1";
+const STORAGE_KEY = "expertly_client_v2";
 
 const fallback = {
-  store: {
-    creatorName: "Claire Mentor",
-    creatorRole: "Business coach",
-    bio: "Je t’aide à transformer ton expertise en une offre claire, désirable et rentable.",
-    color: "#5965f2",
-    showProof: true,
-    showLeadMagnet: true,
-    instagram: "@clairementor",
-    youtube: "youtube.com/@clairementor",
+  profile: {
+    firstName: "Expertly",
+    creatorName: "Boutique Expertly",
+    creatorRole: "Infopreneur",
+    bio: "Bienvenue dans ma boutique de produits digitaux.",
+    slug: "boutique",
+    accent: "#6558f5",
   },
-  offers: [],
-  contacts: [],
-  orders: [],
-  traffic: { purchases: 0 },
+  products: [],
 };
 
-function loadState() {
-  try {
-    return { ...fallback, ...JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}") };
-  } catch {
-    return fallback;
-  }
+let state = fallback;
+let selectedProduct = null;
+
+function currentStoreSlug() {
+  const params = new URLSearchParams(location.search);
+  const querySlug = params.get("slug");
+  const pathMatch = location.pathname.match(/\/b\/([^/?#]+)/);
+  return (querySlug || pathMatch?.[1] || "").trim();
 }
 
-let state = loadState();
-let selectedOffer = null;
-const euro = new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0 });
-
-function initials(value) {
-  return value
-    .split(" ")
-    .map((part) => part[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
-}
+const euro = new Intl.NumberFormat("fr-FR", {
+  style: "currency",
+  currency: "EUR",
+  maximumFractionDigits: 0,
+});
 
 function escapeHtml(value = "") {
   return String(value)
@@ -47,183 +37,237 @@ function escapeHtml(value = "") {
     .replaceAll("'", "&#039;");
 }
 
-function saveState() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+function initials(value = "") {
+  return value
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
 }
 
-function enablePointerTilt(cards) {
-  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const SOCIAL_LINKS = [
+  { key: "instagram", label: "Instagram" },
+  { key: "youtube", label: "YouTube" },
+  { key: "tiktok", label: "TikTok" },
+];
 
-  cards.forEach((card) => {
-    const update = (event) => {
-      const bounds = card.getBoundingClientRect();
-      const x = Math.min(Math.max(event.clientX - bounds.left, 0), bounds.width);
-      const y = Math.min(Math.max(event.clientY - bounds.top, 0), bounds.height);
+function safeUrl(value = "") {
+  const trimmed = String(value).trim();
+  return /^https?:\/\//i.test(trimmed) ? trimmed : "";
+}
 
-      card.style.setProperty("--glow-x", `${(x / bounds.width) * 100}%`);
-      card.style.setProperty("--glow-y", `${(y / bounds.height) * 100}%`);
+function safeColor(value = "", fallback = "#6558f5") {
+  const trimmed = String(value).trim();
+  return /^#[0-9a-f]{3,8}$|^(rgb|hsl)a?\([\d.,%\s/]+\)$/i.test(trimmed) ? trimmed : fallback;
+}
 
-      if (!reducedMotion) {
-        card.style.setProperty("--card-rotate-x", `${((0.5 - y / bounds.height) * 5).toFixed(2)}deg`);
-        card.style.setProperty("--card-rotate-y", `${((x / bounds.width - 0.5) * 5).toFixed(2)}deg`);
-      }
-    };
+function renderSocials(profile) {
+  const container = document.querySelector("#creatorSocials");
+  if (!container) return;
+  const links = SOCIAL_LINKS.map(({ key, label }) => ({ label, url: safeUrl(profile[key]) })).filter(
+    (item) => item.url,
+  );
+  if (!links.length) {
+    container.hidden = true;
+    container.innerHTML = "";
+    return;
+  }
+  container.hidden = false;
+  container.innerHTML = links
+    .map(
+      (item) =>
+        `<a href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer" aria-label="${escapeHtml(
+          item.label,
+        )}">${escapeHtml(item.label)}</a>`,
+    )
+    .join("");
+}
 
-    const reset = () => {
-      card.classList.remove("is-interacting");
-      card.style.setProperty("--card-rotate-x", "0deg");
-      card.style.setProperty("--card-rotate-y", "0deg");
-    };
-
-    card.addEventListener("pointerenter", (event) => {
-      card.classList.add("is-interacting");
-      update(event);
-    });
-    card.addEventListener("pointermove", update);
-    card.addEventListener("pointerdown", (event) => {
-      card.classList.add("is-interacting");
-      update(event);
-    });
-    card.addEventListener("pointerleave", reset);
-    card.addEventListener("pointerup", reset);
-    card.addEventListener("pointercancel", reset);
-  });
+function renderFeaturedBanner(publishedProducts) {
+  const banner = document.querySelector("#featuredBanner");
+  if (!banner) return;
+  const freeProduct = publishedProducts.find((product) => Number(product.price) === 0);
+  if (!freeProduct) {
+    banner.hidden = true;
+    banner.style.display = "none";
+    return;
+  }
+  banner.hidden = false;
+  banner.style.display = "";
+  const title = document.querySelector("#featuredBannerTitle");
+  if (title) title.textContent = freeProduct.title || "Ressource gratuite offerte";
 }
 
 function renderStore() {
-  const store = state.store;
-  document.documentElement.style.setProperty("--accent", store.color || "#5965f2");
-  document.title = `${store.creatorName} · Boutique`;
-  document.querySelector("#creatorAvatar").textContent = initials(store.creatorName);
-  document.querySelector("#creatorName").textContent = store.creatorName;
-  document.querySelector("#creatorRole").textContent = store.creatorRole;
-  document.querySelector("#creatorBio").textContent = store.bio;
-  document.querySelector("#proofStrip").hidden = !store.showProof;
-  document.querySelector("#leadCard").hidden = !store.showLeadMagnet;
+  const profile = state.profile;
+  document.documentElement.style.setProperty("--accent", profile.accent || "#6558f5");
+  document.title = `${profile.creatorName} · Boutique`;
+  const avatar = document.querySelector("#creatorAvatar");
+  const logo = (profile.logo || "").trim();
+  const validLogo = /^https?:\/\//i.test(logo) || /^data:image\//i.test(logo);
+  if (validLogo) {
+    avatar.classList.add("has-logo");
+    avatar.innerHTML = `<img class="creator-avatar-img" src="${escapeHtml(logo)}" alt="${escapeHtml(profile.creatorName)}" />`;
+  } else {
+    avatar.classList.remove("has-logo");
+    avatar.textContent = initials(profile.creatorName);
+  }
+  document.querySelector("#creatorName").textContent = profile.creatorName;
+  document.querySelector("#creatorRole").textContent = profile.creatorRole;
+  document.querySelector("#creatorBio").textContent = profile.bio;
 
-  const instagram = document.querySelector("#instagramLink");
-  instagram.textContent = store.instagram || "Instagram";
-  instagram.hidden = !store.instagram;
-  instagram.href = store.instagram?.startsWith("http") ? store.instagram : `https://instagram.com/${store.instagram?.replace("@", "")}`;
+  renderSocials(profile);
 
-  const youtube = document.querySelector("#youtubeLink");
-  youtube.hidden = !store.youtube;
-  youtube.href = store.youtube?.startsWith("http") ? store.youtube : `https://${store.youtube}`;
-
-  const offers = state.offers
-    .filter((offer) => offer.status === "published")
+  const products = state.products
+    .filter((product) => product.status === "published")
     .sort((a, b) => Number(b.featured) - Number(a.featured));
-  document.querySelector("#offerCount").textContent = `${offers.length} offres`;
+
+  document.querySelector("#offerCount").textContent = `${products.length} offre${products.length > 1 ? "s" : ""}`;
+  const singleProduct = products.length === 1;
+  const accent = safeColor(profile.accent, "#6558f5");
   document.querySelector("#publicOffers").innerHTML =
-    offers
-      .map((offer) => `
-        <article class="public-offer ${offer.featured ? "featured" : ""}" style="--offer-color:${offer.color}">
-          ${offer.featured ? '<span class="featured-label">Recommandée</span>' : ""}
-          <div class="public-offer-icon">${initials(offer.title)}</div>
-          <div>
-            <h3>${escapeHtml(offer.title)}</h3>
-            <p>${escapeHtml(offer.description)}</p>
+    products
+      .map((product) => {
+        const requested = ["s", "m", "l", "xl"].includes(product.cardSize) ? product.cardSize : "m";
+        const size = singleProduct ? "l" : requested;
+        const cover = (product.coverUrl || "").trim();
+        const hasCover = /^https?:\/\//i.test(cover) || /^data:image\//i.test(cover);
+        const offerColor = safeColor(product.color, accent);
+        const media = hasCover
+          ? `<img class="offer-cover" src="${escapeHtml(cover)}" alt="${escapeHtml(product.title)}" loading="lazy" />`
+          : `<div class="offer-cover offer-cover-fallback"><span>${initials(product.title)}</span></div>`;
+        return `
+        <article class="public-offer size-${size} ${product.featured ? "featured" : ""}" style="--offer-color:${offerColor}">
+          <div class="offer-media">
+            ${media}
+            ${product.featured ? '<span class="featured-label">★ Recommandé</span>' : ""}
+            <span class="offer-price">${product.price ? euro.format(product.price) : "Gratuit"}</span>
           </div>
-          <div class="offer-buy">
-            <strong>${offer.price ? euro.format(offer.price) : "Gratuit"}</strong>
-            <button data-buy="${offer.id}">${offer.price ? "Découvrir" : "Accéder"}</button>
+          <div class="offer-body">
+            ${product.type ? `<span class="offer-type">${escapeHtml(product.type)}</span>` : ""}
+            <h3>${escapeHtml(product.title)}</h3>
+            <p>${escapeHtml(product.description || "")}</p>
+            <button data-buy="${product.id}">${product.price ? "Acheter" : "Accéder"}</button>
           </div>
-        </article>
-      `)
-      .join("") || "<p>Aucune offre publiée pour le moment.</p>";
-  enablePointerTilt(document.querySelectorAll(".public-offer"));
+        </article>`;
+      })
+      .join("") || "<p>Aucun produit publié pour le moment.</p>";
+
+  renderFeaturedBanner(products);
+
+  window.ExpertlyTracking?.track("store_viewed", {
+    product_count: products.length,
+    creator_slug: profile.slug,
+  });
 }
 
-function openCheckout(offer) {
-  selectedOffer = offer;
-  const isFree = offer.price === 0;
+function openCheckout(product) {
+  if (!product) return;
+  selectedProduct = product;
+  const isFree = product.price === 0;
   document.querySelector("#checkoutContent").innerHTML = `
-    <div class="checkout-offer">
-      <div class="public-offer-icon" style="--offer-color:${offer.color};background:${offer.color}">${initials(offer.title)}</div>
-      <div><h2>${escapeHtml(offer.title)}</h2><p>${escapeHtml(offer.type)} · Accès immédiat</p></div>
+    <div class="checkout-product">
+      <div class="public-offer-icon" style="--offer-color:${safeColor(product.color, safeColor(state.profile.accent, "#6558f5"))}">${initials(product.title)}</div>
+      <div><h2>${escapeHtml(product.title)}</h2><p>${escapeHtml(product.type)} · Accès immédiat après confirmation</p></div>
     </div>
     <div class="checkout-summary">
-      <div><span>Sous-total</span><span>${isFree ? "Gratuit" : euro.format(offer.price)}</span></div>
-      <div><span>TVA incluse</span><span>${isFree ? "0 €" : euro.format(Math.round(offer.price * 0.2))}</span></div>
-      <div><span>Total</span><span>${isFree ? "Gratuit" : euro.format(offer.price)}</span></div>
+      <div><span>Sous-total</span><span>${isFree ? "Gratuit" : euro.format(product.price)}</span></div>
+      <div><span>TVA incluse</span><span>${isFree ? "0 €" : euro.format(Math.round(product.price * 0.2))}</span></div>
+      <div><span>Total</span><span>${isFree ? "Gratuit" : euro.format(product.price)}</span></div>
     </div>
     <form id="checkoutForm">
       <label>Prénom et nom<input name="name" required autocomplete="name" placeholder="Sofia Bernard" /></label>
       <label>Email<input name="email" type="email" required autocomplete="email" placeholder="sofia@email.com" /></label>
-      ${isFree ? "" : '<label>Numéro de carte<input name="card" required inputmode="numeric" placeholder="4242 4242 4242 4242" maxlength="19" /></label>'}
-      <button type="submit">${isFree ? "Recevoir l’accès" : `Payer ${euro.format(offer.price)}`}</button>
-      <p class="secure-note">${isFree ? "Aucun paiement requis." : "Paiement de démonstration sécurisé par Stripe."}</p>
+      <button type="submit">${isFree ? "Recevoir l’accès" : `Continuer vers Stripe · ${euro.format(product.price)}`}</button>
+      <p class="secure-note">${isFree ? "Aucun paiement requis." : "Le produit est débloqué uniquement après confirmation du paiement Stripe."}</p>
+      <p class="checkout-error" id="checkoutError" role="alert"></p>
     </form>
   `;
-  document.querySelector("#checkoutModal").classList.add("open");
-  document.querySelector("#checkoutModal").setAttribute("aria-hidden", "false");
+  const modal = document.querySelector("#checkoutModal");
+  modal.classList.add("open");
+  modal.setAttribute("aria-hidden", "false");
   document.querySelector("#checkoutForm").addEventListener("submit", completeCheckout);
-  const card = document.querySelector('input[name="card"]');
-  if (card) {
-    card.addEventListener("input", () => {
-      card.value = card.value.replace(/\D/g, "").replace(/(.{4})/g, "$1 ").trim().slice(0, 19);
+  window.ExpertlyTracking?.track("store_product_clicked", {
+    product_id: product.id,
+    product_type: product.type,
+    price: product.price,
+  });
+  window.ExpertlyTracking?.track("checkout_form_opened", {
+    product_id: product.id,
+    source: "store",
+  });
+}
+
+function closeCheckout() {
+  const modal = document.querySelector("#checkoutModal");
+  modal.classList.remove("open");
+  modal.setAttribute("aria-hidden", "true");
+}
+
+async function completeCheckout(event) {
+  event.preventDefault();
+  const data = new FormData(event.currentTarget);
+  const button = event.currentTarget.querySelector("button[type='submit']");
+  const errorRegion = document.querySelector("#checkoutError");
+  button.disabled = true;
+  button.textContent = "Préparation du paiement…";
+  errorRegion.textContent = "";
+
+  try {
+    const response = await fetch("/api/checkout", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        productId: selectedProduct.id,
+        customerName: data.get("name").trim(),
+        customerEmail: data.get("email").trim(),
+        distinctId: window.ExpertlyTracking?.getDistinctId(),
+        source: "store",
+        creatorSlug: state.profile.slug,
+      }),
+    });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || "Impossible de démarrer le paiement.");
+    window.ExpertlyTracking?.track("checkout_request_succeeded", {
+      product_id: selectedProduct.id,
+      source: "store",
+      free: Boolean(result.free),
+    });
+    if (result.url) {
+      location.assign(result.url);
+      return;
+    }
+    if (result.free && result.accessUrl) {
+      location.assign(result.accessUrl);
+      return;
+    }
+    throw new Error("Réponse de paiement invalide.");
+  } catch (error) {
+    errorRegion.textContent = error.message;
+    button.disabled = false;
+    button.textContent = selectedProduct.price
+      ? `Continuer vers Stripe · ${euro.format(selectedProduct.price)}`
+      : "Recevoir l’accès";
+    window.ExpertlyTracking?.track("checkout_request_failed", {
+      product_id: selectedProduct.id,
+      source: "store",
+      error: error.message,
     });
   }
 }
 
-function closeCheckout() {
-  document.querySelector("#checkoutModal").classList.remove("open");
-  document.querySelector("#checkoutModal").setAttribute("aria-hidden", "true");
-}
-
-function completeCheckout(event) {
-  event.preventDefault();
-  const data = new FormData(event.currentTarget);
-  const name = data.get("name").trim();
-  const email = data.get("email").trim();
-  let contact = state.contacts.find((item) => item.email.toLowerCase() === email.toLowerCase());
-  if (!contact) {
-    contact = {
-      id: `c_${Date.now()}`,
-      name,
-      email,
-      segment: "Client",
-      activity: "Achat à l’instant",
-      value: selectedOffer.price,
-    };
-    state.contacts.unshift(contact);
-  } else {
-    contact.segment = "Client";
-    contact.activity = "Achat à l’instant";
-    contact.value += selectedOffer.price;
-  }
-
-  const order = {
-    id: `OL-${1050 + state.orders.length}`,
-    contactId: contact.id,
-    offerId: selectedOffer.id,
-    date: "À l’instant",
-    amount: selectedOffer.price,
-    status: "Payée",
-  };
-  state.orders.unshift(order);
-  selectedOffer.sales += 1;
-  state.traffic.purchases += 1;
-  saveState();
-
-  document.querySelector("#checkoutContent").innerHTML = `
-    <div class="success-state">
-      <div class="success-icon">✓</div>
-      <h2>Commande confirmée</h2>
-      <p>Un email d’accès a été envoyé à <strong>${escapeHtml(email)}</strong>.<br />Référence ${order.id}.</p>
-      <button data-close-modal>Fermer</button>
-    </div>
-  `;
-}
-
 function openLeadModal() {
-  document.querySelector("#leadModal").classList.add("open");
-  document.querySelector("#leadModal").setAttribute("aria-hidden", "false");
+  const modal = document.querySelector("#leadModal");
+  modal.classList.add("open");
+  modal.setAttribute("aria-hidden", "false");
 }
 
 function closeLeadModal() {
-  document.querySelector("#leadModal").classList.remove("open");
-  document.querySelector("#leadModal").setAttribute("aria-hidden", "true");
+  const modal = document.querySelector("#leadModal");
+  modal.classList.remove("open");
+  modal.setAttribute("aria-hidden", "true");
 }
 
 function showToast(message) {
@@ -235,35 +279,38 @@ function showToast(message) {
 
 document.addEventListener("click", (event) => {
   const buy = event.target.closest("[data-buy]");
-  if (buy) openCheckout(state.offers.find((offer) => offer.id === buy.dataset.buy));
-  if (event.target.closest("[data-close-modal]") || event.target === document.querySelector("#checkoutModal")) closeCheckout();
+  if (buy) openCheckout(state.products.find((product) => product.id === buy.dataset.buy));
+  if (event.target.closest("[data-close-checkout]") || event.target === document.querySelector("#checkoutModal")) closeCheckout();
   if (event.target.closest("[data-close-lead]") || event.target === document.querySelector("#leadModal")) closeLeadModal();
 });
 
-document.querySelector("#openLeadModal").addEventListener("click", openLeadModal);
-document.querySelector("#leadForm").addEventListener("submit", (event) => {
+document.querySelector("#leadButton").addEventListener("click", openLeadModal);
+document.querySelector("#leadForm").addEventListener("submit", async (event) => {
   event.preventDefault();
   const data = new FormData(event.currentTarget);
-  const email = data.get("email").trim();
-  if (!state.contacts.some((contact) => contact.email.toLowerCase() === email.toLowerCase())) {
-    state.contacts.unshift({
-      id: `c_${Date.now()}`,
-      name: data.get("name").trim(),
-      email,
-      segment: "Lead",
-      activity: "Checklist téléchargée",
-      value: 0,
-    });
-    saveState();
+  const freeProduct = state.products.find((product) => product.price === 0 && product.status === "published");
+  if (!freeProduct) {
+    showToast("Aucune ressource gratuite n’est encore configurée.");
+    closeLeadModal();
+    return;
   }
-  closeLeadModal();
-  event.currentTarget.reset();
-  showToast("Checklist envoyée. Vérifie ta boîte mail.");
-});
-
-window.addEventListener("storage", () => {
-  state = loadState();
-  renderStore();
+  try {
+    const response = await fetch("/api/checkout", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        productId: freeProduct.id,
+        customerName: data.get("name").trim(),
+        customerEmail: data.get("email").trim(),
+        creatorSlug: state.profile.slug,
+      }),
+    });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error);
+    location.assign(result.accessUrl);
+  } catch (error) {
+    showToast(error.message || "Impossible d’envoyer la ressource.");
+  }
 });
 
 window.addEventListener("keydown", (event) => {
@@ -273,4 +320,29 @@ window.addEventListener("keydown", (event) => {
   }
 });
 
-renderStore();
+if (new URLSearchParams(location.search).get("embed") === "1") {
+  document.body.classList.add("embed");
+}
+
+async function startStore() {
+  const slug = currentStoreSlug();
+  try {
+    const response = await fetch(`/api/store?slug=${encodeURIComponent(slug)}`, { cache: "no-store" });
+    if (!response.ok) throw new Error();
+    state = await response.json();
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch {
+    try {
+      state = { ...fallback, ...JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}") };
+    } catch {
+      state = fallback;
+    }
+    showToast("Mode hors ligne : paiement indisponible.");
+  }
+  const isEmbed = new URLSearchParams(location.search).get("embed") === "1";
+  if (!isEmbed && location.protocol.startsWith("http") && !sessionStorage.getItem("expertly_visit_counted_v2")) {
+    sessionStorage.setItem("expertly_visit_counted_v2", "1");
+    fetch("/api/events/visit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ slug })
