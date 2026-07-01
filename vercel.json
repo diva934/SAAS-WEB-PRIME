@@ -1,10 +1,16 @@
 {
-  "buildCommand": "echo 'static site'",
-  "outputDirectory": ".",
-  "rewrites": [
-    { "source": "/b/:slug", "destination": "/store.html" },
-    { "source": "/go/:slug", "destination": "/open.html" },
-    { "source": "/p/:path*", "destination": "/sales.html" },
-    { "source": "/:slug", "destination": "/open.html" }
+  "version": 2,
+  "builds": [
+    { "src": "api/**/*.js", "use": "@vercel/node" },
+    { "src": "*.html", "use": "@vercel/static" },
+    { "src": "*.css", "use": "@vercel/static" },
+    { "src": "assets/**", "use": "@vercel/static" }
+  ],
+  "routes": [
+    { "src": "/b/([^/]+)", "dest": "/store.html" },
+    { "src": "/go/([^/]+)", "dest": "/open.html" },
+    { "src": "/p/(.*)", "dest": "/sales.html" },
+    { "src": "/api/(.*)", "dest": "/api/$1" },
+    { "src": "/(.*)", "dest": "/$1" }
   ]
 }
