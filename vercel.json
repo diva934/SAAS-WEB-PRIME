@@ -1,4 +1,5 @@
 {
+  "buildCommand": "echo 'static site'",
   "outputDirectory": ".",
   "rewrites": [
     { "source": "/b/:slug", "destination": "/store.html" },
