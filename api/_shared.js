@@ -1,213 +1,253 @@
-export const plans = {
-  launch: {
-    name: "Expertly Launch",
-    description: "1 boutique, 5 produits et lead magnets.",
-    amount: 1900,
-  },
-  scale: {
-    name: "Expertly Scale",
-    description: "Produits illimités, upsells et emails automatisés.",
-    amount: 4900,
-  },
-  studio: {
-    name: "Expertly Studio",
-    description: "Multi-marques, affiliation avancée et support prioritaire.",
-    amount: 14900,
-  },
-};
+import { randomBytes } from "crypto";
 
-export class ApiError extends Error {
-  constructor(message, status = 500) {
-    super(message);
-    this.status = status;
-  }
-}
+const defaultState = {
+  profile: {
+    firstName: "",
+    creatorName: "",
+    creatorRole: "Infopreneur",
+    bio: "Bienvenue dans ma boutique de produits digitaux.",
+    slug: "boutique",
+    accent: "#073bd9",
+    logo: "",
+  },
+  products: [],
+  pages: [],
+  contacts: [],
+  orders: [],
+  analytics: {
+    visits: 0,
+    leads: 0,
+    checkouts: 0,
+    purchases: 0,
+    revenueSeries: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    sources: [
+      { name: "Instagram", value: 0 },
+      { name: "YouTube", value: 0 },
+      { name: "Email", value: 0 },
+      { name: "Direct", value: 0 },
+    ],
+  },
+  emails: [
+    {
+      id: "em1",
+      name: "Livraison post-achat",
+      description: "Envoie automatiquement le lien d'acces au client apres le paiement.",
+      trigger: "Achat confirme",
+      sent: 0,
+      openRate: 0,
+      active: false,
+    },
+  ],
+};
 
 export function sendJson(res, status, body) {
   res.status(status).json(body);
 }
 
-export async function readJson(req) {
-  if (req.body && typeof req.body === "object") return req.body;
-  if (typeof req.body === "string") return JSON.parse(req.body || "{}");
-
-  let body = "";
-  for await (const chunk of req) {
-    body += chunk;
-    if (body.length > 20_000) throw new ApiError("Requête trop volumineuse.", 413);
-  }
-  return JSON.parse(body || "{}");
+export function slugify(value = "") {
+  return String(value)
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 60) || "boutique";
 }
 
-export async function readRawBody(req) {
-  if (Buffer.isBuffer(req.body)) return req.body;
-  if (typeof req.body === "string") return Buffer.from(req.body);
-
-  const chunks = [];
-  for await (const chunk of req) chunks.push(Buffer.from(chunk));
-  return Buffer.concat(chunks);
-}
-
-function requiredEnv(name) {
-  const value = process.env[name]?.trim();
-  if (!value) throw new ApiError("Configuration serveur incomplète.", 503);
-  return value;
-}
-
-export function appOrigin(req) {
-  const configured = process.env.APP_URL?.trim();
-  if (configured?.startsWith("http")) return new URL(configured).origin;
-  return `https://${req.headers.host}`;
-}
-
-export function crmOrigin() {
-  const configured = process.env.CRM_APP_URL?.trim();
-  return configured?.startsWith("http")
-    ? new URL(configured).origin
-    : "https://expertly-client-app.vercel.app";
-}
-
-function supabaseConfig() {
+export function normalizeState(input = {}) {
   return {
-    url: requiredEnv("SUPABASE_URL").replace(/\/$/, ""),
-    anonKey: requiredEnv("SUPABASE_ANON_KEY"),
-    serviceKey: requiredEnv("SUPABASE_SERVICE_ROLE_KEY"),
+    ...defaultState,
+    ...input,
+    profile: {
+      ...defaultState.profile,
+      ...(input.profile || {}),
+      slug: slugify(input.profile?.slug || input.profile?.creatorName || defaultState.profile.slug),
+    },
+    products: Array.isArray(input.products) ? input.products : [],
+    pages: Array.isArray(input.pages) ? input.pages : [],
+    contacts: Array.isArray(input.contacts) ? input.contacts : [],
+    orders: Array.isArray(input.orders) ? input.orders : [],
+    analytics: { ...defaultState.analytics, ...(input.analytics || {}) },
+    emails: Array.isArray(input.emails) ? input.emails : defaultState.emails,
   };
 }
 
-async function parseResponse(response) {
-  const text = await response.text();
-  if (!text) return null;
-  try {
-    return JSON.parse(text);
-  } catch {
-    return { message: text };
-  }
+export function publicStoreState(state) {
+  const normalized = normalizeState(state);
+  return {
+    profile: normalized.profile,
+    products: normalized.products
+      .filter((product) => product.status === "published")
+      .map(({ fileName, ...product }) => product),
+  };
 }
 
-async function createSupabaseUser({ email, password, firstName }) {
-  const { url, serviceKey } = supabaseConfig();
-  const response = await fetch(`${url}/auth/v1/admin/users`, {
-    method: "POST",
-    headers: {
-      apikey: serviceKey,
-      Authorization: `Bearer ${serviceKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      email,
-      password,
-      email_confirm: true,
-      user_metadata: { first_name: firstName, source: "expertly_checkout" },
-    }),
-  });
-  return { response, data: await parseResponse(response) };
+function supabaseHeaders(service = false, token = "") {
+  const key = service ? process.env.SUPABASE_SERVICE_ROLE_KEY : process.env.SUPABASE_ANON_KEY;
+  return {
+    apikey: key,
+    Authorization: `Bearer ${service ? key : token}`,
+    "Content-Type": "application/json",
+  };
 }
 
-async function verifySupabasePassword({ email, password }) {
-  const { url, anonKey } = supabaseConfig();
-  const response = await fetch(`${url}/auth/v1/token?grant_type=password`, {
-    method: "POST",
-    headers: {
-      apikey: anonKey,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ email, password }),
-  });
-  const data = await parseResponse(response);
-  if (!response.ok || !data?.user?.id) {
-    throw new ApiError("Un compte existe déjà avec cet email. Utilise son mot de passe actuel.", 409);
-  }
-  return data.user;
+export function hasSupabaseServerConfig() {
+  return Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY && process.env.SUPABASE_SERVICE_ROLE_KEY);
 }
 
-export async function ensureCreatorAccount({ email, password, firstName }) {
-  const cleanEmail = String(email || "").trim().toLowerCase().slice(0, 180);
-  const cleanName = String(firstName || "").trim().slice(0, 80);
-  const cleanPassword = String(password || "");
-
-  if (!cleanName) throw new ApiError("Ton prénom est requis.", 400);
-  if (!/^\S+@\S+\.\S+$/.test(cleanEmail)) throw new ApiError("Adresse email invalide.", 400);
-  if (cleanPassword.length < 8) throw new ApiError("Le mot de passe doit contenir au moins 8 caractères.", 400);
-
-  const { response, data } = await createSupabaseUser({
-    email: cleanEmail,
-    password: cleanPassword,
-    firstName: cleanName,
-  });
-
-  if (response.ok && data?.id) return { user: data, email: cleanEmail, firstName: cleanName };
-
-  const errorText = String(data?.msg || data?.message || data?.error_description || "").toLowerCase();
-  if ([400, 409, 422].includes(response.status) && /exist|register|already|utilis/.test(errorText)) {
-    const user = await verifySupabasePassword({ email: cleanEmail, password: cleanPassword });
-    return { user, email: cleanEmail, firstName: cleanName };
-  }
-
-  throw new ApiError("Impossible de créer le compte Expertly pour le moment.", 502);
-}
-
-export async function stripeRequest(path, options = {}) {
-  const secretKey = requiredEnv("STRIPE_SECRET_KEY");
-  const response = await fetch(`https://api.stripe.com/v1${path}`, {
+export async function supabaseRequest(path, options = {}) {
+  if (!hasSupabaseServerConfig()) throw new Error("Supabase n'est pas configure.");
+  const response = await fetch(`${process.env.SUPABASE_URL.replace(/\/$/, "")}${path}`, {
     ...options,
     headers: {
-      Authorization: `Bearer ${secretKey}`,
+      ...supabaseHeaders(true),
       ...(options.headers || {}),
     },
   });
-  const data = await parseResponse(response);
-  if (!response.ok) throw new ApiError(data?.error?.message || "Stripe est temporairement indisponible.", 502);
+  const text = await response.text();
+  const data = text ? JSON.parse(text) : null;
+  if (!response.ok) throw new Error(data?.message || data?.error_description || `Supabase HTTP ${response.status}`);
   return data;
 }
 
-export async function saveSubscription({ userId, plan, status }) {
-  if (!userId || !plans[plan]) throw new ApiError("Abonnement Expertly invalide.", 400);
-  const { url, serviceKey } = supabaseConfig();
-  const response = await fetch(`${url}/rest/v1/subscriptions?on_conflict=user_id`, {
+export async function userFromRequest(req) {
+  if (!hasSupabaseServerConfig()) throw new Error("Supabase n'est pas configure.");
+  const token = String(req.headers.authorization || "").replace(/^Bearer\s+/i, "").trim();
+  if (!token) {
+    const error = new Error("Connexion requise.");
+    error.status = 401;
+    throw error;
+  }
+  const response = await fetch(`${process.env.SUPABASE_URL.replace(/\/$/, "")}/auth/v1/user`, {
+    headers: supabaseHeaders(false, token),
+  });
+  const user = await response.json();
+  if (!response.ok || !user?.id) {
+    const error = new Error("Session Supabase invalide.");
+    error.status = 401;
+    throw error;
+  }
+  return user;
+}
+
+export async function requireActiveSubscription(userId) {
+  const rows = await supabaseRequest(
+    `/rest/v1/subscriptions?select=user_id,status,plan&user_id=eq.${encodeURIComponent(userId)}&status=eq.active&limit=1`,
+  );
+  if (!Array.isArray(rows) || rows.length === 0) {
+    const error = new Error("Abonnement actif requis.");
+    error.status = 403;
+    throw error;
+  }
+}
+
+export async function readCreatorState(userId) {
+  const rows = await supabaseRequest(
+    `/rest/v1/creator_states?select=state,slug&user_id=eq.${encodeURIComponent(userId)}&limit=1`,
+  );
+  if (Array.isArray(rows) && rows[0]?.state) return normalizeState(rows[0].state);
+  return normalizeState(defaultState);
+}
+
+export async function readCreatorStateBySlug(slug) {
+  const cleanSlug = slugify(slug);
+  const rows = await supabaseRequest(
+    `/rest/v1/creator_states?select=state,slug&slug=eq.${encodeURIComponent(cleanSlug)}&limit=1`,
+  );
+  if (Array.isArray(rows) && rows[0]?.state) return normalizeState(rows[0].state);
+  return null;
+}
+
+// Comme readCreatorStateBySlug mais renvoie aussi le user_id (necessaire pour saveCreatorState).
+export async function readCreatorRecordBySlug(slug) {
+  const cleanSlug = slugify(slug);
+  const rows = await supabaseRequest(
+    `/rest/v1/creator_states?select=user_id,state,slug&slug=eq.${encodeURIComponent(cleanSlug)}&limit=1`,
+  );
+  if (Array.isArray(rows) && rows[0]?.state) {
+    return { userId: rows[0].user_id, state: normalizeState(rows[0].state) };
+  }
+  return null;
+}
+
+// Token d'acces client : prefixe par le slug pour permettre a /api/access de retrouver
+// la boutique en O(1) (pas de scan de toutes les boutiques). slugify n'emet jamais de ".".
+export function makeAccessToken(slug) {
+  return `${slugify(slug)}.${randomBytes(20).toString("hex")}`;
+}
+
+export function slugFromAccessToken(token = "") {
+  const value = String(token);
+  return value.includes(".") ? value.slice(0, value.indexOf(".")) : "";
+}
+
+export function appOrigin(req) {
+  if (process.env.APP_URL?.startsWith("http")) return new URL(process.env.APP_URL).origin;
+  return `https://${req.headers.host}`;
+}
+
+export function accessUrlFor(req, token) {
+  return `${appOrigin(req)}/access.html?token=${encodeURIComponent(token)}`;
+}
+
+function accessEmailHtml({ customerName, product, url }) {
+  return `<!doctype html><html lang="fr"><body style="margin:0;background:#f6f6fb;font-family:Arial,sans-serif;color:#17172a">
+    <div style="max-width:560px;margin:0 auto;padding:40px 20px">
+      <div style="background:#fff;border-radius:18px;padding:32px;border:1px solid #e8e8ef">
+        <div style="font-size:13px;font-weight:700;color:#6558f5;text-transform:uppercase">Expertly</div>
+        <h1 style="font-size:26px;margin:14px 0 10px">Ton accès est disponible</h1>
+        <p style="line-height:1.6;color:#646579">Bonjour ${customerName}, ton accès à <strong>${product.title}</strong> est prêt.</p>
+        <a href="${url}" style="display:inline-block;margin-top:18px;padding:14px 20px;border-radius:10px;background:#6558f5;color:#fff;text-decoration:none;font-weight:700">Accéder au produit</a>
+      </div>
+    </div></body></html>`;
+}
+
+// Envoie l'email d'acces via Resend. Renvoie {sent:false} si la cle n'est pas configuree
+// (au lieu de lever) pour que le paiement reste enregistre meme sans email.
+export async function sendAccessEmail({ customerName, customerEmail, product, url, orderId }) {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) return { sent: false, reason: "RESEND_API_KEY manquante" };
+  const response = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {
-      apikey: serviceKey,
-      Authorization: `Bearer ${serviceKey}`,
+      Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
-      Prefer: "resolution=merge-duplicates,return=minimal",
-    },
-    body: JSON.stringify([{ user_id: userId, status, plan }]),
-  });
-  if (!response.ok) {
-    await parseResponse(response);
-    throw new ApiError("Le paiement est confirmé, mais l’accès CRM n’a pas pu être activé.", 502);
-  }
-}
-
-export async function saveCreatorBillingMetadata({ userId, plan, stripeSubscriptionId, stripeCustomerId }) {
-  if (!userId || !plans[plan] || !stripeSubscriptionId) return;
-  const { url, serviceKey } = supabaseConfig();
-  const response = await fetch(`${url}/auth/v1/admin/users/${encodeURIComponent(userId)}`, {
-    method: "PUT",
-    headers: {
-      apikey: serviceKey,
-      Authorization: `Bearer ${serviceKey}`,
-      "Content-Type": "application/json",
+      "Idempotency-Key": `expertly-access-${orderId}-${Date.now()}`,
     },
     body: JSON.stringify({
-      app_metadata: {
-        expertly_plan: plan,
-        stripe_subscription_id: stripeSubscriptionId,
-        stripe_customer_id: stripeCustomerId || "",
-      },
+      from: process.env.EMAIL_FROM || "Expertly <onboarding@resend.dev>",
+      to: [customerEmail],
+      subject: `Ton accès à ${product.title}`,
+      html: accessEmailHtml({ customerName, product, url }),
     }),
   });
-  if (!response.ok) {
-    await parseResponse(response);
-    throw new ApiError("L’abonnement est actif, mais son contrôle automatique n’a pas pu être configuré.", 502);
-  }
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(result?.message || "Resend a refusé l'email.");
+  return { sent: true, id: result.id };
 }
 
-export function publicError(error) {
-  if (error instanceof SyntaxError) return { status: 400, message: "Requête invalide." };
-  return {
-    status: Number(error?.status) || 500,
-    message: error?.message || "Erreur interne.",
-  };
+export async function saveCreatorState(userId, state) {
+  const next = normalizeState(state);
+  const slug = next.profile.slug;
+  const existing = await supabaseRequest(
+    `/rest/v1/creator_states?select=user_id&slug=eq.${encodeURIComponent(slug)}&limit=2`,
+  );
+  if (existing.some((row) => row.user_id !== userId)) {
+    const error = new Error("Cet identifiant de boutique est deja utilise.");
+    error.status = 409;
+    throw error;
+  }
+  await supabaseRequest("/rest/v1/creator_states?on_conflict=user_id", {
+    method: "POST",
+    headers: { Prefer: "resolution=merge-duplicates,return=representation" },
+    body: JSON.stringify([
+      {
+        user_id: userId,
+        slug,
+        state: next,
+        updated_at: new Date().toISOString(),
+      },
+    ]),
+  });
+  return next;
 }
