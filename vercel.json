@@ -1,4 +1,5 @@
 {
+  "outputDirectory": ".",
   "rewrites": [
     { "source": "/b/:slug", "destination": "/store.html" },
     { "source": "/go/:slug", "destination": "/open.html" },
