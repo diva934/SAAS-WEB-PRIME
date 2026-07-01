@@ -1,10 +1,9 @@
 {
-  "name": "expertly-marketing-site",
-  "version": "1.0.0",
+  "name": "expertly-client-app",
+  "version": "0.1.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "node server.mjs",
-    "check": "node --check script.js && node --check server.mjs && node --check api/_shared.js && node --check api/health.js && node --check api/create-checkout-session.js && node --check api/checkout-success.js && node --check api/stripe-webhook.js"
+    "dev": "node server.mjs"
   }
 }
