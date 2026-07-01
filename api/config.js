@@ -15,5 +15,10 @@ export default function handler(req, res) {
       hostUrl: "",
       boutiqueSlug: "",
     },
+    // Config publique (ex-/api/public-config, fusionnee ici pour rester sous la limite
+    // de 12 fonctions serverless du plan Hobby).
+    supabaseUrl: process.env.SUPABASE_URL || "",
+    supabaseAnonKey: process.env.SUPABASE_ANON_KEY || "",
+    marketingUrl: process.env.MARKETING_URL || "https://saas-web-prime.vercel.app",
   });
 }

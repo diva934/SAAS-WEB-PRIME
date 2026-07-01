@@ -20,7 +20,7 @@
       const title = document.querySelector("#title");
       const message = document.querySelector("#message");
       const button = document.querySelector("#accessButton");
-      fetch(`/api/access?token=${encodeURIComponent(token || "")}`)
+      fetch(`/api/store?token=${encodeURIComponent(token || "")}`)
         .then(async (response) => {
           const data = await response.json();
           if (!response.ok) throw new Error(data.error || "Accès invalide.");

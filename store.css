@@ -122,6 +122,7 @@ input { font: inherit; }
   text-decoration: none;
 }
 
+.featured-banner[hidden] { display: none !important; }
 .featured-banner {
   display: grid;
   grid-template-columns: 1fr;

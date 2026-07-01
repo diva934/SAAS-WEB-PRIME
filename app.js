@@ -9,7 +9,7 @@ const seedState = {
     firstName: "",
     creatorName: "",
     creatorRole: "Business coach",
-    bio: "J’aide les indépendants à transformer leur expertise en une offre claire, désirable et rentable.",
+    bio: "J'aide les indépendants à transformer leur expertise en une offre claire, désirable et rentable.",
     slug: "boutique",
     accent: "#6558f5",
     logo: "",
@@ -33,7 +33,7 @@ const seedState = {
       title: "Audit stratégique 1:1",
       type: "Coaching",
       price: 249,
-      description: "90 minutes pour identifier les blocages et prioriser ton plan d’action.",
+      description: "90 minutes pour identifier les blocages et prioriser ton plan d'action.",
       status: "published",
       featured: false,
       color: "#1eaa73",
@@ -82,7 +82,7 @@ const seedState = {
       id: "page_kit",
       name: "Page Kit Offre Signature",
       productId: "prod_kit",
-      headline: "Le kit pratique pour clarifier ton offre dès aujourd’hui.",
+      headline: "Le kit pratique pour clarifier ton offre dès aujourd'hui.",
       status: "published",
       visits: 1284,
       conversion: 3.7,
@@ -119,7 +119,7 @@ const seedState = {
     ],
   },
   emails: [
-    { id: "em1", name: "Livraison post-achat", description: "Envoie automatiquement le lien d’accès au client après le paiement.", trigger: "Achat confirmé", sent: 77, openRate: 86, active: false },
+    { id: "em1", name: "Livraison post-achat", description: "Envoie automatiquement le lien d'accès au client après le paiement.", trigger: "Achat confirmé", sent: 77, openRate: 86, active: false },
     { id: "em2", name: "Relance panier abandonné", description: "Relance les prospects qui ont commencé leur paiement sans le terminer.", trigger: "Checkout abandonné", sent: 41, openRate: 52, active: true },
     { id: "em3", name: "Bienvenue nouveau lead", description: "Livre la ressource gratuite et présente ton offre principale.", trigger: "Nouveau contact", sent: 624, openRate: 71, active: true },
   ],
@@ -283,7 +283,7 @@ if (!DEMO_MODE && !localStorage.getItem(STORAGE_KEY)) {
 }
 
 const viewNames = {
-  overview: "Vue d’ensemble",
+  overview: "Vue d'ensemble",
   products: "Produits",
   pages: "Pages de vente",
   tunnel: "Tunnel",
@@ -478,7 +478,7 @@ function marketingUrl() {
 
 async function loadPublicConfig() {
   try {
-    const response = await fetch("/api/public-config", { cache: "no-store" });
+    const response = await fetch("/api/config", { cache: "no-store" });
     if (response.ok) publicConfig = { ...publicConfig, ...(await response.json()) };
   } catch {
     // En local, le serveur peut injecter directement la configuration dans la page.
@@ -589,11 +589,11 @@ async function ensureCreatorAccess() {
 
 async function fileToDataUrl(file) {
   if (!file?.size) return "";
-  if (file.size > 900_000) throw new Error("L’image doit faire moins de 900 Ko.");
+  if (file.size > 900_000) throw new Error("L'image doit faire moins de 900 Ko.");
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(reader.result);
-    reader.onerror = () => reject(new Error("Impossible de lire l’image."));
+    reader.onerror = () => reject(new Error("Impossible de lire l'image."));
     reader.readAsDataURL(file);
   });
 }
@@ -645,14 +645,24 @@ const demoBlockedClickSelector = [
   '[data-action="new-product"]',
   '[data-action="new-page"]',
   '[data-action="new-email"]',
+  '[data-action="new-contact"]',
+  '[data-action="new-order"]',
   "[data-edit-product]",
   "[data-toggle-product]",
   "[data-delete-product]",
   "[data-edit-page]",
   "[data-toggle-page]",
+  "[data-delete-page]",
   "[data-preview-page]",
   "[data-resend-access]",
   "[data-toggle-email]",
+  "[data-edit-email]",
+  "[data-delete-email]",
+  "[data-delete-contact]",
+  "[data-edit-contact]",
+  "#contactModal button[type='submit']",
+  "#orderModal button[type='submit']",
+  "#emailModal button[type='submit']",
   "#copyStoreLink",
   "#topStoreLink",
   "#settingsForm button[type='submit']",
@@ -1187,7 +1197,7 @@ function renderOverview() {
   const average = paidOrders().length ? Math.round(revenue / paidOrders().length) : 0;
 
   document.querySelector("#overviewMetrics").innerHTML = [
-    metricCard("Chiffre d’affaires", euro.format(revenue), "€", "Réel", " paiements enregistrés"),
+    metricCard("Chiffre d'affaires", euro.format(revenue), "€", "Réel", " paiements enregistrés"),
     metricCard("Commandes", String(paidOrders().length), "↗", "Réel", " commandes confirmées"),
     metricCard("Taux de conversion", `${conversion} %`, "⌁", "Réel", ` sur ${state.analytics.visits} visite${state.analytics.visits > 1 ? "s" : ""}`),
     metricCard("Panier moyen", euro.format(average), "◇", "Réel", " moyenne des commandes"),
@@ -1347,6 +1357,7 @@ function renderPages() {
               <button data-edit-page="${page.id}">Personnaliser</button>
               <button data-copy-page="${page.id}">Copier le lien</button>
               <button data-preview-page="${page.id}">Aperçu ↗</button>
+              <button data-delete-page="${page.id}" style="color:#e85a6a">Supprimer</button>
             </div>
             <div class="page-public-link">${escapeHtml(pagePublicUrl(page))}</div>
           </article>
@@ -1364,9 +1375,9 @@ function renderPages() {
     if (previewUrl) previewUrl.textContent = publicUrl;
     if (previewOpen) previewOpen.href = pagePublicPath(selectedPage);
   } else {
-    if (frame) frame.src = "./store.html?embed=1";
-    if (previewUrl) previewUrl.textContent = "Crée une page pour obtenir ton lien";
-    if (previewOpen) previewOpen.href = "./store.html";
+    if (frame) frame.src = storePreviewPath();
+    if (previewUrl) previewUrl.textContent = storePublicUrl();
+    if (previewOpen) previewOpen.href = storePublicPath();
   }
 }
 
@@ -1511,6 +1522,190 @@ function renderContacts() {
     .join("");
 }
 
+function openEmailModal(email = null) {
+  const modal = document.querySelector("#emailModal");
+  const form = document.querySelector("#emailForm");
+  form.reset();
+  form.elements.id.value = email?.id || "";
+  form.elements.name.value = email?.name || "";
+  form.elements.description.value = email?.description || "";
+  form.elements.trigger.value = email?.trigger || "Achat confirmé";
+  form.elements.active.checked = email ? email.active : true;
+  document.querySelector("#emailModalTitle").textContent = email ? "Modifier l'automation" : "Nouvelle automation";
+  modal.classList.add("open");
+  modal.setAttribute("aria-hidden", "false");
+  setTimeout(() => form.elements.name.focus(), 50);
+}
+
+function closeEmailModal() {
+  const modal = document.querySelector("#emailModal");
+  modal.classList.remove("open");
+  modal.setAttribute("aria-hidden", "true");
+}
+
+function submitEmail(event) {
+  event.preventDefault();
+  const data = new FormData(event.currentTarget);
+  const id = data.get("id");
+  const existing = state.emails.find((e) => e.id === id);
+  const email = {
+    id: id || `em_${Date.now()}`,
+    name: data.get("name").trim(),
+    description: data.get("description").trim(),
+    trigger: data.get("trigger"),
+    active: data.has("active"),
+    sent: existing?.sent || 0,
+    openRate: existing?.openRate || 0,
+  };
+  if (existing) {
+    Object.assign(existing, email);
+  } else {
+    state.emails.push(email);
+  }
+  saveState();
+  closeEmailModal();
+  renderEmails();
+  showToast(existing ? "Automation mise à jour." : "Automation créée.");
+}
+
+function openOrderModal() {
+  const modal = document.querySelector("#orderModal");
+  const form = document.querySelector("#orderForm");
+  form.reset();
+  const published = state.products.filter((p) => p.status === "published");
+  document.querySelector("#orderProductSelect").innerHTML = published.length
+    ? published.map((p) => `<option value="${p.id}" data-price="${p.price}">${escapeHtml(p.title)} — ${euro.format(p.price)}</option>`).join("")
+    : state.products.map((p) => `<option value="${p.id}" data-price="${p.price}">${escapeHtml(p.title)} — ${euro.format(p.price)}</option>`).join("");
+  const firstProduct = published[0] || state.products[0];
+  if (firstProduct) form.elements.amount.value = firstProduct.price;
+  form.elements.date.value = new Date().toISOString().split("T")[0];
+  modal.classList.add("open");
+  modal.setAttribute("aria-hidden", "false");
+  setTimeout(() => form.elements.clientName.focus(), 50);
+}
+
+function closeOrderModal() {
+  const modal = document.querySelector("#orderModal");
+  modal.classList.remove("open");
+  modal.setAttribute("aria-hidden", "true");
+}
+
+function submitOrder(event) {
+  event.preventDefault();
+  const data = new FormData(event.currentTarget);
+  const clientName = data.get("clientName").trim();
+  const clientEmail = data.get("clientEmail").trim().toLowerCase();
+  const productId = data.get("productId");
+  const amount = Number(data.get("amount"));
+  const dateRaw = data.get("date");
+  const status = data.get("status");
+  const dateFormatted = new Date(dateRaw).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
+
+  let contact = state.contacts.find((c) => c.email.toLowerCase() === clientEmail);
+  if (!contact) {
+    contact = {
+      id: `c_${Date.now()}`,
+      name: clientName,
+      email: clientEmail,
+      segment: status === "paid" ? "Client" : "Lead",
+      activity: status === "paid" ? "Achat enregistré manuellement" : "Commande remboursée",
+      value: status === "paid" ? amount : 0,
+      joined: dateFormatted,
+      tags: [],
+      buyingScore: status === "paid" ? 80 : 0,
+    };
+    state.contacts.unshift(contact);
+  } else if (status === "paid") {
+    contact.segment = "Client";
+    contact.value = (contact.value || 0) + amount;
+    contact.activity = "Achat enregistré manuellement";
+  }
+
+  const order = {
+    id: `ORD-${Date.now()}`,
+    contactId: contact.id,
+    productId,
+    amount,
+    date: dateFormatted,
+    status,
+    emailStatus: "not_configured",
+    source: "manual",
+  };
+  state.orders.unshift(order);
+
+  if (status === "paid") {
+    state.analytics.purchases = (state.analytics.purchases || 0) + 1;
+    if (Array.isArray(state.analytics.revenueSeries) && state.analytics.revenueSeries.length > 0) {
+      state.analytics.revenueSeries[state.analytics.revenueSeries.length - 1] += amount;
+    }
+    const product = state.products.find((p) => p.id === productId);
+    if (product) product.sales = (product.sales || 0) + 1;
+  }
+
+  saveState();
+  closeOrderModal();
+  renderOrders();
+  showToast(status === "paid" ? "Vente enregistrée." : "Commande enregistrée.");
+}
+
+function openContactModal(contact = null) {
+  const modal = document.querySelector("#contactModal");
+  const form = document.querySelector("#contactForm");
+  form.reset();
+  form.elements.id.value = contact?.id || "";
+  form.elements.name.value = contact?.name || "";
+  form.elements.email.value = contact?.email || "";
+  form.elements.segment.value = contact?.segment || "Lead";
+  form.elements.source.value = contact?.source || "";
+  form.elements.nextAction.value = contact?.nextAction || "";
+  form.elements.notes.value = contact?.notes || "";
+  document.querySelector("#contactModalTitle").textContent = contact ? "Modifier le contact" : "Ajouter un contact";
+  modal.classList.add("open");
+  modal.setAttribute("aria-hidden", "false");
+  setTimeout(() => form.elements.name.focus(), 50);
+}
+
+function closeContactModal() {
+  const modal = document.querySelector("#contactModal");
+  modal.classList.remove("open");
+  modal.setAttribute("aria-hidden", "true");
+}
+
+function submitContact(event) {
+  event.preventDefault();
+  const data = new FormData(event.currentTarget);
+  const id = data.get("id");
+  const existing = state.contacts.find((c) => c.id === id);
+  const emailVal = data.get("email").trim().toLowerCase();
+  if (!existing) {
+    const duplicate = state.contacts.find((c) => c.email.toLowerCase() === emailVal);
+    if (duplicate) { showToast("Un contact avec cet email existe déjà."); return; }
+  }
+  const contact = {
+    id: id || `c_${Date.now()}`,
+    name: data.get("name").trim(),
+    email: emailVal,
+    segment: data.get("segment"),
+    source: data.get("source").trim(),
+    nextAction: data.get("nextAction").trim(),
+    notes: data.get("notes").trim(),
+    activity: existing?.activity || "Contact créé manuellement",
+    value: existing?.value || 0,
+    joined: existing?.joined || new Date().toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" }),
+    tags: existing?.tags || [],
+    buyingScore: existing?.buyingScore || 0,
+  };
+  if (existing) {
+    Object.assign(existing, contact);
+  } else {
+    state.contacts.unshift(contact);
+  }
+  saveState();
+  closeContactModal();
+  renderContacts();
+  showToast(existing ? "Contact mis à jour." : "Contact ajouté.");
+}
+
 function openDetailPanel(type, title, content) {
   document.querySelector("#detailEyebrow").textContent = type;
   document.querySelector("#detailTitle").textContent = title;
@@ -1570,7 +1765,11 @@ function openContactDetail(contactId) {
         </label>
         <label>Prochaine action<input name="nextAction" value="${escapeHtml(contact.nextAction || "")}" placeholder="Ex. Relancer mardi avec l'offre Scale" /></label>
         <label>Notes internes<textarea name="notes" rows="4" placeholder="Contexte, objections, besoin principal...">${escapeHtml(contact.notes || "")}</textarea></label>
-        <button class="primary-button" type="submit">Enregistrer la fiche</button>
+        <div style="display:flex;gap:.5rem;">
+          <button class="primary-button" type="submit" style="flex:1">Enregistrer la fiche</button>
+          <button class="secondary-button" type="button" data-edit-contact="${contact.id}">Modifier</button>
+          <button class="secondary-button" type="button" data-delete-contact="${contact.id}" style="color:#e85a6a">Supprimer</button>
+        </div>
       </form>
       <div class="detail-section">
         <span class="panel-label">Timeline</span>
@@ -1723,7 +1922,7 @@ function renderEmails() {
       <article class="email-card">
         <div class="email-card-head">
           <span class="email-trigger">✉</span>
-          <button class="toggle ${email.active ? "active" : ""}" data-toggle-email="${email.id}" aria-label="${email.active ? "Désactiver" : "Activer"} l’automatisation"></button>
+          <button class="toggle ${email.active ? "active" : ""}" data-toggle-email="${email.id}" aria-label="${email.active ? "Désactiver" : "Activer"} l'automatisation"></button>
         </div>
         <h3>${escapeHtml(email.name)}</h3>
         <p>${escapeHtml(email.description)}</p>
@@ -1731,6 +1930,10 @@ function renderEmails() {
           <span>Déclencheur<br /><strong>${escapeHtml(email.trigger)}</strong></span>
           <span>Envoyés<br /><strong>${email.sent}</strong></span>
           <span>Ouverture<br /><strong>${email.openRate} %</strong></span>
+        </div>
+        <div class="detail-actions" style="margin-top:.75rem">
+          <button class="secondary-button" style="font-size:.8rem;padding:.3rem .75rem" data-edit-email="${email.id}">Modifier</button>
+          <button class="secondary-button" style="font-size:.8rem;padding:.3rem .75rem;color:#e85a6a" data-delete-email="${email.id}">Supprimer</button>
         </div>
       </article>
     `)
@@ -1831,7 +2034,7 @@ async function renderPaymentConfiguration() {
     }
     renderLaunchProgress();
   } catch {
-    // L’état local reste utilisable sans configuration distante.
+    // L'état local reste utilisable sans configuration distante.
     renderLaunchProgress();
   }
 }
@@ -1945,7 +2148,7 @@ function updatePageEditorPreview() {
   preview.className = `mini-sales-page layout-${form.elements.layout.value}`;
   document.querySelector("#editorHeadlinePreview").textContent = form.elements.headline.value || "Ton titre de vente";
   document.querySelector("#editorSubheadlinePreview").textContent = form.elements.subheadline.value || "Ta promesse apparaîtra ici.";
-  document.querySelector("#editorButtonPreview").textContent = form.elements.buttonText.value || "Je découvre l’offre";
+  document.querySelector("#editorButtonPreview").textContent = form.elements.buttonText.value || "Je découvre l'offre";
   document.querySelector("#editorBadgePreview").textContent = form.elements.badge.value || "Nouveau";
   const logo = document.querySelector("#editorLogoPreview");
   const productImage = document.querySelector("#editorProductPreview");
@@ -1963,7 +2166,7 @@ function openPageModal(page = null) {
     .map((product) => `<option value="${product.id}">${escapeHtml(product.title)}</option>`)
     .join("");
   if (!state.products.length) {
-    showToast("Ajoute d’abord un produit avant de créer sa page de vente.");
+    showToast("Ajoute d'abord un produit avant de créer sa page de vente.");
     setView("products");
     return;
   }
@@ -1975,7 +2178,7 @@ function openPageModal(page = null) {
   form.elements.slug.value = page?.slug || "";
   form.elements.headline.value = page?.headline || "";
   form.elements.subheadline.value = page?.subheadline || "";
-  form.elements.buttonText.value = page?.buttonText || "Je découvre l’offre";
+  form.elements.buttonText.value = page?.buttonText || "Je découvre l'offre";
   form.elements.badge.value = page?.badge || "Accès immédiat";
   form.elements.accent.value = page?.accent || "#6558f5";
   form.elements.backgroundColor.value = page?.backgroundColor || "#f5f3ff";
@@ -2137,10 +2340,15 @@ document.addEventListener("click", (event) => {
   if (event.target.closest('[data-action="new-product"]')) openProductModal();
   if (event.target.closest('[data-action="new-page"]')) openPageModal();
   if (event.target.closest('[data-action="open-checklist"]')) openChecklist();
-  if (event.target.closest('[data-action="new-email"]')) showToast("L’éditeur d’automatisation sera la prochaine étape.");
+  if (event.target.closest('[data-action="new-email"]')) openEmailModal();
+  if (event.target.closest('[data-action="new-contact"]')) openContactModal();
+  if (event.target.closest('[data-action="new-order"]')) openOrderModal();
 
   if (event.target.closest("[data-close-modal]") || event.target === document.querySelector("#productModal")) closeProductModal();
   if (event.target.closest("[data-close-page-modal]") || event.target === document.querySelector("#pageModal")) closePageModal();
+  if (event.target.closest("[data-close-contact-modal]") || event.target === document.querySelector("#contactModal")) closeContactModal();
+  if (event.target.closest("[data-close-order-modal]") || event.target === document.querySelector("#orderModal")) closeOrderModal();
+  if (event.target.closest("[data-close-email-modal]") || event.target === document.querySelector("#emailModal")) closeEmailModal();
   if (event.target.closest("[data-close-drawer]") || event.target === document.querySelector("#drawerBackdrop")) closeChecklist();
   if (event.target.closest("[data-close-detail]") || event.target === document.querySelector("#detailPanel")) closeDetailPanel();
 
@@ -2244,6 +2452,52 @@ document.addEventListener("click", (event) => {
       showToast(email.active ? "Automatisation activée." : "Automatisation désactivée.");
     }
   }
+
+  const deletePage = event.target.closest("[data-delete-page]");
+  if (deletePage) {
+    const page = state.pages.find((item) => item.id === deletePage.dataset.deletePage);
+    if (page && window.confirm(`Supprimer la page « ${page.name} » ?`)) {
+      state.pages = state.pages.filter((item) => item.id !== page.id);
+      saveState();
+      renderPages();
+      showToast("Page supprimée.");
+    }
+  }
+
+  const deleteContact = event.target.closest("[data-delete-contact]");
+  if (deleteContact) {
+    const contact = state.contacts.find((item) => item.id === deleteContact.dataset.deleteContact);
+    if (contact && window.confirm(`Supprimer le contact « ${contact.name} » ?`)) {
+      state.contacts = state.contacts.filter((item) => item.id !== contact.id);
+      saveState();
+      closeDetailPanel();
+      renderContacts();
+      showToast("Contact supprimé.");
+    }
+  }
+
+  const editContact = event.target.closest("[data-edit-contact]");
+  if (editContact) {
+    const contact = state.contacts.find((item) => item.id === editContact.dataset.editContact);
+    if (contact) { closeDetailPanel(); openContactModal(contact); }
+  }
+
+  const editEmail = event.target.closest("[data-edit-email]");
+  if (editEmail) {
+    const email = state.emails.find((item) => item.id === editEmail.dataset.editEmail);
+    if (email) openEmailModal(email);
+  }
+
+  const deleteEmail = event.target.closest("[data-delete-email]");
+  if (deleteEmail) {
+    const email = state.emails.find((item) => item.id === deleteEmail.dataset.deleteEmail);
+    if (email && window.confirm(`Supprimer l'automation « ${email.name} » ?`)) {
+      state.emails = state.emails.filter((item) => item.id !== email.id);
+      saveState();
+      renderEmails();
+      showToast("Automation supprimée.");
+    }
+  }
 });
 
 document.addEventListener("submit", (event) => {
@@ -2271,6 +2525,14 @@ document.querySelector("#menuButton").addEventListener("click", () => document.q
 document.querySelector("#sidebarClose").addEventListener("click", () => document.querySelector("#sidebar").classList.remove("open"));
 document.querySelector("#productForm").addEventListener("submit", submitProduct);
 document.querySelector("#pageForm").addEventListener("submit", submitPage);
+document.querySelector("#contactForm").addEventListener("submit", submitContact);
+document.querySelector("#orderForm").addEventListener("submit", submitOrder);
+document.querySelector("#emailForm").addEventListener("submit", submitEmail);
+document.querySelector("#orderProductSelect")?.addEventListener("change", (e) => {
+  const selected = e.target.selectedOptions[0];
+  const form = document.querySelector("#orderForm");
+  if (selected && form) form.elements.amount.value = selected.dataset.price || 0;
+});
 document.querySelector("#pageForm").addEventListener("input", (event) => {
   const form = event.currentTarget;
   if (event.target.name === "name" && !form.elements.id.value && !form.elements.slug.dataset.touched) {
@@ -2295,7 +2557,7 @@ document.querySelector("#orderSearch").addEventListener("input", renderOrders);
 document.querySelector("#orderFilter").addEventListener("change", renderOrders);
 document.querySelector("#contactSearch").addEventListener("input", renderContacts);
 document.querySelector("#contactFilter").addEventListener("change", renderContacts);
-document.querySelector("#notificationButton").addEventListener("click", () => showToast("Tu n’as aucune nouvelle notification."));
+document.querySelector("#notificationButton").addEventListener("click", () => showToast("Tu n'as aucune nouvelle notification."));
 
 document.querySelector("#helpButton")?.addEventListener("click", () => {
   window.open(marketingUrl(), "_blank", "noopener");
@@ -2314,10 +2576,10 @@ document.querySelector("#manageSubscription")?.addEventListener("click", async (
   try {
     const response = await authenticatedFetch("/api/billing-portal", { method: "POST" });
     const data = await response.json().catch(() => ({}));
-    if (!response.ok || !data.url) throw new Error(data.error || "Gestion d’abonnement indisponible.");
+    if (!response.ok || !data.url) throw new Error(data.error || "Gestion d'abonnement indisponible.");
     location.assign(data.url);
   } catch (error) {
-    showToast(error.message || "Impossible d’ouvrir la gestion d’abonnement.");
+    showToast(error.message || "Impossible d'ouvrir la gestion d'abonnement.");
     button.disabled = false;
     button.textContent = previous;
   }
@@ -2363,7 +2625,7 @@ document.querySelector("#copyStoreLink")?.addEventListener("click", () => {
 
 document.querySelector("#exportContacts").addEventListener("click", () => {
   exportCsv("expertly-contacts.csv", [
-    ["Nom", "Email", "Segment", "Valeur client", "Date d’inscription"],
+    ["Nom", "Email", "Segment", "Valeur client", "Date d'inscription"],
     ...state.contacts.map((contact) => [contact.name, contact.email, contact.segment, contact.value, contact.joined]),
   ]);
 });
@@ -2415,7 +2677,7 @@ document.querySelector("#settingsForm").addEventListener("change", async (event)
       event.currentTarget.dataset.logo = dataUrl;
       const urlField = event.currentTarget.elements.namedItem("logo");
       if (urlField) urlField.value = "";
-      showToast("Logo importé. Enregistre pour l’appliquer.");
+      showToast("Logo importé. Enregistre pour l'appliquer.");
     }
   } catch (error) {
     showToast(error.message || "Image trop lourde.");
@@ -2456,6 +2718,9 @@ window.addEventListener("keydown", (event) => {
   if (event.key === "Escape") {
     closeProductModal();
     closePageModal();
+    closeContactModal();
+    closeOrderModal();
+    closeEmailModal();
     closeChecklist();
     closeDetailPanel();
   }

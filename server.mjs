@@ -628,6 +628,27 @@ async function handleApi(request, response) {
     return true;
   }
   if (request.method === "GET" && request.url?.startsWith("/api/store")) {
+    const storeParams = new URL(request.url, appUrl).searchParams;
+    const accessToken = storeParams.get("token");
+    if (accessToken) {
+      // Résolution d'un token d'accès client (format local : hex brut)
+      const tokenState = await readState();
+      const order = tokenState.orders.find((item) => item.accessToken === accessToken && item.status === "paid");
+      if (!order) { sendJson(response, 404, { error: "Accès introuvable ou paiement non confirmé." }); return true; }
+      const product = tokenState.products.find((item) => item.id === order.productId);
+      if (!product) { sendJson(response, 404, { error: "Produit indisponible." }); return true; }
+      await trackUmami(
+        "product_accessed",
+        { boutique_slug: tokenState.profile.slug, order_id: order.id, product_id: product.id },
+        { distinctId: order.contactId, url: `/boutique/${tokenState.profile.slug}/access` },
+      );
+      sendJson(response, 200, {
+        productTitle: product.title,
+        orderId: order.id,
+        access: (product.fileName || "").trim() || `/b/${encodeURIComponent(tokenState.profile.slug)}`,
+      });
+      return true;
+    }
     sendJson(response, 200, publicStoreState(await readState()));
     return true;
   }

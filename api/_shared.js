@@ -1,3 +1,5 @@
+import { randomBytes } from "crypto";
+
 const defaultState = {
   profile: {
     firstName: "",
@@ -154,6 +156,74 @@ export async function readCreatorStateBySlug(slug) {
   );
   if (Array.isArray(rows) && rows[0]?.state) return normalizeState(rows[0].state);
   return null;
+}
+
+// Comme readCreatorStateBySlug mais renvoie aussi le user_id (necessaire pour saveCreatorState).
+export async function readCreatorRecordBySlug(slug) {
+  const cleanSlug = slugify(slug);
+  const rows = await supabaseRequest(
+    `/rest/v1/creator_states?select=user_id,state,slug&slug=eq.${encodeURIComponent(cleanSlug)}&limit=1`,
+  );
+  if (Array.isArray(rows) && rows[0]?.state) {
+    return { userId: rows[0].user_id, state: normalizeState(rows[0].state) };
+  }
+  return null;
+}
+
+// Token d'acces client : prefixe par le slug pour permettre a /api/access de retrouver
+// la boutique en O(1) (pas de scan de toutes les boutiques). slugify n'emet jamais de ".".
+export function makeAccessToken(slug) {
+  return `${slugify(slug)}.${randomBytes(20).toString("hex")}`;
+}
+
+export function slugFromAccessToken(token = "") {
+  const value = String(token);
+  return value.includes(".") ? value.slice(0, value.indexOf(".")) : "";
+}
+
+export function appOrigin(req) {
+  if (process.env.APP_URL?.startsWith("http")) return new URL(process.env.APP_URL).origin;
+  return `https://${req.headers.host}`;
+}
+
+export function accessUrlFor(req, token) {
+  return `${appOrigin(req)}/access.html?token=${encodeURIComponent(token)}`;
+}
+
+function accessEmailHtml({ customerName, product, url }) {
+  return `<!doctype html><html lang="fr"><body style="margin:0;background:#f6f6fb;font-family:Arial,sans-serif;color:#17172a">
+    <div style="max-width:560px;margin:0 auto;padding:40px 20px">
+      <div style="background:#fff;border-radius:18px;padding:32px;border:1px solid #e8e8ef">
+        <div style="font-size:13px;font-weight:700;color:#6558f5;text-transform:uppercase">Expertly</div>
+        <h1 style="font-size:26px;margin:14px 0 10px">Ton accès est disponible</h1>
+        <p style="line-height:1.6;color:#646579">Bonjour ${customerName}, ton accès à <strong>${product.title}</strong> est prêt.</p>
+        <a href="${url}" style="display:inline-block;margin-top:18px;padding:14px 20px;border-radius:10px;background:#6558f5;color:#fff;text-decoration:none;font-weight:700">Accéder au produit</a>
+      </div>
+    </div></body></html>`;
+}
+
+// Envoie l'email d'acces via Resend. Renvoie {sent:false} si la cle n'est pas configuree
+// (au lieu de lever) pour que le paiement reste enregistre meme sans email.
+export async function sendAccessEmail({ customerName, customerEmail, product, url, orderId }) {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) return { sent: false, reason: "RESEND_API_KEY manquante" };
+  const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+      "Idempotency-Key": `expertly-access-${orderId}-${Date.now()}`,
+    },
+    body: JSON.stringify({
+      from: process.env.EMAIL_FROM || "Expertly <onboarding@resend.dev>",
+      to: [customerEmail],
+      subject: `Ton accès à ${product.title}`,
+      html: accessEmailHtml({ customerName, product, url }),
+    }),
+  });
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(result?.message || "Resend a refusé l'email.");
+  return { sent: true, id: result.id };
 }
 
 export async function saveCreatorState(userId, state) {

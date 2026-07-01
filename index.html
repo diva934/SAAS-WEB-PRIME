@@ -241,7 +241,10 @@
                 <h1>Commandes</h1>
                 <p>Suis les paiements, remboursements et accès livrés.</p>
               </div>
-              <button class="secondary-button" id="exportOrders">Exporter en CSV</button>
+              <div style="display:flex;gap:.5rem;">
+                <button class="primary-button" data-action="new-order">＋ Enregistrer une vente</button>
+                <button class="secondary-button" id="exportOrders">Exporter en CSV</button>
+              </div>
             </div>
             <div class="metric-grid compact" id="orderMetrics"></div>
             <div class="panel table-panel">
@@ -287,7 +290,10 @@
                 <h1>Contacts</h1>
                 <p>Centralise les leads, clients et opportunités de ton activité.</p>
               </div>
-              <button class="secondary-button" id="exportContacts">Exporter les contacts</button>
+              <div style="display:flex;gap:.5rem;">
+                <button class="primary-button" data-action="new-contact">＋ Ajouter un contact</button>
+                <button class="secondary-button" id="exportContacts">Exporter les contacts</button>
+              </div>
             </div>
             <div class="metric-grid compact" id="contactMetrics"></div>
             <div class="panel table-panel">
@@ -372,6 +378,9 @@
                   <label>Couleur principale<input name="accent" type="color" /></label>
                   <label class="full">Logo — URL<input name="logo" type="url" placeholder="https://monsite.fr/logo.png" /></label>
                   <label class="full media-upload">Ou importer un logo<input name="logoFile" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" /></label>
+                  <label>Instagram — URL<input name="instagram" type="url" placeholder="https://instagram.com/toncompte" /></label>
+                  <label>YouTube — URL<input name="youtube" type="url" placeholder="https://youtube.com/@tacreatrice" /></label>
+                  <label>TikTok — URL<input name="tiktok" type="url" placeholder="https://tiktok.com/@toncompte" /></label>
                 </div>
                 <div class="public-bio-link">
                   <span>Lien de bio Instagram <em>· ouvre la boutique hors d’Instagram</em></span>
@@ -529,13 +538,4 @@
           <div><span class="panel-label" id="detailEyebrow">CRM</span><h2 id="detailTitle">Détail</h2></div>
           <button class="icon-button" data-close-detail aria-label="Fermer">×</button>
         </div>
-        <div id="detailContent"></div>
-      </div>
-    </aside>
-    <div class="drawer-backdrop" id="drawerBackdrop"></div>
-    <div class="toast-region" id="toastRegion" aria-live="polite"></div>
-    <script src="./analytics.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
-    <script src="./app.js"></script>
-  </body>
-</html>
+        <div id="detailCo

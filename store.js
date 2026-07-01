@@ -47,6 +47,57 @@ function initials(value = "") {
     .toUpperCase();
 }
 
+const SOCIAL_LINKS = [
+  { key: "instagram", label: "Instagram" },
+  { key: "youtube", label: "YouTube" },
+  { key: "tiktok", label: "TikTok" },
+];
+
+function safeUrl(value = "") {
+  const trimmed = String(value).trim();
+  return /^https?:\/\//i.test(trimmed) ? trimmed : "";
+}
+
+function safeColor(value = "", fallback = "#6558f5") {
+  const trimmed = String(value).trim();
+  return /^#[0-9a-f]{3,8}$|^(rgb|hsl)a?\([\d.,%\s/]+\)$/i.test(trimmed) ? trimmed : fallback;
+}
+
+function renderSocials(profile) {
+  const container = document.querySelector("#creatorSocials");
+  if (!container) return;
+  const links = SOCIAL_LINKS.map(({ key, label }) => ({ label, url: safeUrl(profile[key]) })).filter(
+    (item) => item.url,
+  );
+  if (!links.length) {
+    container.hidden = true;
+    container.innerHTML = "";
+    return;
+  }
+  container.hidden = false;
+  container.innerHTML = links
+    .map(
+      (item) =>
+        `<a href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer" aria-label="${escapeHtml(
+          item.label,
+        )}">${escapeHtml(item.label)}</a>`,
+    )
+    .join("");
+}
+
+function renderFeaturedBanner(publishedProducts) {
+  const banner = document.querySelector("#featuredBanner");
+  if (!banner) return;
+  const freeProduct = publishedProducts.find((product) => Number(product.price) === 0);
+  if (!freeProduct) {
+    banner.hidden = true;
+    return;
+  }
+  banner.hidden = false;
+  const title = document.querySelector("#featuredBannerTitle");
+  if (title) title.textContent = freeProduct.title || "Ressource gratuite offerte";
+}
+
 function renderStore() {
   const profile = state.profile;
   document.documentElement.style.setProperty("--accent", profile.accent || "#6558f5");
@@ -65,12 +116,15 @@ function renderStore() {
   document.querySelector("#creatorRole").textContent = profile.creatorRole;
   document.querySelector("#creatorBio").textContent = profile.bio;
 
+  renderSocials(profile);
+
   const products = state.products
     .filter((product) => product.status === "published")
     .sort((a, b) => Number(b.featured) - Number(a.featured));
 
   document.querySelector("#offerCount").textContent = `${products.length} offre${products.length > 1 ? "s" : ""}`;
   const singleProduct = products.length === 1;
+  const accent = safeColor(profile.accent, "#6558f5");
   document.querySelector("#publicOffers").innerHTML =
     products
       .map((product) => {
@@ -78,11 +132,12 @@ function renderStore() {
         const size = singleProduct ? "l" : requested;
         const cover = (product.coverUrl || "").trim();
         const hasCover = /^https?:\/\//i.test(cover) || /^data:image\//i.test(cover);
+        const offerColor = safeColor(product.color, accent);
         const media = hasCover
           ? `<img class="offer-cover" src="${escapeHtml(cover)}" alt="${escapeHtml(product.title)}" loading="lazy" />`
           : `<div class="offer-cover offer-cover-fallback"><span>${initials(product.title)}</span></div>`;
         return `
-        <article class="public-offer size-${size} ${product.featured ? "featured" : ""}" style="--offer-color:${product.color || "#6558f5"}">
+        <article class="public-offer size-${size} ${product.featured ? "featured" : ""}" style="--offer-color:${offerColor}">
           <div class="offer-media">
             ${media}
             ${product.featured ? '<span class="featured-label">★ Recommandé</span>' : ""}
@@ -97,6 +152,9 @@ function renderStore() {
         </article>`;
       })
       .join("") || "<p>Aucun produit publié pour le moment.</p>";
+
+  renderFeaturedBanner(products);
+
   window.ExpertlyTracking?.track("store_viewed", {
     product_count: products.length,
     creator_slug: profile.slug,
@@ -109,7 +167,7 @@ function openCheckout(product) {
   const isFree = product.price === 0;
   document.querySelector("#checkoutContent").innerHTML = `
     <div class="checkout-product">
-      <div class="public-offer-icon" style="--offer-color:${product.color}">${initials(product.title)}</div>
+      <div class="public-offer-icon" style="--offer-color:${safeColor(product.color, safeColor(state.profile.accent, "#6558f5"))}">${initials(product.title)}</div>
       <div><h2>${escapeHtml(product.title)}</h2><p>${escapeHtml(product.type)} · Accès immédiat après confirmation</p></div>
     </div>
     <div class="checkout-summary">

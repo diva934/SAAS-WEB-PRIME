@@ -12,13 +12,11 @@
       <p class="eyebrow">Paiement confirmé</p>
       <h1>Ton produit est débloqué</h1>
       <p>L’email d’accès est envoyé immédiatement à l’adresse utilisée lors du paiement.</p>
-      <a href="./store.html">Retourner à la boutique</a>
+      <a id="returnLink" href="./store.html">Retourner à la boutique</a>
     </main>
     <script src="./analytics.js"></script>
     <script>
-      window.ExpertlyTracking?.track("payment_success_page_viewed", {
-        order_id: new URLSearchParams(location.search).get("order")
-      });
-    </script>
-  </body>
-</html>
+      (function () {
+        const params = new URLSearchParams(location.search);
+        const store = params.get("store");
+        const order = params.get("order
