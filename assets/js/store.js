@@ -345,4 +345,10 @@ async function startStore() {
     fetch("/api/events/visit", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ slug })
+      body: JSON.stringify({ slug }),
+    }).catch(() => {});
+  }
+  renderStore();
+}
+
+startStore();
