@@ -3,515 +3,539 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Expertly — Boutique, CRM et tunnels pour infopreneurs</title>
     <meta
       name="description"
-      content="Vends tes formations, coachings et ressources depuis une boutique qui capture, convertit et relance automatiquement avec Expertly."
+      content="Espace Expertly pour gérer produits digitaux, pages de vente, contacts et commandes."
     />
-    <link rel="canonical" href="https://saas-web-prime.vercel.app/" />
-    <meta name="theme-color" content="#073bd9" />
-    <meta property="og:type" content="website" />
-    <meta property="og:locale" content="fr_FR" />
-    <meta property="og:site_name" content="Expertly" />
-    <meta property="og:title" content="Expertly — Transforme ton audience en système de vente" />
-    <meta
-      property="og:description"
-      content="Boutique, mini-CRM, tunnels courts et automatisations pour infopreneurs."
-    />
-    <meta property="og:url" content="https://saas-web-prime.vercel.app/" />
-    <meta property="og:image" content="https://saas-web-prime.vercel.app/assets/expertly-dashboard-hq.png" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Expertly — Boutique et CRM pour infopreneurs" />
-    <meta
-      name="twitter:description"
-      content="Vends, livre et relance depuis un seul espace pensé pour l’expertise."
-    />
-    <meta name="twitter:image" content="https://saas-web-prime.vercel.app/assets/expertly-dashboard-hq.png" />
-    <link rel="icon" href="./assets/expertly-logo.webp" type="image/webp" />
+    <title>Expertly · Espace créateur</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap"
       rel="stylesheet"
     />
+    <link rel="icon" href="./assets/expertly-logo.png" />
     <link rel="stylesheet" href="./styles.css" />
-    <script type="application/ld+json">
-      {
-        "@context": "https://schema.org",
-        "@type": "SoftwareApplication",
-        "name": "Expertly",
-        "applicationCategory": "BusinessApplication",
-        "operatingSystem": "Web",
-        "url": "https://saas-web-prime.vercel.app/",
-        "description": "Boutique, CRM et tunnels de vente pour infopreneurs.",
-        "offers": [
-          { "@type": "Offer", "name": "Launch", "price": "19", "priceCurrency": "EUR" },
-          { "@type": "Offer", "name": "Scale", "price": "49", "priceCurrency": "EUR" },
-          { "@type": "Offer", "name": "Studio", "price": "149", "priceCurrency": "EUR" }
-        ]
-      }
+    <script>
+      window.EXPERTLY_CONFIG = {
+        supabaseUrl: "%SUPABASE_URL%",
+        supabaseAnonKey: "%SUPABASE_ANON_KEY%",
+        marketingUrl: "%MARKETING_URL%"
+      };
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   </head>
-  <body>
-    <div class="announcement-bar">
-      <p>Expertly accompagne les créateurs pour transformer leur audience en revenus.</p>
-    </div>
+  <body class="auth-pending" data-surface="creator_dashboard">
+    <div class="app-shell">
+      <aside class="sidebar" id="sidebar">
+        <div class="brand-row">
+          <a class="brand" href="#overview" aria-label="Expertly">
+            <img class="brand-logo" src="./assets/expertly-logo.png" alt="Expertly" />
+          </a>
+          <button class="icon-button sidebar-close" id="sidebarClose" aria-label="Fermer le menu">×</button>
+        </div>
 
-    <header class="site-header">
-      <div class="header-inner">
-        <a class="brand" href="#top" aria-label="Expertly accueil">
-          <img src="./assets/expertly-logo.webp" alt="Expertly" width="512" height="120" />
-        </a>
+        <div class="workspace-switcher">
+          <span class="workspace-avatar" id="workspaceInitials">EX</span>
+          <span>
+            <strong id="workspaceName">Espace Expertly</strong>
+            <small>Expertly Scale</small>
+          </span>
+          <button aria-label="Changer d’espace">⌄</button>
+        </div>
 
-        <nav class="nav-links" aria-label="Navigation principale">
-          <a href="#product">Produit</a>
-          <a href="#how-it-works">Fonctionnement</a>
-          <a href="#pricing">Tarifs</a>
-          <a href="#faq">FAQ</a>
+        <nav class="main-nav" aria-label="Navigation principale">
+          <p>Activité</p>
+          <button class="nav-item active" data-view="overview">
+            <span class="nav-icon">⌂</span><span>Vue d’ensemble</span>
+          </button>
+          <button class="nav-item" data-view="products">
+            <span class="nav-icon">◇</span><span>Produits</span><span class="nav-count" id="productCount">0</span>
+          </button>
+          <button class="nav-item" data-view="pages">
+            <span class="nav-icon">▤</span><span>Pages de vente</span>
+          </button>
+          <button class="nav-item" data-view="tunnel">
+            <span class="nav-icon">⇄</span><span>Tunnel</span>
+          </button>
+          <button class="nav-item" data-view="orders">
+            <span class="nav-icon">↗</span><span>Commandes</span>
+          </button>
+          <button class="nav-item" data-view="contacts">
+            <span class="nav-icon">◎</span><span>Contacts</span>
+          </button>
+          <p>Développer</p>
+          <button class="nav-item" data-view="analytics">
+            <span class="nav-icon">⌁</span><span>Analytics</span>
+          </button>
+          <button class="nav-item" data-view="finance">
+            <span class="nav-icon">€</span><span>Finance</span>
+          </button>
+          <button class="nav-item" data-view="emails">
+            <span class="nav-icon">✉</span><span>Emails</span><span class="soon">Bêta</span>
+          </button>
         </nav>
 
-        <div class="header-actions">
-          <a class="header-login" href="https://expertly-client-app.vercel.app/">Connexion</a>
-          <a class="header-cta" href="#pricing">Créer ma boutique</a>
+        <div class="sidebar-bottom">
+          <div class="launch-card">
+            <span>Checklist de lancement</span>
+            <strong id="launchProgressLabel">0 étape sur 7</strong>
+            <div class="mini-progress"><i id="launchProgressBar"></i></div>
+            <button data-action="open-checklist">Continuer la configuration</button>
+          </div>
+          <button class="nav-item" data-view="settings">
+            <span class="nav-icon">⚙</span><span>Réglages</span>
+          </button>
+          <button class="help-button" id="helpButton"><span>?</span> Centre d’aide</button>
         </div>
+      </aside>
+
+      <div class="main-column">
+        <header class="topbar">
+          <div class="topbar-left">
+            <button class="icon-button menu-button" id="menuButton" aria-label="Ouvrir le menu">☰</button>
+            <div>
+              <span class="breadcrumb">Espace créateur</span>
+              <strong id="viewTitle">Vue d’ensemble</strong>
+            </div>
+          </div>
+          <div class="topbar-actions">
+            <a class="store-link" href="./store.html" target="_blank" id="topStoreLink">
+              Voir ma boutique <span>↗</span>
+            </a>
+            <button class="icon-button notification-button" id="notificationButton" aria-label="Notifications">
+              ♢<i></i>
+            </button>
+            <button class="account-button" id="accountButton">
+              <span id="accountInitials">EX</span><span class="account-copy"><strong id="accountName">Créateur</strong><small>Administrateur</small></span><b>⌄</b>
+            </button>
+          </div>
+        </header>
+
+        <main class="content">
+          <section class="view active" id="overviewView">
+            <div class="page-heading overview-heading">
+              <div>
+                <p class="eyebrow">Jeudi 25 juin</p>
+                <h1>Bienvenue dans ton espace de vente</h1>
+                <p>Voici ce qui se passe dans ton activité aujourd’hui.</p>
+              </div>
+              <button class="primary-button" data-action="new-product">＋ Créer un produit</button>
+            </div>
+
+            <div class="metric-grid" id="overviewMetrics"></div>
+
+            <div class="overview-grid">
+              <article class="panel revenue-panel">
+                <div class="panel-heading">
+                  <div>
+                    <span class="panel-label">Revenus</span>
+                    <h2 id="revenueHeading">0 €</h2>
+                  </div>
+                  <select aria-label="Période">
+                    <option>30 derniers jours</option>
+                    <option>7 derniers jours</option>
+                  </select>
+                </div>
+                <div class="chart-wrap">
+                  <svg id="revenueChart" viewBox="0 0 760 250" role="img" aria-label="Évolution du chiffre d’affaires"></svg>
+                  <div class="chart-labels"><span>1 juin</span><span>8 juin</span><span>15 juin</span><span>22 juin</span><span>30 juin</span></div>
+                </div>
+              </article>
+
+              <article class="panel action-panel">
+                <div class="panel-heading">
+                  <div><span class="panel-label">À faire</span><h2>Actions recommandées</h2></div>
+                  <span class="action-total">3</span>
+                </div>
+                <div class="action-list">
+                  <button data-view-target="pages">
+                    <span class="action-icon purple">▤</span>
+                    <span><strong>Publie ta page principale</strong><small>Elle est encore en brouillon</small></span>
+                    <b>→</b>
+                  </button>
+                  <button data-view-target="products">
+                    <span class="action-icon green">◇</span>
+                    <span><strong>Ajoute un produit d’appel</strong><small>Augmente la conversion de ta boutique</small></span>
+                    <b>→</b>
+                  </button>
+                  <button data-view-target="emails">
+                    <span class="action-icon orange">✉</span>
+                    <span><strong>Active l’email post-achat</strong><small>Automatise la livraison client</small></span>
+                    <b>→</b>
+                  </button>
+                </div>
+              </article>
+
+              <article class="panel product-performance">
+                <div class="panel-heading">
+                  <div><span class="panel-label">Catalogue</span><h2>Performance des produits</h2></div>
+                  <button class="text-button" data-view-target="products">Tout voir →</button>
+                </div>
+                <div id="performanceList"></div>
+              </article>
+
+              <article class="panel recent-orders">
+                <div class="panel-heading">
+                  <div><span class="panel-label">Temps réel</span><h2>Dernières commandes</h2></div>
+                  <button class="text-button" data-view-target="orders">Tout voir →</button>
+                </div>
+                <div id="recentOrderList"></div>
+              </article>
+            </div>
+          </section>
+
+          <section class="view" id="productsView">
+            <div class="page-heading">
+              <div>
+                <p class="eyebrow">Catalogue</p>
+                <h1>Tes produits digitaux</h1>
+                <p>Crée, organise et publie tout ce que tu souhaites vendre.</p>
+              </div>
+              <button class="primary-button" data-action="new-product">＋ Nouveau produit</button>
+            </div>
+
+            <div class="toolbar">
+              <label class="search-field">
+                <span>⌕</span>
+                <input id="productSearch" type="search" placeholder="Rechercher un produit…" />
+              </label>
+              <select id="productFilter" aria-label="Filtrer les produits">
+                <option value="all">Tous les statuts</option>
+                <option value="published">Publiés</option>
+                <option value="draft">Brouillons</option>
+              </select>
+            </div>
+            <div class="product-grid" id="productGrid"></div>
+          </section>
+
+          <section class="view" id="pagesView">
+            <div class="page-heading">
+              <div>
+                <p class="eyebrow">Conversion</p>
+                <h1>Pages de vente</h1>
+                <p>Transforme tes visiteurs en clients avec des pages simples et ciblées.</p>
+              </div>
+              <button class="primary-button" data-action="new-page">＋ Créer une page</button>
+            </div>
+
+            <div class="pages-layout">
+              <div class="page-list" id="salesPageList"></div>
+              <aside class="panel live-preview-panel">
+                <div class="panel-heading">
+                  <div><span class="panel-label">Aperçu</span><h2>Page sélectionnée</h2></div>
+                  <a href="./store.html" target="_blank" id="pagePreviewOpen">Ouvrir ↗</a>
+                </div>
+                <div class="browser-frame">
+                  <div class="browser-bar"><i></i><i></i><i></i><span id="pagePreviewUrl">Crée une page pour obtenir ton lien</span></div>
+                  <iframe src="./store.html?embed=1" title="Aperçu de la boutique" id="storePreview"></iframe>
+                </div>
+              </aside>
+            </div>
+          </section>
+
+          <section class="view" id="ordersView">
+            <div class="page-heading">
+              <div>
+                <p class="eyebrow">Ventes</p>
+                <h1>Commandes</h1>
+                <p>Suis les paiements, remboursements et accès livrés.</p>
+              </div>
+              <div style="display:flex;gap:.5rem;">
+                <button class="primary-button" data-action="new-order">＋ Enregistrer une vente</button>
+                <button class="secondary-button" id="exportOrders">Exporter en CSV</button>
+              </div>
+            </div>
+            <div class="metric-grid compact" id="orderMetrics"></div>
+            <div class="panel table-panel">
+              <div class="toolbar table-toolbar">
+                <label class="search-field"><span>⌕</span><input id="orderSearch" type="search" placeholder="Client, produit ou commande…" /></label>
+                <select id="orderFilter"><option value="all">Tous les paiements</option><option value="paid">Payés</option><option value="refunded">Remboursés</option></select>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>Commande</th><th>Client</th><th>Produit</th><th>Date</th><th>Montant</th><th>Livraison</th><th>Statut</th><th></th></tr></thead>
+                  <tbody id="orderTable"></tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          <section class="view" id="tunnelView">
+            <div class="page-heading">
+              <div>
+                <p class="eyebrow">Tunnel Bio → Lead → Vente</p>
+                <h1>Tunnel de vente</h1>
+                <p>Visualise le chemin complet promis par Expertly : capture, offre, checkout, upsell et livraison.</p>
+              </div>
+              <button class="primary-button" data-action="new-page">＋ Créer une page</button>
+            </div>
+            <div class="tunnel-board" id="tunnelBoard"></div>
+            <div class="tunnel-grid">
+              <article class="panel">
+                <div class="panel-heading"><div><span class="panel-label">Offres</span><h2>Architecture commerciale</h2></div></div>
+                <div class="offer-map" id="offerMap"></div>
+              </article>
+              <article class="panel">
+                <div class="panel-heading"><div><span class="panel-label">Optimisations</span><h2>Upsells et order bumps</h2></div></div>
+                <div class="insight-list" id="upsellInsights"></div>
+              </article>
+            </div>
+          </section>
+
+          <section class="view" id="contactsView">
+            <div class="page-heading">
+              <div>
+                <p class="eyebrow">Audience</p>
+                <h1>Contacts</h1>
+                <p>Centralise les leads, clients et opportunités de ton activité.</p>
+              </div>
+              <div style="display:flex;gap:.5rem;">
+                <button class="primary-button" data-action="new-contact">＋ Ajouter un contact</button>
+                <button class="secondary-button" id="exportContacts">Exporter les contacts</button>
+              </div>
+            </div>
+            <div class="metric-grid compact" id="contactMetrics"></div>
+            <div class="panel table-panel">
+              <div class="toolbar table-toolbar">
+                <label class="search-field"><span>⌕</span><input id="contactSearch" type="search" placeholder="Rechercher un contact…" /></label>
+                <select id="contactFilter"><option value="all">Tous les segments</option><option value="Client">Clients</option><option value="Prospect chaud">Prospects chauds</option><option value="Lead">Leads</option></select>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>Contact</th><th>Segment</th><th>Dernière activité</th><th>Prochaine action</th><th>Valeur client</th><th>Inscrit le</th><th></th></tr></thead>
+                  <tbody id="contactTable"></tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          <section class="view" id="analyticsView">
+            <div class="page-heading">
+              <div><p class="eyebrow">Pilotage</p><h1>Analytics</h1><p>Comprends ce qui attire, convertit et génère du revenu.</p></div>
+              <select class="period-select"><option>30 derniers jours</option><option>90 derniers jours</option></select>
+            </div>
+            <div class="metric-grid" id="analyticsMetrics"></div>
+            <div class="analytics-grid">
+              <article class="panel">
+                <div class="panel-heading"><div><span class="panel-label">Tunnel</span><h2>Conversion globale</h2></div></div>
+                <div class="funnel" id="funnel"></div>
+              </article>
+              <article class="panel">
+                <div class="panel-heading"><div><span class="panel-label">Acquisition</span><h2>Sources de trafic</h2></div></div>
+                <div class="source-list" id="sourceList"></div>
+              </article>
+              <article class="panel analytics-action-panel">
+                <div class="panel-heading"><div><span class="panel-label">Priorités</span><h2>Actions recommandées</h2></div></div>
+                <div class="insight-list" id="analyticsInsights"></div>
+              </article>
+              <article class="panel analytics-action-panel">
+                <div class="panel-heading"><div><span class="panel-label">Produits</span><h2>Revenus par offre</h2></div></div>
+                <div class="source-list" id="productRevenueList"></div>
+              </article>
+            </div>
+          </section>
+
+          <section class="view" id="emailsView">
+            <div class="page-heading">
+              <div><p class="eyebrow">Automatisation</p><h1>Emails clients</h1><p>Envoie les bons messages aux bons moments, sans outil supplémentaire.</p></div>
+              <button class="primary-button" data-action="new-email">＋ Créer une automatisation</button>
+            </div>
+            <div class="email-status-panel" id="emailStatusPanel"></div>
+            <div class="email-grid" id="emailGrid"></div>
+          </section>
+
+          <section class="view" id="financeView">
+            <div class="page-heading">
+              <div><p class="eyebrow">Europe-ready</p><h1>Finance</h1><p>Prépare factures, TVA, remboursements et exports comptables pour une boutique plus sérieuse.</p></div>
+              <button class="secondary-button" id="exportFinance">Exporter comptabilité</button>
+            </div>
+            <div class="metric-grid compact" id="financeMetrics"></div>
+            <div class="finance-grid">
+              <article class="panel">
+                <div class="panel-heading"><div><span class="panel-label">Factures</span><h2>Dernières ventes</h2></div></div>
+                <div class="invoice-list" id="invoiceList"></div>
+              </article>
+              <article class="panel">
+                <div class="panel-heading"><div><span class="panel-label">Configuration</span><h2>Statut fiscal</h2></div></div>
+                <div class="tax-checklist" id="taxChecklist"></div>
+              </article>
+            </div>
+          </section>
+
+          <section class="view" id="settingsView">
+            <div class="page-heading">
+              <div><p class="eyebrow">Configuration</p><h1>Réglages</h1><p>Configure ton identité, tes paiements et ton domaine.</p></div>
+            </div>
+            <div class="settings-layout">
+              <form class="panel settings-form" id="settingsForm">
+                <div class="panel-heading"><div><span class="panel-label">Profil public</span><h2>Identité de la boutique</h2></div></div>
+                <div class="form-grid">
+                  <label>Nom public<input name="creatorName" required /></label>
+                  <label>Activité<input name="creatorRole" required /></label>
+                  <label class="full">Promesse<textarea name="bio" rows="3" required></textarea></label>
+                  <label>Identifiant de boutique<div class="slug-field"><span>/b/</span><input name="slug" required /></div></label>
+                  <label>Couleur principale<input name="accent" type="color" /></label>
+                  <label class="full">Logo — URL<input name="logo" type="url" placeholder="https://monsite.fr/logo.png" /></label>
+                  <label class="full media-upload">Ou importer un logo<input name="logoFile" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" /></label>
+                  <label>Instagram — URL<input name="instagram" type="url" placeholder="https://instagram.com/toncompte" /></label>
+                  <label>YouTube — URL<input name="youtube" type="url" placeholder="https://youtube.com/@tacreatrice" /></label>
+                  <label>TikTok — URL<input name="tiktok" type="url" placeholder="https://tiktok.com/@toncompte" /></label>
+                </div>
+                <div class="public-bio-link">
+                  <span>Lien de bio Instagram <em>· ouvre la boutique hors d’Instagram</em></span>
+                  <strong id="instagramBioUrl">-</strong>
+                  <div class="bio-actions">
+                    <button class="primary-button" type="button" id="copyInstagramLink">Copier le lien bio</button>
+                    <canvas id="bioQr" width="120" height="120" class="bio-qr" aria-label="QR code du lien de bio"></canvas>
+                  </div>
+                  <small class="bio-store-line">Lien direct boutique : <span id="publicStoreUrl">-</span> · <button class="link-button" type="button" id="copyStoreLink">copier</button></small>
+                </div>
+                <button class="primary-button" type="submit">Enregistrer les modifications</button>
+              </form>
+              <div class="settings-stack">
+                <article class="panel integration-card">
+                  <span class="integration-icon stripe">S</span>
+                  <span><strong>Stripe</strong><small>Paiements et abonnements</small></span>
+                  <span id="stripeStatus">À configurer</span>
+                </article>
+                <article class="panel integration-card">
+                  <span class="integration-icon" style="background:#17172a">✉</span>
+                  <span><strong>Resend</strong><small>Envoi instantané des accès clients</small></span>
+                  <span id="emailStatus">À configurer</span>
+                </article>
+                <article class="panel integration-card">
+                  <span class="integration-icon domain">↗</span>
+                  <span><strong>Domaine personnalisé</strong><small>Connecte ton domaine</small></span>
+                  <button type="button" id="configureDomain">Configurer</button>
+                </article>
+                <article class="panel plan-card">
+                  <span class="panel-label">Abonnement</span>
+                  <h3>Expertly Scale</h3>
+                  <p>Produits illimités, emails automatisés et domaine personnalisé.</p>
+                  <button type="button" id="manageSubscription">Gérer mon abonnement</button>
+                </article>
+              </div>
+            </div>
+          </section>
+        </main>
       </div>
-    </header>
+    </div>
 
-    <main id="top">
-      <section class="hero section-blue">
-        <div class="hero-shell">
-          <div class="side-mockup side-mockup-left" aria-hidden="true">
-            <img
-              class="hero-side-image hero-dashboard-image"
-              src="./assets/expertly-hero-dashboard.webp"
-              width="800"
-              height="922"
-              alt=""
-            />
+    <div class="modal" id="productModal" aria-hidden="true">
+      <div class="modal-card">
+        <div class="modal-heading">
+          <div><span class="panel-label">Catalogue</span><h2 id="productModalTitle">Créer un produit</h2></div>
+          <button class="icon-button" data-close-modal aria-label="Fermer">×</button>
+        </div>
+        <form id="productForm">
+          <input type="hidden" name="id" />
+          <div class="form-grid">
+            <label class="full">Nom du produit<input name="title" required placeholder="Ex. Bootcamp Offre Signature" /></label>
+            <label>Type<select name="type"><option>Formation</option><option>Coaching</option><option>Produit digital</option><option>Masterclass</option><option>Abonnement</option></select></label>
+            <label>Prix en euros<input name="price" type="number" min="0" step="1" required /></label>
+            <label class="full">Description<textarea name="description" rows="3" required placeholder="Décris le résultat obtenu par ton client…"></textarea></label>
+            <label>Statut<select name="status"><option value="published">Publié</option><option value="draft">Brouillon</option></select></label>
+            <label>Couleur<input name="color" type="color" value="#6558f5" /></label>
+            <label>Taille de la carte<select name="cardSize"><option value="m">Moyenne</option><option value="s">Petite</option><option value="l">Large</option><option value="xl">Vedette (mise en avant)</option></select></label>
+            <label>Rôle dans le tunnel<select name="offerRole"><option value="core">Offre principale</option><option value="lead">Lead magnet</option><option value="tripwire">Produit d'appel</option><option value="upsell">Upsell</option></select></label>
+            <label>Type d'accès<select name="accessType"><option value="link">Lien privé</option><option value="file">Fichier</option><option value="calendar">Calendrier</option><option value="video">Vidéo</option><option value="member">Espace membre</option></select></label>
+            <label>Prix barré<input name="compareAtPrice" type="number" min="0" step="1" placeholder="Ex. 1497" /></label>
+            <label>Score de priorité<select name="funnelPriority"><option value="standard">Standard</option><option value="hero">Offre mise en avant</option><option value="support">Offre secondaire</option></select></label>
+            <label>Order bump associé<select name="bumpProductId" id="bumpProductSelect"></select></label>
+            <label>Upsell post-achat<select name="upsellProductId" id="upsellProductSelect"></select></label>
+            <label class="full">Image de couverture<input name="coverUrl" type="url" placeholder="https://ton-site.fr/visuel-produit.jpg" /></label>
+            <label class="full upload-zone">
+              <span>↓</span>
+              <strong>Lien d’accès à livrer</strong>
+              <small>URL du PDF, espace membre, vidéo, fichier cloud ou page privée.</small>
+              <input name="fileName" type="url" required placeholder="https://ton-site.fr/acces-produit" />
+            </label>
           </div>
-
-          <div class="hero-content">
-            <p class="eyebrow">Le système de vente des infopreneurs</p>
-            <h1>
-              Vends ton <span>expertise</span><br />
-              sans empiler les outils
-            </h1>
-            <p class="hero-copy">
-              Vends tes formations, coachings et ressources depuis une boutique qui
-              capture les prospects, encaisse, livre et relance automatiquement.
-            </p>
-            <div class="hero-actions">
-              <a class="btn btn-primary" href="#pricing">
-                Créer ma boutique
-                <span aria-hidden="true">→</span>
-              </a>
-              <a class="btn btn-secondary" href="#product">Voir le CRM en action</a>
-            </div>
+          <div class="modal-actions">
+            <button type="button" class="secondary-button" data-close-modal>Annuler</button>
+            <button type="submit" class="primary-button">Enregistrer le produit</button>
           </div>
-
-          <div class="side-mockup side-mockup-right" aria-hidden="true">
-            <img
-              class="hero-side-image hero-phone-image"
-              src="./assets/expertly-hero-phone.webp"
-              width="720"
-              height="998"
-              alt=""
-            />
-          </div>
-        </div>
-
-        <div class="creator-proof hero-creator-proof" aria-label="Profils pour lesquels Expertly est conçu">
-          <div class="creator-avatars">
-            <img src="./assets/social-proof/charles.jpg" alt="Charles" />
-            <img src="./assets/social-proof/victor.webp" alt="Victor" />
-            <img src="./assets/social-proof/adscei_fun.webp" alt="Adscei" />
-            <img src="./assets/social-proof/bakir.webp" alt="Bakir" />
-            <img src="./assets/social-proof/sallahudin.webp" alt="Sallahudin" />
-            <img src="./assets/social-proof/tona.webp" alt="Tona" />
-            <img src="./assets/social-proof/andrei.webp" alt="Andrei" />
-            <img src="./assets/social-proof/cruz.webp" alt="Cruz" />
-            <img src="./assets/social-proof/alan.webp" alt="Alan" />
-          </div>
-          <p><strong>Conçu pour les coachs, formateurs</strong> et créateurs de contenu</p>
-        </div>
-
-        <div class="value-cards">
-          <article>
-            <div class="value-card-visual">
-              <img
-                src="./assets/features/offers-structured.webp"
-                alt="Aperçu d’une offre Expertly sur ordinateur et mobile"
-                decoding="async"
-              />
-            </div>
-            <h3>Offres structurées</h3>
-            <p>
-              Templates pour lead magnet, mini-formation, coaching premium,
-              abonnement et bundle.
-            </p>
-          </article>
-          <article>
-            <div class="value-card-visual secure">
-              <img
-                src="./assets/features/short-tunnel.webp"
-                alt="Cadenas représentant un tunnel de vente sécurisé"
-                decoding="async"
-              />
-            </div>
-            <h3>Tunnels ultra courts</h3>
-            <p>
-              Checkout rapide, order bump, upsell post-achat et livraison
-              automatique sans outil externe.
-            </p>
-          </article>
-          <article>
-            <div class="value-card-visual">
-              <img
-                src="./assets/features/crm-audience.webp"
-                alt="Blocs de contacts représentant le CRM audience Expertly"
-                decoding="async"
-              />
-            </div>
-            <h3>CRM audience</h3>
-            <p>
-              Segments par intérêt, score d’achat et séquences emails prêtes
-              pour relancer les prospects.
-            </p>
-          </article>
-        </div>
-
-      </section>
-
-      <section class="section-white" id="product">
-        <div class="section-heading">
-          <p class="eyebrow">Produit</p>
-          <h2>Une boutique, un mini-CRM et un tunnel de vente dans le même outil.</h2>
-        </div>
-
-        <div class="product-grid">
-          <figure class="dashboard-preview dashboard-image">
-            <img
-              src="./assets/expertly-dashboard-hq.png"
-              width="2048"
-              height="1673"
-              loading="lazy"
-              alt="Dashboard créateur Expertly présentant le chiffre d’affaires, les commandes, les clients et les statistiques."
-            />
-          </figure>
-
-          <div class="product-copy">
-            <h3>Optimisé pour vendre de l’expertise, pas des t-shirts.</h3>
-            <p>
-              La logique produit est pensée pour les infopreneurs : capturer un
-              lead, le qualifier, vendre une offre simple, proposer un upsell et
-              suivre la valeur client.
-            </p>
-            <ul>
-              <li>Pages bio avec blocs offres, preuves et FAQ.</li>
-              <li>Livraison automatique de fichiers, vidéos et liens privés.</li>
-              <li>Calendrier intégré pour audits, appels et coaching.</li>
-              <li>Factures, TVA et domaines personnalisés pour le marché européen.</li>
-            </ul>
-          </div>
-        </div>
-      </section>
-
-      <section class="section-blue" id="features">
-        <div class="section-heading">
-          <p class="eyebrow">Fonctions</p>
-          <h2>Le minimum utile pour remplacer 5 outils sans complexifier le business.</h2>
-        </div>
-        <figure class="product-showcase">
-          <img
-            src="./assets/expertly-product-showcase.webp"
-            width="1541"
-            height="1005"
-            loading="lazy"
-            alt="Interface de boutique créateur sur ordinateur et mobile avec réservations, formations, téléchargements, sessions en direct et liens."
-          />
-        </figure>
-        <div class="feature-cards">
-          <article>
-            <div class="feature-visual funnel"></div>
-            <h3>Tunnel Bio → Lead → Vente</h3>
-            <p>Capture email, page de vente courte, checkout et upsell post-achat.</p>
-            <a href="#pricing">Accéder au service</a>
-          </article>
-          <article>
-            <div class="feature-visual course"></div>
-            <h3>Bibliothèque de formations</h3>
-            <p>Modules, fichiers, liens privés et accès client sans LMS lourd.</p>
-            <a href="#pricing">Accéder au service</a>
-          </article>
-          <article>
-            <div class="feature-visual email"></div>
-            <h3>Emails de conversion</h3>
-            <p>Séquences prêtes pour webinar, panier abandonné et relance coaching.</p>
-            <a href="#pricing">Accéder au service</a>
-          </article>
-          <article>
-            <div class="feature-visual tax"></div>
-            <h3>Vente Europe-ready</h3>
-            <p>Stripe, TVA, factures, devise EUR et export comptable propre.</p>
-            <a href="#pricing">Accéder au service</a>
-          </article>
-          <article>
-            <div class="feature-visual ai"></div>
-            <h3>Assistant d'offre IA</h3>
-            <p>Génère promesse, structure, prix, FAQ et email de lancement.</p>
-            <a href="#pricing">Accéder au service</a>
-          </article>
-          <article>
-            <div class="feature-visual affiliate"></div>
-            <h3>Affiliation créateur</h3>
-            <p>Liens partenaires, commissions et tracking des ambassadeurs.</p>
-            <a href="#pricing">Accéder au service</a>
-          </article>
-        </div>
-      </section>
-
-      <section class="section-white how-it-works" id="how-it-works">
-        <div class="section-heading">
-          <p class="eyebrow">Mise en route</p>
-          <h2>De ton idée à ta première vente en trois étapes.</h2>
-        </div>
-        <div class="steps-grid">
-          <article>
-            <span>01</span>
-            <h3>Structure ton offre</h3>
-            <p>Choisis un modèle, pose ta promesse, ton prix et ce que le client reçoit.</p>
-          </article>
-          <article>
-            <span>02</span>
-            <h3>Publie ta boutique</h3>
-            <p>Personnalise ta page, connecte Stripe et partage un lien unique à ton audience.</p>
-          </article>
-          <article>
-            <span>03</span>
-            <h3>Pilote tes ventes</h3>
-            <p>Suis les contacts, commandes et conversions depuis le CRM Expertly.</p>
-          </article>
-        </div>
-      </section>
-
-      <section class="section-white comparison">
-        <div class="section-heading">
-          <p class="eyebrow">Positionnement</p>
-          <h2>Une alternative plus verticale qu’un store bio généraliste.</h2>
-        </div>
-        <div class="comparison-table">
-          <div class="comparison-row head">
-            <span>Usage</span>
-            <span>Store bio généraliste</span>
-            <span>Expertly</span>
-          </div>
-          <div class="comparison-row">
-            <span>Produit principal</span>
-            <span>Liens et produits simples</span>
-            <span>Formations, coaching, cohortes</span>
-          </div>
-          <div class="comparison-row">
-            <span>Conversion</span>
-            <span>Checkout + upsell</span>
-            <span>Lead magnet + nurturing + upsell</span>
-          </div>
-          <div class="comparison-row">
-            <span>Marché cible</span>
-            <span>Créateurs tous secteurs</span>
-            <span>Infopreneurs francophones / Europe</span>
-          </div>
-          <div class="comparison-row">
-            <span>Avantage</span>
-            <span>Simple et rapide</span>
-            <span>Un système de vente complet</span>
-          </div>
-        </div>
-      </section>
-
-      <section class="section-blue pricing-section" id="pricing">
-        <div class="section-heading">
-          <p class="eyebrow">Tarifs</p>
-          <h2>Choisis l’offre adaptée à ton activité.</h2>
-        </div>
-        <div class="pricing-grid">
-          <article class="pricing-card plan-launch">
-            <div class="plan-visual">
-              <span class="plan-icon" aria-hidden="true">↗</span>
-              <span class="plan-audience">Pour débuter</span>
-            </div>
-            <div class="pricing-card-head">
-              <span class="plan-name">Launch</span>
-              <p>Pour lancer ta première offre.</p>
-            </div>
-            <div class="plan-price">
-              <strong>19 €</strong>
-              <span>/ mois</span>
-            </div>
-            <p class="plan-trial">14 jours d’essai gratuit, puis 19 €/mois · sans engagement</p>
-            <p class="plan-includes">Tout le nécessaire pour commencer :</p>
-            <ul class="plan-features">
-              <li>1 boutique personnalisable</li>
-              <li>Jusqu’à 5 produits</li>
-              <li>Lead magnets et collecte d’emails</li>
-              <li>3 % de commission par vente</li>
-            </ul>
-            <button class="pricing-checkout" type="button" data-checkout-plan="launch" aria-haspopup="dialog">
-              Essayer Launch gratuitement
-            </button>
-            <small class="plan-note">Idéal pour tester ton marché</small>
-          </article>
-          <article class="pricing-card featured plan-scale">
-            <span class="recommended-badge">Le plus choisi</span>
-            <div class="plan-visual">
-              <span class="plan-icon" aria-hidden="true">✦</span>
-              <span class="plan-audience">Pour accélérer</span>
-            </div>
-            <div class="pricing-card-head">
-              <span class="plan-name">Scale</span>
-              <p>Pour développer des ventes régulières.</p>
-            </div>
-            <div class="plan-price">
-              <strong>49 €</strong>
-              <span>/ mois</span>
-            </div>
-            <p class="plan-trial">14 jours d’essai gratuit, puis 49 €/mois · sans engagement</p>
-            <p class="plan-includes">Tout dans Launch, plus :</p>
-            <ul class="plan-features">
-              <li>Produits et offres illimités</li>
-              <li>Upsells et order bumps</li>
-              <li>Emails automatisés</li>
-              <li>Domaine personnalisé</li>
-            </ul>
-            <button class="pricing-checkout" type="button" data-checkout-plan="scale" aria-haspopup="dialog">
-              Essayer Scale gratuitement
-            </button>
-            <small class="plan-note">Pour les créateurs qui vendent déjà</small>
-          </article>
-          <article class="pricing-card plan-studio">
-            <div class="plan-visual">
-              <span class="plan-icon" aria-hidden="true">◆</span>
-              <span class="plan-audience">Pour les équipes</span>
-            </div>
-            <div class="pricing-card-head">
-              <span class="plan-name">Studio</span>
-              <p>Pour gérer plusieurs marques ou clients.</p>
-            </div>
-            <div class="plan-price">
-              <strong>149 €</strong>
-              <span>/ mois</span>
-            </div>
-            <p class="plan-trial">14 jours d’essai gratuit, puis 149 €/mois · sans engagement</p>
-            <p class="plan-includes">Tout dans Scale, plus :</p>
-            <ul class="plan-features">
-              <li>Espaces multi-marques</li>
-              <li>Affiliation avancée</li>
-              <li>Exports comptables détaillés</li>
-              <li>Support prioritaire</li>
-            </ul>
-            <button class="pricing-checkout" type="button" data-checkout-plan="studio" aria-haspopup="dialog">
-              Essayer Studio gratuitement
-            </button>
-            <small class="plan-note">Conçu pour les équipes et agences</small>
-          </article>
-        </div>
-        <p class="pricing-intro">14 jours d’essai gratuit · Sans engagement, annulation à tout moment · Paiement sécurisé par Stripe</p>
-        <p class="checkout-feedback" id="checkoutFeedback" role="status" aria-live="polite"></p>
-      </section>
-
-      <section class="section-white roadmap" id="included">
-        <div class="section-heading">
-          <p class="eyebrow">Inclus dans Expertly</p>
-          <h2>Tout ce qu’il faut pour transformer ton audience en clients.</h2>
-        </div>
-        <div class="roadmap-grid">
-          <article><strong>1</strong><span>Boutique personnalisable prête à publier</span></article>
-          <article><strong>2</strong><span>Vente de formations et produits numériques</span></article>
-          <article><strong>3</strong><span>Réservations de coaching et sessions en direct</span></article>
-          <article><strong>4</strong><span>Paiements sécurisés et abonnements avec Stripe</span></article>
-          <article><strong>5</strong><span>Livraison automatique et emails clients</span></article>
-          <article><strong>6</strong><span>Contacts, ventes et statistiques centralisés</span></article>
-        </div>
-      </section>
-
-      <section class="section-white faq-section" id="faq">
-        <div class="section-heading">
-          <p class="eyebrow">Questions fréquentes</p>
-          <h2>Ce qu’il faut savoir avant de lancer ta boutique.</h2>
-        </div>
-        <div class="faq-list">
-          <details>
-            <summary>Quels produits puis-je vendre avec Expertly ?</summary>
-            <p>Formations, coachings, audits, ressources numériques, abonnements et bundles.</p>
-          </details>
-          <details>
-            <summary>Ai-je besoin d’un autre outil pour encaisser ?</summary>
-            <p>Non. Tu connectes Stripe et Expertly centralise le checkout, les commandes et l’accès client.</p>
-          </details>
-          <details>
-            <summary>Puis-je utiliser mon propre domaine ?</summary>
-            <p>Oui, le domaine personnalisé est inclus à partir de la formule Scale.</p>
-          </details>
-          <details>
-            <summary>Que se passe-t-il après le paiement ?</summary>
-            <p>Ton compte est activé et tu es redirigé vers le CRM pour te connecter avec l’email et le mot de passe choisis.</p>
-          </details>
-          <details>
-            <summary>Puis-je arrêter mon abonnement ?</summary>
-            <p>Oui. Les formules sont mensuelles et sans engagement annuel.</p>
-          </details>
-        </div>
-      </section>
-
-      <section class="final-cta section-blue">
-        <h2>Transforme ton audience en système de vente.</h2>
-        <div>
-          <a class="btn btn-primary" href="#pricing">Créer ma boutique</a>
-          <a class="btn btn-secondary" href="#product">Voir le produit</a>
-        </div>
-      </section>
-    </main>
-
-    <footer class="footer">
-      <div>
-        <img class="footer-logo" src="./assets/expertly-logo.webp" alt="Expertly" width="512" height="120" />
-        <p>Le système de vente vertical pour infopreneurs.</p>
-      </div>
-      <nav aria-label="Footer">
-        <a href="#product">Produit</a>
-        <a href="#features">Fonctions</a>
-        <a href="#pricing">Tarifs</a>
-        <a href="#faq">FAQ</a>
-      </nav>
-    </footer>
-
-    <div class="checkout-dialog" id="checkoutDialog" aria-hidden="true">
-      <div class="checkout-dialog-card" role="dialog" aria-modal="true" aria-labelledby="checkoutDialogTitle">
-        <button class="checkout-dialog-close" type="button" data-close-checkout aria-label="Fermer">×</button>
-        <p class="eyebrow">Créer ton espace Expertly</p>
-        <h2 id="checkoutDialogTitle">Finalise ton compte avant le paiement</h2>
-        <p id="checkoutPlanSummary">Formule sélectionnée</p>
-        <form id="checkoutAccountForm">
-          <input type="hidden" name="plan" />
-          <label>
-            Prénom
-            <input name="firstName" autocomplete="given-name" required maxlength="80" />
-          </label>
-          <label>
-            Email
-            <input name="email" type="email" autocomplete="email" required maxlength="180" />
-          </label>
-          <label>
-            Mot de passe
-            <input name="password" type="password" autocomplete="new-password" minlength="8" required />
-            <small>8 caractères minimum. Il servira à ouvrir ton CRM.</small>
-          </label>
-          <p class="checkout-dialog-note">Abonnement mensuel, annulable à tout moment. Paiement sécurisé par Stripe.</p>
-          <p class="checkout-dialog-error" id="checkoutDialogError" role="alert"></p>
-          <button class="checkout-dialog-submit" type="submit">Continuer vers le paiement</button>
         </form>
       </div>
     </div>
 
-    <script src="./script.js"></script>
-  </body>
-</html>
+    <div class="modal" id="pageModal" aria-hidden="true">
+      <div class="modal-card page-editor-modal">
+        <div class="modal-heading">
+          <div><span class="panel-label">Page de vente</span><h2 id="pageModalTitle">Créer une page</h2></div>
+          <button class="icon-button" data-close-page-modal aria-label="Fermer">×</button>
+        </div>
+        <form id="pageForm">
+          <input type="hidden" name="id" />
+          <div class="page-editor-grid">
+            <div class="page-editor-fields">
+              <div class="form-grid">
+                <label>Nom interne<input name="name" required placeholder="Ex. Page Guide Instagram" /></label>
+                <label>Produit associé<select name="productId" id="pageProductSelect" required></select></label>
+                <label class="full">Lien public<div class="slug-field"><span>/p/</span><input name="slug" required pattern="[a-z0-9-]+" placeholder="guide-instagram" /></div></label>
+                <label class="full">Titre principal<input name="headline" required placeholder="Transforme ton audience en clients" /></label>
+                <label class="full">Sous-titre<textarea name="subheadline" rows="3" required placeholder="Explique le résultat concret obtenu par ton client."></textarea></label>
+                <label>Texte du bouton<input name="buttonText" required value="Je découvre l’offre" /></label>
+                <label>Badge<input name="badge" placeholder="Nouveau · Accès immédiat" /></label>
+                <label>Couleur principale<input name="accent" type="color" value="#6558f5" /></label>
+                <label>Couleur du fond<input name="backgroundColor" type="color" value="#f5f3ff" /></label>
+                <label>Couleur du texte<input name="textColor" type="color" value="#17172a" /></label>
+                <label>Style<select name="layout"><option value="split">Visuel à droite</option><option value="centered">Centré</option><option value="minimal">Minimal</option></select></label>
+                <label class="full">Logo — URL<input name="logoUrl" type="url" placeholder="https://monsite.fr/logo.png" /></label>
+                <label class="full media-upload">Ou importer un logo<input name="logoFile" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" /></label>
+                <label class="full">Image produit — URL<input name="productImageUrl" type="url" placeholder="https://monsite.fr/produit.jpg" /></label>
+                <label class="full media-upload">Ou importer une image produit<input name="productImageFile" type="file" accept="image/png,image/jpeg,image/webp" /></label>
+                <label class="full">Image de fond — URL<input name="backgroundImageUrl" type="url" placeholder="https://monsite.fr/fond.jpg" /></label>
+                <label class="full media-upload">Ou importer une image de fond<input name="backgroundImageFile" type="file" accept="image/png,image/jpeg,image/webp" /></label>
+                <label class="full">Preuve ou garantie<textarea name="proof" rows="2" placeholder="Paiement sécurisé · Accès instantané · Garantie 14 jours"></textarea></label>
+                <fieldset class="full block-picker">
+                  <legend>Blocs de page</legend>
+                  <label><input type="checkbox" name="blockBenefits" checked /> Bénéfices</label>
+                  <label><input type="checkbox" name="blockProgram" checked /> Programme</label>
+                  <label><input type="checkbox" name="blockTestimonials" /> Témoignages</label>
+                  <label><input type="checkbox" name="blockFaq" checked /> FAQ</label>
+                  <label><input type="checkbox" name="blockGuarantee" checked /> Garantie</label>
+                  <label><input type="checkbox" name="blockLeadMagnet" /> Lead magnet</label>
+                </fieldset>
+                <label class="full">Programme ou contenu<textarea name="program" rows="3" placeholder="Module 1 : ...&#10;Module 2 : ..."></textarea></label>
+                <label class="full">FAQ<textarea name="faq" rows="3" placeholder="Question fréquente ? Réponse courte."></textarea></label>
+                <label class="full">Témoignage principal<textarea name="testimonial" rows="2" placeholder="Résultat client, preuve sociale ou citation."></textarea></label>
+                <label class="full">Mentions transparentes<textarea name="disclosure" rows="2" placeholder="Produit digital vendu par [nom]. Support : contact@domaine.fr"></textarea></label>
+              </div>
+            </div>
+            <div class="page-editor-preview">
+              <span class="panel-label">Aperçu instantané</span>
+              <div class="mini-sales-page" id="pageEditorPreview">
+                <div class="mini-sales-overlay"></div>
+                <div class="mini-sales-content">
+                  <img class="mini-logo" id="editorLogoPreview" alt="" hidden />
+                  <span id="editorBadgePreview">Nouveau</span>
+                  <h3 id="editorHeadlinePreview">Ton titre de vente</h3>
+                  <p id="editorSubheadlinePreview">Ta promesse apparaîtra ici.</p>
+                  <button type="button" id="editorButtonPreview">Je découvre l’offre</button>
+                </div>
+                <img class="mini-product-image" id="editorProductPreview" alt="" hidden />
+              </div>
+              <p class="compliance-note">Lien direct, contenu identique pour tous les visiteurs, sans redirection cachée.</p>
+            </div>
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="secondary-button" data-close-page-modal>Annuler</button>
+            <button type="submit" class="primary-button">Enregistrer la page</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="drawer" id="checklistDrawer" aria-hidden="true">
+      <div class="drawer-heading"><div><span class="panel-label">Démarrage</span><h2>Publie ta première boutique</h2></div><button class="icon-button" data-close-drawer>×</button></div>
+      <div class="checklist" id="launchChecklist"></div>
+    </div>
+    <aside class="detail-panel" id="detailPanel" aria-hidden="true">
+      <div class="detail-panel-card">
+        <div class="drawer-heading">
+          <div><span class="panel-label" id="detailEyebrow">CRM</span><h2 id="detailTitle">Détail</h2></div>
+          <button class="icon-button" data-close-detail aria-label="Fermer">×</button>
+        </div>
+        <div id="detailCo
