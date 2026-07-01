@@ -91,9 +91,11 @@ function renderFeaturedBanner(publishedProducts) {
   const freeProduct = publishedProducts.find((product) => Number(product.price) === 0);
   if (!freeProduct) {
     banner.hidden = true;
+    banner.style.display = "none";
     return;
   }
   banner.hidden = false;
+  banner.style.display = "";
   const title = document.querySelector("#featuredBannerTitle");
   if (title) title.textContent = freeProduct.title || "Ressource gratuite offerte";
 }
@@ -343,10 +345,4 @@ async function startStore() {
     fetch("/api/events/visit", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ slug }),
-    }).catch(() => {});
-  }
-  renderStore();
-}
-
-startStore();
+      body: JSON.stringify({ slug })
