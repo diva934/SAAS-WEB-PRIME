@@ -3,100 +3,66 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Boutique de Claire Mentor, propulsée par Expertly." />
-    <title>Claire Mentor · Boutique</title>
+    <title>Expertly · Boutique</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="./store.css" />
+    <link rel="stylesheet" href="/store.css" />
+    <style>.featured-banner[hidden]{display:none!important}</style>
   </head>
-  <body>
+  <body data-surface="creator_store">
     <main class="store-shell">
       <header class="creator-header">
-        <div class="creator-avatar" id="creatorAvatar">CM</div>
+        <div class="creator-avatar" id="creatorAvatar">EX</div>
         <div class="creator-copy">
-          <div class="creator-title">
-            <h1 id="creatorName">Claire Mentor</h1>
-            <span class="verified" title="Créatrice vérifiée">✓</span>
-          </div>
+          <h1 id="creatorName">Boutique Expertly</h1>
           <p class="creator-role" id="creatorRole">Business coach</p>
           <p class="creator-bio" id="creatorBio"></p>
-          <div class="social-links">
-            <a id="instagramLink" href="#" aria-label="Instagram">Instagram</a>
-            <a id="youtubeLink" href="#" aria-label="YouTube">YouTube</a>
-          </div>
+          <div class="social-links" id="creatorSocials" hidden></div>
         </div>
       </header>
 
-      <section class="proof-strip" id="proofStrip">
-        <div><strong>4,9/5</strong><span>Note moyenne</span></div>
-        <div><strong>326</strong><span>Clients accompagnés</span></div>
-        <div><strong>14 jours</strong><span>Garantie satisfait</span></div>
-      </section>
-
-      <section class="lead-card" id="leadCard">
-        <span class="lead-icon">↓</span>
+      <section class="featured-banner" id="featuredBanner" hidden>
+        <span>Ressource gratuite</span>
         <div>
-          <p>Ressource gratuite</p>
-          <h2>Le plan d’une offre qui se vend</h2>
-          <span>Checklist et structure complète en 12 pages.</span>
-        </div>
-        <button id="openLeadModal">Recevoir</button>
-      </section>
-
-      <section class="offers-section">
-        <div class="section-title">
-          <div>
-            <span>Programmes et ressources</span>
-            <h2>Choisis ton prochain niveau.</h2>
-          </div>
-          <span id="offerCount"></span>
-        </div>
-        <div class="public-offers" id="publicOffers"></div>
-      </section>
-
-      <section class="testimonial">
-        <div class="quote-mark">“</div>
-        <blockquote>
-          Claire m’a aidée à simplifier mon offre et à passer de quelques ventes irrégulières à un lancement à 18 400 €.
-        </blockquote>
-        <div class="testimonial-author">
-          <span>SB</span>
-          <div><strong>Sofia Bernard</strong><small>Fondatrice, Atelier S.</small></div>
+          <p id="featuredBannerTitle">La checklist d’une offre qui se vend</p>
+          <button id="leadButton">La recevoir gratuitement →</button>
         </div>
       </section>
 
-      <footer>
-        <span>Paiement sécurisé · Accès immédiat</span>
-        <a href="./index.html" target="_blank">Propulsé par <strong>Expertly</strong></a>
-      </footer>
+      <section class="catalogue">
+        <div class="catalogue-heading">
+          <div><span>Catalogue</span><h2>Choisis ton prochain niveau.</h2></div>
+          <small id="offerCount">0 offres</small>
+        </div>
+        <div class="offer-list" id="publicOffers"></div>
+      </section>
     </main>
 
-    <div class="modal-backdrop" id="checkoutModal" aria-hidden="true">
-      <div class="checkout-modal" role="dialog" aria-modal="true">
-        <button class="close-button" data-close-modal aria-label="Fermer">×</button>
+    <footer><span class="mini-mark">E</span> Propulsé par <strong>Expertly</strong></footer>
+
+    <div class="modal" id="checkoutModal" aria-hidden="true">
+      <div class="modal-card">
+        <button class="close-button" data-close-checkout>×</button>
         <div id="checkoutContent"></div>
       </div>
     </div>
 
-    <div class="modal-backdrop" id="leadModal" aria-hidden="true">
-      <div class="checkout-modal compact-modal" role="dialog" aria-modal="true">
-        <button class="close-button" data-close-lead aria-label="Fermer">×</button>
-        <span class="modal-eyebrow">Ressource gratuite</span>
-        <h2>Reçois le plan d’une offre qui se vend.</h2>
-        <p>Le lien sera envoyé immédiatement dans ta boîte mail.</p>
+    <div class="modal" id="leadModal" aria-hidden="true">
+      <div class="modal-card small">
+        <button class="close-button" data-close-lead>×</button>
+        <span class="modal-eyebrow">Ressource offerte</span>
+        <h2>Reçois la checklist maintenant.</h2>
+        <p>Entre tes informations pour obtenir le PDF dans ta boîte mail.</p>
         <form id="leadForm">
-          <label>Prénom<input name="name" required placeholder="Ton prénom" /></label>
-          <label>Email<input name="email" type="email" required placeholder="toi@email.com" /></label>
+          <label>Prénom<input name="name" required placeholder="Alex" /></label>
+          <label>Email<input name="email" type="email" required placeholder="claire@email.com" /></label>
           <button type="submit">Recevoir la checklist</button>
         </form>
       </div>
     </div>
-
-    <div class="toast" id="storeToast" aria-live="polite"></div>
-    <script src="./store.js"></script>
-  </body>
-</html>
+    <div class="store-toast" id="storeToast"></div>
+    <script src="/analytics.js
