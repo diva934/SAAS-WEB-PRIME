@@ -542,4 +542,77 @@
       </div>
     </aside>
     <!-- Contact modal -->
-    <div class="modal" id="contactModa
+    <div class="modal" id="contactModal" aria-hidden="true">
+      <div class="modal-card">
+        <div class="modal-heading">
+          <div><span class="panel-label">CRM</span><h2 id="contactModalTitle">Ajouter un contact</h2></div>
+          <button class="icon-button" data-close-contact-modal aria-label="Fermer">×</button>
+        </div>
+        <form id="contactForm">
+          <input type="hidden" name="id" />
+          <div class="form-grid">
+            <label class="full">Nom<input name="name" required placeholder="Ex. Marie Dupont" /></label>
+            <label class="full">Email<input name="email" type="email" required placeholder="marie@exemple.fr" /></label>
+            <label>Segment<select name="segment"><option value="Lead">Lead</option><option value="Client">Client</option><option value="Prospect">Prospect</option></select></label>
+            <label>Source<input name="source" placeholder="Instagram, Publicité…" /></label>
+            <label class="full">Prochaine action<input name="nextAction" placeholder="Relancer dans 3 jours…" /></label>
+            <label class="full">Notes<textarea name="notes" rows="3" placeholder="Notes internes…"></textarea></label>
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="secondary-button" data-close-contact-modal>Annuler</button>
+            <button type="submit" class="primary-button">Enregistrer</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Order modal -->
+    <div class="modal" id="orderModal" aria-hidden="true">
+      <div class="modal-card">
+        <div class="modal-heading">
+          <div><span class="panel-label">Commandes</span><h2>Ajouter une commande</h2></div>
+          <button class="icon-button" data-close-order-modal aria-label="Fermer">×</button>
+        </div>
+        <form id="orderForm">
+          <div class="form-grid">
+            <label class="full">Nom du client<input name="clientName" required placeholder="Marie Dupont" /></label>
+            <label class="full">Email du client<input name="clientEmail" type="email" required placeholder="marie@exemple.fr" /></label>
+            <label class="full">Produit<select name="productId" id="orderProductSelect"></select></label>
+            <label>Montant (€)<input name="amount" type="number" min="0" step="1" required /></label>
+            <label>Date<input name="date" type="date" required /></label>
+            <label>Statut<select name="status"><option value="paid">Payé</option><option value="refunded">Remboursé</option></select></label>
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="secondary-button" data-close-order-modal>Annuler</button>
+            <button type="submit" class="primary-button">Enregistrer</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Email automation modal -->
+    <div class="modal" id="emailModal" aria-hidden="true">
+      <div class="modal-card">
+        <div class="modal-heading">
+          <div><span class="panel-label">Emails</span><h2 id="emailModalTitle">Nouvelle automation</h2></div>
+          <button class="icon-button" data-close-email-modal aria-label="Fermer">×</button>
+        </div>
+        <form id="emailForm">
+          <input type="hidden" name="id" />
+          <div class="form-grid">
+            <label class="full">Nom de l'automation<input name="name" required placeholder="Email de bienvenue" /></label>
+            <label class="full">Description<textarea name="description" rows="2" placeholder="Envoyé après chaque achat…"></textarea></label>
+            <label class="full">Déclencheur<select name="trigger"><option>Achat confirmé</option><option>Inscription newsletter</option><option>Panier abandonné</option><option>J+3 après achat</option><option>J+7 après achat</option></select></label>
+            <label class="full"><input type="checkbox" name="active" checked /> Automation active</label>
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="secondary-button" data-close-email-modal>Annuler</button>
+            <button type="submit" class="primary-button">Enregistrer</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script src="./assets/js/app.js"></script>
+  </body>
+</html>
