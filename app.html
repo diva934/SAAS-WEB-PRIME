@@ -3,385 +3,616 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Expertly Studio, le système de vente des infopreneurs." />
-    <title>Expertly Studio</title>
+    <meta
+      name="description"
+      content="Espace Expertly pour gérer produits digitaux, pages de vente, contacts et commandes."
+    />
+    <title>Expertly · Espace créateur</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="./app.css" />
+    <link rel="icon" href="./assets/expertly-logo.png" />
+    <link rel="stylesheet" href="./styles.css" />
+    <script>
+      window.EXPERTLY_CONFIG = {
+        supabaseUrl: "%SUPABASE_URL%",
+        supabaseAnonKey: "%SUPABASE_ANON_KEY%",
+        marketingUrl: "%MARKETING_URL%"
+      };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   </head>
-  <body>
+  <body class="auth-pending" data-surface="creator_dashboard">
     <div class="app-shell">
       <aside class="sidebar" id="sidebar">
-        <a class="app-brand" href="./index.html" aria-label="Retour à Expertly">
-          <img src="./assets/expertly-logo.png" alt="Expertly" />
-        </a>
-
-        <div class="workspace-switcher">
-          <div class="workspace-avatar">CM</div>
-          <div>
-            <strong>Claire Mentor</strong>
-            <span>Workspace principal</span>
-          </div>
-          <button class="icon-button compact" title="Changer d’espace" aria-label="Changer d’espace">⌄</button>
+        <div class="brand-row">
+          <a class="brand" href="#overview" aria-label="Expertly">
+            <img class="brand-logo" src="./assets/expertly-logo.png" alt="Expertly" />
+          </a>
+          <button class="icon-button sidebar-close" id="sidebarClose" aria-label="Fermer le menu">×</button>
         </div>
 
-        <nav class="side-nav" aria-label="Navigation principale">
-          <button class="nav-item active" data-view="dashboard"><span>⌂</span>Vue d’ensemble</button>
-          <button class="nav-item" data-view="offers"><span>▣</span>Offres</button>
-          <button class="nav-item" data-view="store"><span>◫</span>Boutique</button>
-          <button class="nav-item" data-view="contacts"><span>◎</span>Contacts</button>
-          <button class="nav-item" data-view="orders"><span>↗</span>Commandes</button>
-          <button class="nav-item" data-view="analytics"><span>⌁</span>Analytics</button>
+        <div class="workspace-switcher">
+          <span class="workspace-avatar" id="workspaceInitials">EX</span>
+          <span>
+            <strong id="workspaceName">Espace Expertly</strong>
+            <small>Expertly Scale</small>
+          </span>
+          <button aria-label="Changer d’espace">⌄</button>
+        </div>
+
+        <nav class="main-nav" aria-label="Navigation principale">
+          <p>Activité</p>
+          <button class="nav-item active" data-view="overview">
+            <span class="nav-icon">⌂</span><span>Vue d’ensemble</span>
+          </button>
+          <button class="nav-item" data-view="products">
+            <span class="nav-icon">◇</span><span>Produits</span><span class="nav-count" id="productCount">0</span>
+          </button>
+          <button class="nav-item" data-view="pages">
+            <span class="nav-icon">▤</span><span>Pages de vente</span>
+          </button>
+          <button class="nav-item" data-view="tunnel">
+            <span class="nav-icon">⇄</span><span>Tunnel</span>
+          </button>
+          <button class="nav-item" data-view="orders">
+            <span class="nav-icon">↗</span><span>Commandes</span>
+          </button>
+          <button class="nav-item" data-view="contacts">
+            <span class="nav-icon">◎</span><span>Contacts</span>
+          </button>
+          <p>Développer</p>
+          <button class="nav-item" data-view="analytics">
+            <span class="nav-icon">⌁</span><span>Analytics</span>
+          </button>
+          <button class="nav-item" data-view="finance">
+            <span class="nav-icon">€</span><span>Finance</span>
+          </button>
+          <button class="nav-item" data-view="emails">
+            <span class="nav-icon">✉</span><span>Emails</span><span class="soon">Bêta</span>
+          </button>
         </nav>
 
-        <div class="nav-label">Configuration</div>
-        <nav class="side-nav">
-          <button class="nav-item" data-view="settings"><span>⚙</span>Réglages</button>
-        </nav>
-
-        <div class="plan-card">
-          <div>
-            <span class="status-dot"></span>
-            <strong>Plan Scale</strong>
+        <div class="sidebar-bottom">
+          <div class="launch-card">
+            <span>Checklist de lancement</span>
+            <strong id="launchProgressLabel">0 étape sur 7</strong>
+            <div class="mini-progress"><i id="launchProgressBar"></i></div>
+            <button data-action="open-checklist">Continuer la configuration</button>
           </div>
-          <p>8 offres sur un nombre illimité</p>
-          <button data-view-trigger="settings">Gérer le plan</button>
+          <button class="nav-item" data-view="settings">
+            <span class="nav-icon">⚙</span><span>Réglages</span>
+          </button>
+          <button class="help-button" id="helpButton"><span>?</span> Centre d’aide</button>
         </div>
       </aside>
 
       <div class="main-column">
         <header class="topbar">
-          <button class="icon-button menu-button" id="menuButton" aria-label="Ouvrir le menu">☰</button>
-          <div class="topbar-title">
-            <span id="breadcrumb">Studio</span>
-            <strong id="viewTitle">Vue d’ensemble</strong>
+          <div class="topbar-left">
+            <button class="icon-button menu-button" id="menuButton" aria-label="Ouvrir le menu">☰</button>
+            <div>
+              <span class="breadcrumb">Espace créateur</span>
+              <strong id="viewTitle">Vue d’ensemble</strong>
+            </div>
           </div>
           <div class="topbar-actions">
-            <a class="store-link" href="./store.html" target="_blank">Voir ma boutique ↗</a>
-            <button class="icon-button" id="notificationButton" title="Notifications" aria-label="Notifications">●</button>
-            <div class="user-avatar">CM</div>
+            <a class="store-link" href="./store.html" target="_blank" id="topStoreLink">
+              Voir ma boutique <span>↗</span>
+            </a>
+            <button class="icon-button notification-button" id="notificationButton" aria-label="Notifications">
+              ♢<i></i>
+            </button>
+            <button class="account-button" id="accountButton">
+              <span id="accountInitials">EX</span><span class="account-copy"><strong id="accountName">Créateur</strong><small>Administrateur</small></span><b>⌄</b>
+            </button>
           </div>
         </header>
 
         <main class="content">
-          <section class="view active" id="dashboardView">
-            <div class="page-heading">
+          <section class="view active" id="overviewView">
+            <div class="page-heading overview-heading">
               <div>
-                <p class="eyebrow">Mardi 23 juin</p>
-                <h1>Bonjour Claire, voici ce qui convertit.</h1>
-                <p>Une lecture rapide de ton activité et des prochaines actions utiles.</p>
+                <p class="eyebrow">Jeudi 25 juin</p>
+                <h1>Bienvenue dans ton espace de vente</h1>
+                <p>Voici ce qui se passe dans ton activité aujourd’hui.</p>
               </div>
-              <button class="primary-button" data-action="new-offer">＋ Nouvelle offre</button>
+              <button class="primary-button" data-action="new-product">＋ Créer un produit</button>
             </div>
 
-            <div class="metrics-grid" id="metricsGrid"></div>
+            <div class="metric-grid" id="overviewMetrics"></div>
 
-            <div class="dashboard-grid">
+            <div class="overview-grid">
               <article class="panel revenue-panel">
                 <div class="panel-heading">
                   <div>
-                    <span class="panel-label">Chiffre d’affaires</span>
-                    <h2 id="revenueTotal">0 €</h2>
+                    <span class="panel-label">Revenus</span>
+                    <h2 id="revenueHeading">0 €</h2>
                   </div>
-                  <select id="revenuePeriod" aria-label="Période du chiffre d’affaires">
-                    <option value="30">30 derniers jours</option>
-                    <option value="7">7 derniers jours</option>
+                  <select aria-label="Période">
+                    <option>30 derniers jours</option>
+                    <option>7 derniers jours</option>
                   </select>
                 </div>
                 <div class="chart-wrap">
-                  <div class="chart-grid-lines"></div>
-                  <svg id="revenueChart" viewBox="0 0 700 240" role="img" aria-label="Évolution du chiffre d’affaires"></svg>
+                  <svg id="revenueChart" viewBox="0 0 760 250" role="img" aria-label="Évolution du chiffre d’affaires"></svg>
+                  <div class="chart-labels"><span>1 juin</span><span>8 juin</span><span>15 juin</span><span>22 juin</span><span>30 juin</span></div>
                 </div>
-                <div class="chart-axis"><span>1 juin</span><span>8 juin</span><span>15 juin</span><span>22 juin</span><span>30 juin</span></div>
               </article>
 
               <article class="panel action-panel">
                 <div class="panel-heading">
-                  <div>
-                    <span class="panel-label">À faire maintenant</span>
-                    <h2>3 actions à impact</h2>
-                  </div>
+                  <div><span class="panel-label">À faire</span><h2>Actions recommandées</h2></div>
+                  <span class="action-total">3</span>
                 </div>
                 <div class="action-list">
-                  <button data-view-target="contacts">
-                    <span class="action-icon coral">1</span>
-                    <span><strong>Relancer 18 prospects chauds</strong><small>Ils ont consulté l’offre 2 fois cette semaine.</small></span>
+                  <button data-view-target="pages">
+                    <span class="action-icon purple">▤</span>
+                    <span><strong>Publie ta page principale</strong><small>Elle est encore en brouillon</small></span>
                     <b>→</b>
                   </button>
-                  <button data-view-target="offers">
-                    <span class="action-icon mint">2</span>
-                    <span><strong>Ajouter un order bump</strong><small>+12 % de panier moyen estimé.</small></span>
+                  <button data-view-target="products">
+                    <span class="action-icon green">◇</span>
+                    <span><strong>Ajoute un produit d’appel</strong><small>Augmente la conversion de ta boutique</small></span>
                     <b>→</b>
                   </button>
-                  <button data-view-target="store">
-                    <span class="action-icon blue">3</span>
-                    <span><strong>Publier la nouvelle preuve</strong><small>Ton dernier témoignage est encore en brouillon.</small></span>
+                  <button data-view-target="emails">
+                    <span class="action-icon orange">✉</span>
+                    <span><strong>Active l’email post-achat</strong><small>Automatise la livraison client</small></span>
                     <b>→</b>
                   </button>
                 </div>
               </article>
-            </div>
 
-            <div class="dashboard-grid lower-grid">
-              <article class="panel">
+              <article class="panel product-performance">
                 <div class="panel-heading">
-                  <div>
-                    <span class="panel-label">Offres actives</span>
-                    <h2>Performance par offre</h2>
-                  </div>
-                  <button class="text-button" data-view-target="offers">Tout voir →</button>
+                  <div><span class="panel-label">Catalogue</span><h2>Performance des produits</h2></div>
+                  <button class="text-button" data-view-target="products">Tout voir →</button>
                 </div>
-                <div class="offer-performance" id="offerPerformance"></div>
+                <div id="performanceList"></div>
               </article>
 
-              <article class="panel">
+              <article class="panel recent-orders">
                 <div class="panel-heading">
-                  <div>
-                    <span class="panel-label">Activité récente</span>
-                    <h2>Dernières conversions</h2>
-                  </div>
+                  <div><span class="panel-label">Temps réel</span><h2>Dernières commandes</h2></div>
+                  <button class="text-button" data-view-target="orders">Tout voir →</button>
                 </div>
-                <div class="activity-list" id="activityList"></div>
+                <div id="recentOrderList"></div>
               </article>
             </div>
           </section>
 
-          <section class="view" id="offersView">
-            <div class="page-heading compact-heading">
+          <section class="view" id="productsView">
+            <div class="page-heading">
               <div>
                 <p class="eyebrow">Catalogue</p>
-                <h1>Tes offres</h1>
-                <p>Structure, publie et optimise chaque produit depuis un seul endroit.</p>
+                <h1>Tes produits digitaux</h1>
+                <p>Crée, organise et publie tout ce que tu souhaites vendre.</p>
               </div>
-              <button class="primary-button" data-action="new-offer">＋ Nouvelle offre</button>
+              <button class="primary-button" data-action="new-product">＋ Nouveau produit</button>
             </div>
+
             <div class="toolbar">
               <label class="search-field">
                 <span>⌕</span>
-                <input id="offerSearch" type="search" placeholder="Rechercher une offre" />
+                <input id="productSearch" type="search" placeholder="Rechercher un produit…" />
               </label>
-              <select id="offerFilter" aria-label="Filtrer les offres">
+              <select id="productFilter" aria-label="Filtrer les produits">
                 <option value="all">Tous les statuts</option>
-                <option value="published">Publiées</option>
+                <option value="published">Publiés</option>
                 <option value="draft">Brouillons</option>
               </select>
             </div>
-            <div class="offer-grid" id="offerGrid"></div>
+            <div class="product-grid" id="productGrid"></div>
           </section>
 
-          <section class="view" id="storeView">
-            <div class="page-heading compact-heading">
+          <section class="view" id="pagesView">
+            <div class="page-heading">
               <div>
-                <p class="eyebrow">Boutique publique</p>
-                <h1>Éditeur de boutique</h1>
-                <p>Personnalise le message, les couleurs et les offres visibles par ton audience.</p>
+                <p class="eyebrow">Conversion</p>
+                <h1>Pages de vente</h1>
+                <p>Transforme tes visiteurs en clients avec des pages simples et ciblées.</p>
               </div>
-              <div class="heading-actions">
-                <a class="secondary-button" href="./store.html" target="_blank">Aperçu ↗</a>
-                <button class="primary-button" id="saveStoreButton">Publier les changements</button>
-              </div>
+              <button class="primary-button" data-action="new-page">＋ Créer une page</button>
             </div>
 
-            <div class="editor-layout">
-              <form class="panel editor-panel" id="storeForm">
-                <div class="form-section">
-                  <h2>Identité</h2>
-                  <div class="field-row">
-                    <label>Nom public<input name="creatorName" required /></label>
-                    <label>Métier<input name="creatorRole" required /></label>
-                  </div>
-                  <label>Promesse<textarea name="bio" rows="3" required></textarea></label>
+            <div class="pages-layout">
+              <div class="page-list" id="salesPageList"></div>
+              <aside class="panel live-preview-panel">
+                <div class="panel-heading">
+                  <div><span class="panel-label">Aperçu</span><h2>Page sélectionnée</h2></div>
+                  <a href="./store.html" target="_blank" id="pagePreviewOpen">Ouvrir ↗</a>
                 </div>
-                <div class="form-section">
-                  <h2>Apparence</h2>
-                  <div class="color-options" id="colorOptions">
-                    <button type="button" data-color="#5965f2" style="--swatch:#5965f2" aria-label="Bleu"></button>
-                    <button type="button" data-color="#151922" style="--swatch:#151922" aria-label="Noir"></button>
-                    <button type="button" data-color="#e65050" style="--swatch:#e65050" aria-label="Rouge"></button>
-                    <button type="button" data-color="#159b78" style="--swatch:#159b78" aria-label="Vert"></button>
-                  </div>
-                  <label class="toggle-row">
-                    <span><strong>Afficher la preuve sociale</strong><small>Nombre de clients et note moyenne</small></span>
-                    <input type="checkbox" name="showProof" />
-                  </label>
-                  <label class="toggle-row">
-                    <span><strong>Capturer les emails</strong><small>Formulaire gratuit avant les offres</small></span>
-                    <input type="checkbox" name="showLeadMagnet" />
-                  </label>
+                <div class="browser-frame">
+                  <div class="browser-bar"><i></i><i></i><i></i><span id="pagePreviewUrl">Crée une page pour obtenir ton lien</span></div>
+                  <iframe src="./store.html?embed=1" title="Aperçu de la boutique" id="storePreview"></iframe>
                 </div>
-                <div class="form-section">
-                  <h2>Réseaux</h2>
-                  <label>Instagram<input name="instagram" placeholder="@clairementor" /></label>
-                  <label>YouTube<input name="youtube" placeholder="youtube.com/@clairementor" /></label>
-                </div>
-              </form>
-
-              <div class="preview-column">
-                <div class="preview-toolbar">
-                  <strong>Aperçu en direct</strong>
-                  <div class="device-switch">
-                    <button class="active" data-device="mobile" title="Aperçu mobile">▯</button>
-                    <button data-device="desktop" title="Aperçu ordinateur">▭</button>
-                  </div>
-                </div>
-                <div class="store-preview-frame mobile" id="storePreviewFrame">
-                  <iframe id="storePreview" src="./store.html?preview=1" title="Aperçu de la boutique"></iframe>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <section class="view" id="contactsView">
-            <div class="page-heading compact-heading">
-              <div>
-                <p class="eyebrow">Audience</p>
-                <h1>Contacts</h1>
-                <p>Identifie les prospects engagés et les clients à forte valeur.</p>
-              </div>
-              <button class="secondary-button" id="exportContacts">Exporter CSV</button>
-            </div>
-            <div class="metrics-grid small-metrics" id="contactMetrics"></div>
-            <div class="panel table-panel">
-              <div class="toolbar table-toolbar">
-                <label class="search-field"><span>⌕</span><input id="contactSearch" type="search" placeholder="Nom ou email" /></label>
-                <select id="contactFilter">
-                  <option value="all">Tous les segments</option>
-                  <option value="Client">Clients</option>
-                  <option value="Prospect chaud">Prospects chauds</option>
-                  <option value="Lead">Leads</option>
-                </select>
-              </div>
-              <div class="data-table-wrap">
-                <table class="data-table">
-                  <thead><tr><th>Contact</th><th>Segment</th><th>Dernière activité</th><th>Valeur</th><th></th></tr></thead>
-                  <tbody id="contactTable"></tbody>
-                </table>
-              </div>
+              </aside>
             </div>
           </section>
 
           <section class="view" id="ordersView">
-            <div class="page-heading compact-heading">
+            <div class="page-heading">
               <div>
-                <p class="eyebrow">Transactions</p>
+                <p class="eyebrow">Ventes</p>
                 <h1>Commandes</h1>
-                <p>Suis les paiements, remboursements et livraisons.</p>
+                <p>Suis les paiements, remboursements et accès livrés.</p>
               </div>
-              <button class="secondary-button" id="simulateOrder">Simuler une vente</button>
+              <div style="display:flex;gap:.5rem;">
+                <button class="primary-button" data-action="new-order">＋ Enregistrer une vente</button>
+                <button class="secondary-button" id="exportOrders">Exporter en CSV</button>
+              </div>
             </div>
+            <div class="metric-grid compact" id="orderMetrics"></div>
             <div class="panel table-panel">
-              <div class="data-table-wrap">
-                <table class="data-table">
-                  <thead><tr><th>Commande</th><th>Client</th><th>Offre</th><th>Date</th><th>Montant</th><th>Statut</th></tr></thead>
+              <div class="toolbar table-toolbar">
+                <label class="search-field"><span>⌕</span><input id="orderSearch" type="search" placeholder="Client, produit ou commande…" /></label>
+                <select id="orderFilter"><option value="all">Tous les paiements</option><option value="paid">Payés</option><option value="refunded">Remboursés</option></select>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>Commande</th><th>Client</th><th>Produit</th><th>Date</th><th>Montant</th><th>Livraison</th><th>Statut</th><th></th></tr></thead>
                   <tbody id="orderTable"></tbody>
                 </table>
               </div>
             </div>
           </section>
 
-          <section class="view" id="analyticsView">
-            <div class="page-heading compact-heading">
+          <section class="view" id="tunnelView">
+            <div class="page-heading">
               <div>
-                <p class="eyebrow">Performance</p>
-                <h1>Analytics</h1>
-                <p>Comprends le parcours complet entre la visite et l’achat.</p>
+                <p class="eyebrow">Tunnel Bio → Lead → Vente</p>
+                <h1>Tunnel de vente</h1>
+                <p>Visualise le chemin complet promis par Expertly : capture, offre, checkout, upsell et livraison.</p>
               </div>
-              <select><option>30 derniers jours</option><option>7 derniers jours</option></select>
+              <button class="primary-button" data-action="new-page">＋ Créer une page</button>
             </div>
-            <div class="metrics-grid" id="analyticsMetrics"></div>
-            <div class="analytics-layout">
-              <article class="panel funnel-panel">
-                <div class="panel-heading"><div><span class="panel-label">Tunnel global</span><h2>Conversion par étape</h2></div></div>
+            <div class="tunnel-board" id="tunnelBoard"></div>
+            <div class="tunnel-grid">
+              <article class="panel">
+                <div class="panel-heading"><div><span class="panel-label">Offres</span><h2>Architecture commerciale</h2></div></div>
+                <div class="offer-map" id="offerMap"></div>
+              </article>
+              <article class="panel">
+                <div class="panel-heading"><div><span class="panel-label">Optimisations</span><h2>Upsells et order bumps</h2></div></div>
+                <div class="insight-list" id="upsellInsights"></div>
+              </article>
+            </div>
+          </section>
+
+          <section class="view" id="contactsView">
+            <div class="page-heading">
+              <div>
+                <p class="eyebrow">Audience</p>
+                <h1>Contacts</h1>
+                <p>Centralise les leads, clients et opportunités de ton activité.</p>
+              </div>
+              <div style="display:flex;gap:.5rem;">
+                <button class="primary-button" data-action="new-contact">＋ Ajouter un contact</button>
+                <button class="secondary-button" id="exportContacts">Exporter les contacts</button>
+              </div>
+            </div>
+            <div class="metric-grid compact" id="contactMetrics"></div>
+            <div class="panel table-panel">
+              <div class="toolbar table-toolbar">
+                <label class="search-field"><span>⌕</span><input id="contactSearch" type="search" placeholder="Rechercher un contact…" /></label>
+                <select id="contactFilter"><option value="all">Tous les segments</option><option value="Client">Clients</option><option value="Prospect chaud">Prospects chauds</option><option value="Lead">Leads</option></select>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>Contact</th><th>Segment</th><th>Dernière activité</th><th>Prochaine action</th><th>Valeur client</th><th>Inscrit le</th><th></th></tr></thead>
+                  <tbody id="contactTable"></tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          <section class="view" id="analyticsView">
+            <div class="page-heading">
+              <div><p class="eyebrow">Pilotage</p><h1>Analytics</h1><p>Comprends ce qui attire, convertit et génère du revenu.</p></div>
+              <select class="period-select"><option>30 derniers jours</option><option>90 derniers jours</option></select>
+            </div>
+            <div class="metric-grid" id="analyticsMetrics"></div>
+            <div class="analytics-grid">
+              <article class="panel">
+                <div class="panel-heading"><div><span class="panel-label">Tunnel</span><h2>Conversion globale</h2></div></div>
                 <div class="funnel" id="funnel"></div>
               </article>
               <article class="panel">
                 <div class="panel-heading"><div><span class="panel-label">Acquisition</span><h2>Sources de trafic</h2></div></div>
                 <div class="source-list" id="sourceList"></div>
               </article>
+              <article class="panel analytics-action-panel">
+                <div class="panel-heading"><div><span class="panel-label">Priorités</span><h2>Actions recommandées</h2></div></div>
+                <div class="insight-list" id="analyticsInsights"></div>
+              </article>
+              <article class="panel analytics-action-panel">
+                <div class="panel-heading"><div><span class="panel-label">Produits</span><h2>Revenus par offre</h2></div></div>
+                <div class="source-list" id="productRevenueList"></div>
+              </article>
+            </div>
+          </section>
+
+          <section class="view" id="emailsView">
+            <div class="page-heading">
+              <div><p class="eyebrow">Automatisation</p><h1>Emails clients</h1><p>Envoie les bons messages aux bons moments, sans outil supplémentaire.</p></div>
+              <button class="primary-button" data-action="new-email">＋ Créer une automatisation</button>
+            </div>
+            <div class="email-status-panel" id="emailStatusPanel"></div>
+            <div class="email-grid" id="emailGrid"></div>
+          </section>
+
+          <section class="view" id="financeView">
+            <div class="page-heading">
+              <div><p class="eyebrow">Europe-ready</p><h1>Finance</h1><p>Prépare factures, TVA, remboursements et exports comptables pour une boutique plus sérieuse.</p></div>
+              <button class="secondary-button" id="exportFinance">Exporter comptabilité</button>
+            </div>
+            <div class="metric-grid compact" id="financeMetrics"></div>
+            <div class="finance-grid">
+              <article class="panel">
+                <div class="panel-heading"><div><span class="panel-label">Factures</span><h2>Dernières ventes</h2></div></div>
+                <div class="invoice-list" id="invoiceList"></div>
+              </article>
+              <article class="panel">
+                <div class="panel-heading"><div><span class="panel-label">Configuration</span><h2>Statut fiscal</h2></div></div>
+                <div class="tax-checklist" id="taxChecklist"></div>
+              </article>
             </div>
           </section>
 
           <section class="view" id="settingsView">
-            <div class="page-heading compact-heading">
-              <div>
-                <p class="eyebrow">Configuration</p>
-                <h1>Réglages</h1>
-                <p>Gère le workspace, les paiements et les notifications.</p>
-              </div>
+            <div class="page-heading">
+              <div><p class="eyebrow">Configuration</p><h1>Réglages</h1><p>Configure ton identité, tes paiements et ton domaine.</p></div>
             </div>
             <div class="settings-layout">
-              <nav class="settings-nav">
-                <button class="active">Compte</button>
-                <button>Paiements</button>
-                <button>Domaines</button>
-                <button>Notifications</button>
-              </nav>
               <form class="panel settings-form" id="settingsForm">
-                <div class="form-section">
-                  <h2>Informations du compte</h2>
-                  <div class="field-row">
-                    <label>Prénom<input value="Claire" /></label>
-                    <label>Nom<input value="Martin" /></label>
-                  </div>
-                  <label>Email<input type="email" value="claire@offerlab.demo" /></label>
+                <div class="panel-heading"><div><span class="panel-label">Profil public</span><h2>Identité de la boutique</h2></div></div>
+                <div class="form-grid">
+                  <label>Nom public<input name="creatorName" required /></label>
+                  <label>Activité<input name="creatorRole" required /></label>
+                  <label class="full">Promesse<textarea name="bio" rows="3" required></textarea></label>
+                  <label>Identifiant de boutique<div class="slug-field"><span>/b/</span><input name="slug" required /></div></label>
+                  <label>Couleur principale<input name="accent" type="color" /></label>
+                  <label class="full">Logo — URL<input name="logo" type="url" placeholder="https://monsite.fr/logo.png" /></label>
+                  <label class="full media-upload">Ou importer un logo<input name="logoFile" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" /></label>
+                  <label>Instagram — URL<input name="instagram" type="url" placeholder="https://instagram.com/toncompte" /></label>
+                  <label>YouTube — URL<input name="youtube" type="url" placeholder="https://youtube.com/@tacreatrice" /></label>
+                  <label>TikTok — URL<input name="tiktok" type="url" placeholder="https://tiktok.com/@toncompte" /></label>
                 </div>
-                <div class="form-section">
-                  <h2>Paiements</h2>
-                  <div class="integration-row">
-                    <span class="integration-icon">S</span>
-                    <span><strong>Stripe</strong><small>Compte connecté · paiements actifs</small></span>
-                    <span class="connected-badge">Connecté</span>
+                <div class="public-bio-link">
+                  <span>Lien de bio Instagram <em>· ouvre la boutique hors d’Instagram</em></span>
+                  <strong id="instagramBioUrl">-</strong>
+                  <div class="bio-actions">
+                    <button class="primary-button" type="button" id="copyInstagramLink">Copier le lien bio</button>
+                    <canvas id="bioQr" width="120" height="120" class="bio-qr" aria-label="QR code du lien de bio"></canvas>
                   </div>
+                  <small class="bio-store-line">Lien direct boutique : <span id="publicStoreUrl">-</span> · <button class="link-button" type="button" id="copyStoreLink">copier</button></small>
                 </div>
-                <button class="primary-button" type="submit">Enregistrer</button>
+                <button class="primary-button" type="submit">Enregistrer les modifications</button>
               </form>
+              <div class="settings-stack">
+                <article class="panel integration-card">
+                  <span class="integration-icon stripe">S</span>
+                  <span><strong>Stripe</strong><small>Paiements et abonnements</small></span>
+                  <span id="stripeStatus">À configurer</span>
+                </article>
+                <article class="panel integration-card">
+                  <span class="integration-icon" style="background:#17172a">✉</span>
+                  <span><strong>Resend</strong><small>Envoi instantané des accès clients</small></span>
+                  <span id="emailStatus">À configurer</span>
+                </article>
+                <article class="panel integration-card">
+                  <span class="integration-icon domain">↗</span>
+                  <span><strong>Domaine personnalisé</strong><small>Connecte ton domaine</small></span>
+                  <button type="button" id="configureDomain">Configurer</button>
+                </article>
+                <article class="panel plan-card">
+                  <span class="panel-label">Abonnement</span>
+                  <h3>Expertly Scale</h3>
+                  <p>Produits illimités, emails automatisés et domaine personnalisé.</p>
+                  <button type="button" id="manageSubscription">Gérer mon abonnement</button>
+                </article>
+              </div>
             </div>
           </section>
         </main>
       </div>
     </div>
 
-    <div class="modal-backdrop" id="offerModal" aria-hidden="true">
-      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="offerModalTitle">
-        <div class="modal-header">
-          <div><span class="panel-label">Catalogue</span><h2 id="offerModalTitle">Créer une offre</h2></div>
+    <div class="modal" id="productModal" aria-hidden="true">
+      <div class="modal-card">
+        <div class="modal-heading">
+          <div><span class="panel-label">Catalogue</span><h2 id="productModalTitle">Créer un produit</h2></div>
           <button class="icon-button" data-close-modal aria-label="Fermer">×</button>
         </div>
-        <form id="offerForm">
+        <form id="productForm">
           <input type="hidden" name="id" />
-          <label>Nom de l’offre<input name="title" required placeholder="Ex. Bootcamp Offre Signature" /></label>
-          <div class="field-row">
-            <label>Type
-              <select name="type"><option>Formation</option><option>Coaching</option><option>Produit digital</option><option>Abonnement</option></select>
+          <div class="form-grid">
+            <label class="full">Nom du produit<input name="title" required placeholder="Ex. Bootcamp Offre Signature" /></label>
+            <label>Type<select name="type"><option>Formation</option><option>Coaching</option><option>Produit digital</option><option>Masterclass</option><option>Abonnement</option></select></label>
+            <label>Prix en euros<input name="price" type="number" min="0" step="1" required /></label>
+            <label class="full">Description<textarea name="description" rows="3" required placeholder="Décris le résultat obtenu par ton client…"></textarea></label>
+            <label>Statut<select name="status"><option value="published">Publié</option><option value="draft">Brouillon</option></select></label>
+            <label>Couleur<input name="color" type="color" value="#6558f5" /></label>
+            <label>Taille de la carte<select name="cardSize"><option value="m">Moyenne</option><option value="s">Petite</option><option value="l">Large</option><option value="xl">Vedette (mise en avant)</option></select></label>
+            <label>Rôle dans le tunnel<select name="offerRole"><option value="core">Offre principale</option><option value="lead">Lead magnet</option><option value="tripwire">Produit d'appel</option><option value="upsell">Upsell</option></select></label>
+            <label>Type d'accès<select name="accessType"><option value="link">Lien privé</option><option value="file">Fichier</option><option value="calendar">Calendrier</option><option value="video">Vidéo</option><option value="member">Espace membre</option></select></label>
+            <label>Prix barré<input name="compareAtPrice" type="number" min="0" step="1" placeholder="Ex. 1497" /></label>
+            <label>Score de priorité<select name="funnelPriority"><option value="standard">Standard</option><option value="hero">Offre mise en avant</option><option value="support">Offre secondaire</option></select></label>
+            <label>Order bump associé<select name="bumpProductId" id="bumpProductSelect"></select></label>
+            <label>Upsell post-achat<select name="upsellProductId" id="upsellProductSelect"></select></label>
+            <label class="full">Image de couverture<input name="coverUrl" type="url" placeholder="https://ton-site.fr/visuel-produit.jpg" /></label>
+            <label class="full upload-zone">
+              <span>↓</span>
+              <strong>Lien d’accès à livrer</strong>
+              <small>URL du PDF, espace membre, vidéo, fichier cloud ou page privée.</small>
+              <input name="fileName" type="url" required placeholder="https://ton-site.fr/acces-produit" />
             </label>
-            <label>Prix (€)<input name="price" type="number" min="0" step="1" required /></label>
           </div>
-          <label>Description<textarea name="description" rows="4" required></textarea></label>
-          <div class="field-row">
-            <label>Statut
-              <select name="status"><option value="published">Publiée</option><option value="draft">Brouillon</option></select>
-            </label>
-            <label>Couleur
-              <select name="color"><option value="#5965f2">Bleu</option><option value="#159b78">Vert</option><option value="#e65050">Rouge</option><option value="#151922">Noir</option></select>
-            </label>
-          </div>
-          <label class="toggle-row">
-            <span><strong>Mettre en avant</strong><small>Affichée en premier dans la boutique</small></span>
-            <input type="checkbox" name="featured" />
-          </label>
           <div class="modal-actions">
             <button type="button" class="secondary-button" data-close-modal>Annuler</button>
-            <button type="submit" class="primary-button">Enregistrer l’offre</button>
+            <button type="submit" class="primary-button">Enregistrer le produit</button>
           </div>
         </form>
       </div>
     </div>
 
-    <div class="toast-region" id="toastRegion" aria-live="polite"></div>
-    <script src="./app.js"></script>
+    <div class="modal" id="pageModal" aria-hidden="true">
+      <div class="modal-card page-editor-modal">
+        <div class="modal-heading">
+          <div><span class="panel-label">Page de vente</span><h2 id="pageModalTitle">Créer une page</h2></div>
+          <button class="icon-button" data-close-page-modal aria-label="Fermer">×</button>
+        </div>
+        <form id="pageForm">
+          <input type="hidden" name="id" />
+          <div class="page-editor-grid">
+            <div class="page-editor-fields">
+              <div class="form-grid">
+                <label>Nom interne<input name="name" required placeholder="Ex. Page Guide Instagram" /></label>
+                <label>Produit associé<select name="productId" id="pageProductSelect" required></select></label>
+                <label class="full">Lien public<div class="slug-field"><span>/p/</span><input name="slug" required pattern="[a-z0-9-]+" placeholder="guide-instagram" /></div></label>
+                <label class="full">Titre principal<input name="headline" required placeholder="Transforme ton audience en clients" /></label>
+                <label class="full">Sous-titre<textarea name="subheadline" rows="3" required placeholder="Explique le résultat concret obtenu par ton client."></textarea></label>
+                <label>Texte du bouton<input name="buttonText" required value="Je découvre l’offre" /></label>
+                <label>Badge<input name="badge" placeholder="Nouveau · Accès immédiat" /></label>
+                <label>Couleur principale<input name="accent" type="color" value="#6558f5" /></label>
+                <label>Couleur du fond<input name="backgroundColor" type="color" value="#f5f3ff" /></label>
+                <label>Couleur du texte<input name="textColor" type="color" value="#17172a" /></label>
+                <label>Style<select name="layout"><option value="split">Visuel à droite</option><option value="centered">Centré</option><option value="minimal">Minimal</option></select></label>
+                <label class="full">Logo — URL<input name="logoUrl" type="url" placeholder="https://monsite.fr/logo.png" /></label>
+                <label class="full media-upload">Ou importer un logo<input name="logoFile" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" /></label>
+                <label class="full">Image produit — URL<input name="productImageUrl" type="url" placeholder="https://monsite.fr/produit.jpg" /></label>
+                <label class="full media-upload">Ou importer une image produit<input name="productImageFile" type="file" accept="image/png,image/jpeg,image/webp" /></label>
+                <label class="full">Image de fond — URL<input name="backgroundImageUrl" type="url" placeholder="https://monsite.fr/fond.jpg" /></label>
+                <label class="full media-upload">Ou importer une image de fond<input name="backgroundImageFile" type="file" accept="image/png,image/jpeg,image/webp" /></label>
+                <label class="full">Preuve ou garantie<textarea name="proof" rows="2" placeholder="Paiement sécurisé · Accès instantané · Garantie 14 jours"></textarea></label>
+                <fieldset class="full block-picker">
+                  <legend>Blocs de page</legend>
+                  <label><input type="checkbox" name="blockBenefits" checked /> Bénéfices</label>
+                  <label><input type="checkbox" name="blockProgram" checked /> Programme</label>
+                  <label><input type="checkbox" name="blockTestimonials" /> Témoignages</label>
+                  <label><input type="checkbox" name="blockFaq" checked /> FAQ</label>
+                  <label><input type="checkbox" name="blockGuarantee" checked /> Garantie</label>
+                  <label><input type="checkbox" name="blockLeadMagnet" /> Lead magnet</label>
+                </fieldset>
+                <label class="full">Programme ou contenu<textarea name="program" rows="3" placeholder="Module 1 : ...&#10;Module 2 : ..."></textarea></label>
+                <label class="full">FAQ<textarea name="faq" rows="3" placeholder="Question fréquente ? Réponse courte."></textarea></label>
+                <label class="full">Témoignage principal<textarea name="testimonial" rows="2" placeholder="Résultat client, preuve sociale ou citation."></textarea></label>
+                <label class="full">Mentions transparentes<textarea name="disclosure" rows="2" placeholder="Produit digital vendu par [nom]. Support : contact@domaine.fr"></textarea></label>
+              </div>
+            </div>
+            <div class="page-editor-preview">
+              <span class="panel-label">Aperçu instantané</span>
+              <div class="mini-sales-page" id="pageEditorPreview">
+                <div class="mini-sales-overlay"></div>
+                <div class="mini-sales-content">
+                  <img class="mini-logo" id="editorLogoPreview" alt="" hidden />
+                  <span id="editorBadgePreview">Nouveau</span>
+                  <h3 id="editorHeadlinePreview">Ton titre de vente</h3>
+                  <p id="editorSubheadlinePreview">Ta promesse apparaîtra ici.</p>
+                  <button type="button" id="editorButtonPreview">Je découvre l’offre</button>
+                </div>
+                <img class="mini-product-image" id="editorProductPreview" alt="" hidden />
+              </div>
+              <p class="compliance-note">Lien direct, contenu identique pour tous les visiteurs, sans redirection cachée.</p>
+            </div>
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="secondary-button" data-close-page-modal>Annuler</button>
+            <button type="submit" class="primary-button">Enregistrer la page</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="drawer" id="checklistDrawer" aria-hidden="true">
+      <div class="drawer-heading"><div><span class="panel-label">Démarrage</span><h2>Publie ta première boutique</h2></div><button class="icon-button" data-close-drawer>×</button></div>
+      <div class="checklist" id="launchChecklist"></div>
+    </div>
+    <aside class="detail-panel" id="detailPanel" aria-hidden="true">
+      <div class="detail-panel-card">
+        <div class="drawer-heading">
+          <div><span class="panel-label" id="detailEyebrow">CRM</span><h2 id="detailTitle">Détail</h2></div>
+          <button class="icon-button" data-close-detail aria-label="Fermer">×</button>
+        </div>
+        <div id="detailContent"></div>
+      </div>
+    </aside>
+    <!-- Contact modal -->
+    <div class="modal" id="contactModal" aria-hidden="true">
+      <div class="modal-card">
+        <div class="modal-heading">
+          <div><span class="panel-label">CRM</span><h2 id="contactModalTitle">Ajouter un contact</h2></div>
+          <button class="icon-button" data-close-contact-modal aria-label="Fermer">×</button>
+        </div>
+        <form id="contactForm">
+          <input type="hidden" name="id" />
+          <div class="form-grid">
+            <label class="full">Nom<input name="name" required placeholder="Ex. Marie Dupont" /></label>
+            <label class="full">Email<input name="email" type="email" required placeholder="marie@exemple.fr" /></label>
+            <label>Segment<select name="segment"><option value="Lead">Lead</option><option value="Client">Client</option><option value="Prospect">Prospect</option></select></label>
+            <label>Source<input name="source" placeholder="Instagram, Publicité…" /></label>
+            <label class="full">Prochaine action<input name="nextAction" placeholder="Relancer dans 3 jours…" /></label>
+            <label class="full">Notes<textarea name="notes" rows="3" placeholder="Notes internes…"></textarea></label>
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="secondary-button" data-close-contact-modal>Annuler</button>
+            <button type="submit" class="primary-button">Enregistrer</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Order modal -->
+    <div class="modal" id="orderModal" aria-hidden="true">
+      <div class="modal-card">
+        <div class="modal-heading">
+          <div><span class="panel-label">Commandes</span><h2>Ajouter une commande</h2></div>
+          <button class="icon-button" data-close-order-modal aria-label="Fermer">×</button>
+        </div>
+        <form id="orderForm">
+          <div class="form-grid">
+            <label class="full">Nom du client<input name="clientName" required placeholder="Marie Dupont" /></label>
+            <label class="full">Email du client<input name="clientEmail" type="email" required placeholder="marie@exemple.fr" /></label>
+            <label class="full">Produit<select name="productId" id="orderProductSelect"></select></label>
+            <label>Montant (€)<input name="amount" type="number" min="0" step="1" required /></label>
+            <label>Date<input name="date" type="date" required /></label>
+            <label>Statut<select name="status"><option value="paid">Payé</option><option value="refunded">Remboursé</option></select></label>
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="secondary-button" data-close-order-modal>Annuler</button>
+            <button type="submit" class="primary-button">Enregistrer</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Email automation modal -->
+    <div class="modal" id="emailModal" aria-hidden="true">
+      <div class="modal-card">
+        <div class="modal-heading">
+          <div><span class="panel-label">Emails</span><h2 id="emailModalTitle">Nouvelle automation</h2></div>
+          <button class="icon-button" data-close-email-modal aria-label="Fermer">×</button>
+        </div>
+        <form id="emailForm">
+          <input type="hidden" name="id" />
+          <div class="form-grid">
+            <label class="full">Nom de l'automation<input name="name" required placeholder="Email de bienvenue" /></label>
+            <label class="full">Description<textarea name="description" rows="2" placeholder="Envoyé après chaque achat…"></textarea></label>
+            <label class="full">Déclencheur<select name="trigger"><option>Achat confirmé</option><option>Inscription newsletter</option><option>Panier abandonné</option><option>J+3 après achat</option><option>J+7 après achat</option></select></label>
+            <label class="full"><input type="checkbox" name="active" checked /> Automation active</label>
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="secondary-button" data-close-email-modal>Annuler</button>
+            <button type="submit" class="primary-button">Enregistrer</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script src="./assets/js/app.js"></script>
   </body>
 </html>
