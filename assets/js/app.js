@@ -2175,7 +2175,17 @@ function openPageModal(page = null) {
   form.elements.id.value = page?.id || "";
   form.elements.name.value = page?.name || "";
   form.elements.productId.value = page?.productId || state.products[0].id;
-  form.elements.slug.value = page?.slug || "";
+  // Auto-génère un slug unique pour les nouvelles pages
+  if (!page) {
+    const base = slugify(form.elements.name.value || "") || `page-${Date.now().toString(36)}`;
+    let candidate = base;
+    let n = 2;
+    while (state.pages.some((p) => p.slug === candidate)) { candidate = `${base}-${n}`; n++; }
+    form.elements.slug.value = candidate;
+    delete form.elements.slug.dataset.touched;
+  } else {
+    form.elements.slug.value = page.slug;
+  }
   form.elements.headline.value = page?.headline || "";
   form.elements.subheadline.value = page?.subheadline || "";
   form.elements.buttonText.value = page?.buttonText || "Je découvre l'offre";
@@ -2219,11 +2229,14 @@ async function submitPage(event) {
   const data = new FormData(event.currentTarget);
   const id = data.get("id");
   const existing = state.pages.find((page) => page.id === id);
-  const requestedSlug = slugify(data.get("slug") || data.get("name"));
-  const slugTaken = state.pages.some((page) => page.id !== id && page.slug === requestedSlug);
-  if (!requestedSlug || slugTaken) {
-    showToast(slugTaken ? "Ce lien public est déjà utilisé." : "Le lien public est invalide.");
-    return;
+  const baseSlug = slugify(data.get("slug") || data.get("name"));
+  if (!baseSlug) { showToast("Le lien public est invalide."); return; }
+  // Garantit l'unicité automatiquement (infini)
+  let requestedSlug = baseSlug;
+  let n = 2;
+  while (state.pages.some((page) => page.id !== id && page.slug === requestedSlug)) {
+    requestedSlug = `${baseSlug}-${n}`;
+    n++;
   }
   let logoUrl = event.currentTarget.dataset.logo || data.get("logoUrl").trim();
   let productImageUrl = event.currentTarget.dataset.productImage || data.get("productImageUrl").trim();
@@ -2536,7 +2549,11 @@ document.querySelector("#orderProductSelect")?.addEventListener("change", (e) =>
 document.querySelector("#pageForm").addEventListener("input", (event) => {
   const form = event.currentTarget;
   if (event.target.name === "name" && !form.elements.id.value && !form.elements.slug.dataset.touched) {
-    form.elements.slug.value = slugify(event.target.value);
+    const base = slugify(event.target.value) || `page-${Date.now().toString(36)}`;
+    let candidate = base;
+    let n = 2;
+    while (state.pages.some((p) => p.id !== form.elements.id.value && p.slug === candidate)) { candidate = `${base}-${n}`; n++; }
+    form.elements.slug.value = candidate;
   }
   if (event.target.name === "slug") {
     form.elements.slug.dataset.touched = "true";
