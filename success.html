@@ -3,20 +3,51 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Paiement confirmé · Expertly</title>
+    <title>Paiement confirmÃ© Â· Expertly</title>
     <link rel="stylesheet" href="./access.css" />
   </head>
   <body data-surface="payment_success">
     <main class="access-card">
-      <span class="success">✓</span>
-      <p class="eyebrow">Paiement confirmé</p>
-      <h1>Ton produit est débloqué</h1>
-      <p>L’email d’accès est envoyé immédiatement à l’adresse utilisée lors du paiement.</p>
-      <a id="returnLink" href="./store.html">Retourner à la boutique</a>
+      <span class="success">â</span>
+      <p class="eyebrow">Paiement confirmÃ©</p>
+      <h1>Ton produit est dÃ©bloquÃ©</h1>
+      <p>Lâemail dâaccÃ¨s est envoyÃ© immÃ©diatement Ã  lâadresse utilisÃ©e lors du paiement. VÃ©rifie tes spams si tu ne le vois pas dans 2 minutes.</p>
+      <p id="orderRef" style="font-size:.85rem;opacity:.6;margin-top:-.5rem"></p>
+      <button id="shareBtn" style="margin-top:.5rem;display:none">Partager cette boutique ð</button>
+      <a id="returnLink" href="./store.html">Retourner Ã  la boutique</a>
     </main>
     <script src="/assets/js/analytics.js"></script>
     <script>
       (function () {
         const params = new URLSearchParams(location.search);
         const store = params.get("store");
-        const order = params.get("order
+        const order = params.get("order");
+        const storeUrl = store ? `/b/${encodeURIComponent(store)}` : "./store.html";
+        if (store) document.querySelector("#returnLink").href = storeUrl;
+        if (order) document.querySelector("#orderRef").textContent = `Commande #${order}`;
+
+        const shareBtn = document.querySelector("#shareBtn");
+        if (store && navigator.share) {
+          shareBtn.style.display = "";
+          shareBtn.addEventListener("click", () => {
+            navigator.share({ title: "Boutique Expertly", url: `${location.origin}${storeUrl}` }).catch(() => {});
+          });
+        } else if (store) {
+          shareBtn.style.display = "";
+          shareBtn.textContent = "Copier le lien boutique ð";
+          shareBtn.addEventListener("click", () => {
+            navigator.clipboard.writeText(`${location.origin}${storeUrl}`).then(() => {
+              shareBtn.textContent = "Lien copiÃ© â";
+              setTimeout(() => { shareBtn.textContent = "Copier le lien boutique ð"; }, 2000);
+            });
+          });
+        }
+
+        window.ExpertlyTracking?.track("payment_success_page_viewed", {
+          order_id: order,
+          boutique_slug: store,
+        });
+      })();
+    </script>
+  </body>
+</html>
