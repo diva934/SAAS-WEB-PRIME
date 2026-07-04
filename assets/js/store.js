@@ -100,10 +100,23 @@ function renderFeaturedBanner(publishedProducts) {
   if (title) title.textContent = freeProduct.title || "Ressource gratuite offerte";
 }
 
+function setOgMeta(property, content) {
+  if (!content) return;
+  let el = document.querySelector(`meta[property="${property}"]`);
+  if (!el) { el = document.createElement("meta"); el.setAttribute("property", property); document.head.appendChild(el); }
+  el.setAttribute("content", content);
+}
+
 function renderStore() {
   const profile = state.profile;
   document.documentElement.style.setProperty("--accent", profile.accent || "#6558f5");
-  document.title = `${profile.creatorName} · Boutique`;
+  const storeTitle = `${profile.creatorName} Â· Boutique`;
+  document.title = storeTitle;
+  setOgMeta("og:title", storeTitle);
+  setOgMeta("og:description", profile.bio || `DÃ©couvre les offres de ${profile.creatorName}`);
+  setOgMeta("og:image", (profile.logo || "").trim().match(/^https?:\/\//i) ? profile.logo : "");
+  setOgMeta("og:url", location.href);
+  setOgMeta("og:type", "website");
   const avatar = document.querySelector("#creatorAvatar");
   const logo = (profile.logo || "").trim();
   const validLogo = /^https?:\/\//i.test(logo) || /^data:image\//i.test(logo);
@@ -142,18 +155,18 @@ function renderStore() {
         <article class="public-offer size-${size} ${product.featured ? "featured" : ""}" style="--offer-color:${offerColor}">
           <div class="offer-media">
             ${media}
-            ${product.featured ? '<span class="featured-label">★ Recommandé</span>' : ""}
+            ${product.featured ? '<span class="featured-label">â RecommandÃ©</span>' : ""}
             <span class="offer-price">${product.price ? euro.format(product.price) : "Gratuit"}</span>
           </div>
           <div class="offer-body">
             ${product.type ? `<span class="offer-type">${escapeHtml(product.type)}</span>` : ""}
             <h3>${escapeHtml(product.title)}</h3>
             <p>${escapeHtml(product.description || "")}</p>
-            <button data-buy="${product.id}">${product.price ? "Acheter" : "Accéder"}</button>
+            <button data-buy="${product.id}">${product.price ? "Acheter" : "AccÃ©der"}</button>
           </div>
         </article>`;
       })
-      .join("") || "<p>Aucun produit publié pour le moment.</p>";
+      .join("") || "<p>Aucun produit publiÃ© pour le moment.</p>";
 
   renderFeaturedBanner(products);
 
@@ -170,18 +183,18 @@ function openCheckout(product) {
   document.querySelector("#checkoutContent").innerHTML = `
     <div class="checkout-product">
       <div class="public-offer-icon" style="--offer-color:${safeColor(product.color, safeColor(state.profile.accent, "#6558f5"))}">${initials(product.title)}</div>
-      <div><h2>${escapeHtml(product.title)}</h2><p>${escapeHtml(product.type)} · Accès immédiat après confirmation</p></div>
+      <div><h2>${escapeHtml(product.title)}</h2><p>${escapeHtml(product.type)} Â· AccÃ¨s immÃ©diat aprÃ¨s confirmation</p></div>
     </div>
     <div class="checkout-summary">
       <div><span>Sous-total</span><span>${isFree ? "Gratuit" : euro.format(product.price)}</span></div>
-      <div><span>TVA incluse</span><span>${isFree ? "0 €" : euro.format(Math.round(product.price * 0.2))}</span></div>
+      <div><span>TVA incluse</span><span>${isFree ? "0 â¬" : euro.format(Math.round(product.price * 0.2))}</span></div>
       <div><span>Total</span><span>${isFree ? "Gratuit" : euro.format(product.price)}</span></div>
     </div>
     <form id="checkoutForm">
-      <label>Prénom et nom<input name="name" required autocomplete="name" placeholder="Sofia Bernard" /></label>
+      <label>PrÃ©nom et nom<input name="name" required autocomplete="name" placeholder="Sofia Bernard" /></label>
       <label>Email<input name="email" type="email" required autocomplete="email" placeholder="sofia@email.com" /></label>
-      <button type="submit">${isFree ? "Recevoir l’accès" : `Continuer vers Stripe · ${euro.format(product.price)}`}</button>
-      <p class="secure-note">${isFree ? "Aucun paiement requis." : "Le produit est débloqué uniquement après confirmation du paiement Stripe."}</p>
+      <button type="submit">${isFree ? "Recevoir lâaccÃ¨s" : `Continuer vers Stripe Â· ${euro.format(product.price)}`}</button>
+      <p class="secure-note">${isFree ? "Aucun paiement requis." : "Le produit est dÃ©bloquÃ© uniquement aprÃ¨s confirmation du paiement Stripe."}</p>
       <p class="checkout-error" id="checkoutError" role="alert"></p>
     </form>
   `;
@@ -212,7 +225,7 @@ async function completeCheckout(event) {
   const button = event.currentTarget.querySelector("button[type='submit']");
   const errorRegion = document.querySelector("#checkoutError");
   button.disabled = true;
-  button.textContent = "Préparation du paiement…";
+  button.textContent = "PrÃ©paration du paiementâ¦";
   errorRegion.textContent = "";
 
   try {
@@ -229,7 +242,7 @@ async function completeCheckout(event) {
       }),
     });
     const result = await response.json();
-    if (!response.ok) throw new Error(result.error || "Impossible de démarrer le paiement.");
+    if (!response.ok) throw new Error(result.error || "Impossible de dÃ©marrer le paiement.");
     window.ExpertlyTracking?.track("checkout_request_succeeded", {
       product_id: selectedProduct.id,
       source: "store",
@@ -243,13 +256,13 @@ async function completeCheckout(event) {
       location.assign(result.accessUrl);
       return;
     }
-    throw new Error("Réponse de paiement invalide.");
+    throw new Error("RÃ©ponse de paiement invalide.");
   } catch (error) {
     errorRegion.textContent = error.message;
     button.disabled = false;
     button.textContent = selectedProduct.price
-      ? `Continuer vers Stripe · ${euro.format(selectedProduct.price)}`
-      : "Recevoir l’accès";
+      ? `Continuer vers Stripe Â· ${euro.format(selectedProduct.price)}`
+      : "Recevoir lâaccÃ¨s";
     window.ExpertlyTracking?.track("checkout_request_failed", {
       product_id: selectedProduct.id,
       source: "store",
@@ -290,7 +303,7 @@ document.querySelector("#leadForm").addEventListener("submit", async (event) => 
   const data = new FormData(event.currentTarget);
   const freeProduct = state.products.find((product) => product.price === 0 && product.status === "published");
   if (!freeProduct) {
-    showToast("Aucune ressource gratuite n’est encore configurée.");
+    showToast("Aucune ressource gratuite nâest encore configurÃ©e.");
     closeLeadModal();
     return;
   }
@@ -307,9 +320,11 @@ document.querySelector("#leadForm").addEventListener("submit", async (event) => 
     });
     const result = await response.json();
     if (!response.ok) throw new Error(result.error);
-    location.assign(result.accessUrl);
+    closeLeadModal();
+    showToast("â VÃ©rifie tes emails â la ressource arrive dans quelques secondes !");
+    setTimeout(() => { if (result.accessUrl) location.assign(result.accessUrl); }, 1800);
   } catch (error) {
-    showToast(error.message || "Impossible d’envoyer la ressource.");
+    showToast(error.message || "Impossible dâenvoyer la ressource.");
   }
 });
 
@@ -333,8 +348,7 @@ async function startStore() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   } catch {
     try {
-      state = { ...fallback, ...JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}") };
-    } catch {
+      state = { ...fallback, ...JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}") };    } catch {
       state = fallback;
     }
     showToast("Mode hors ligne : paiement indisponible.");
@@ -345,7 +359,14 @@ async function startStore() {
     fetch("/api/events/visit", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ slug }),
+      body: JSON.stringify({
+        type: "pageview",
+        slug,
+        surface: "creator_store",
+        source: new URLSearchParams(location.search).get("utm_source") || "",
+        referrer: document.referrer || "",
+        url: location.href,
+      }),
     }).catch(() => {});
   }
   renderStore();
