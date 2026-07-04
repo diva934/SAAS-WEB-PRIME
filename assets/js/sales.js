@@ -1,8 +1,14 @@
 let salesData = null;
 const euro = new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0 });
 
-function currentSlug() {
-  return location.pathname.split("/").filter(Boolean).pop();
+function currentSalesRoute() {
+  const parts = location.pathname.split("/").filter(Boolean);
+  const pageIndex = parts.indexOf("p");
+  const routeParts = pageIndex >= 0 ? parts.slice(pageIndex + 1) : parts;
+  return {
+    store: routeParts.length > 1 ? routeParts[0] : "",
+    slug: routeParts.at(-1) || "",
+  };
 }
 
 function escapeHtml(value = "") {
@@ -14,22 +20,35 @@ function escapeHtml(value = "") {
     .replaceAll("'", "&#039;");
 }
 
+function setOgMeta(property, content) {
+  if (!content) return;
+  let el = document.querySelector(`meta[property="${property}"]`);
+  if (!el) { el = document.createElement("meta"); el.setAttribute("property", property); document.head.appendChild(el); }
+  el.setAttribute("content", content);
+}
+
 function applyPage({ page, product, profile }) {
   salesData = { page, product, profile };
   const seller = profile.creatorName || "Expertly";
-  document.title = `${page.headline} · ${seller}`;
+  const title = `${page.headline} Â· ${seller}`;
+  document.title = title;
+  setOgMeta("og:title", title);
+  setOgMeta("og:description", page.subheadline || product.description || "");
+  setOgMeta("og:image", page.productImageUrl || profile.logo || "");
+  setOgMeta("og:url", location.href);
+  setOgMeta("og:type", "website");
   document.documentElement.style.setProperty("--page-accent", page.accent || "#6558f5");
   document.documentElement.style.setProperty("--page-bg", page.backgroundColor || "#f5f3ff");
   document.documentElement.style.setProperty("--page-text", page.textColor || "#17172a");
   document.documentElement.style.setProperty("--page-bg-image", page.backgroundImageUrl ? `url("${page.backgroundImageUrl}")` : "none");
   document.querySelector("#salesShell").classList.add(`layout-${page.layout || "split"}`);
   document.querySelector("#salesBadge").textContent = page.badge || product.type;
-  document.querySelector("#sellerName").textContent = `${seller} · ${profile.creatorRole || "Créateur"}`;
+  document.querySelector("#sellerName").textContent = `${seller} Â· ${profile.creatorRole || "CrÃ©ateur"}`;
   document.querySelector("#salesHeadline").textContent = page.headline;
   document.querySelector("#salesSubheadline").textContent = page.subheadline;
   document.querySelector("#salesProof").textContent = page.proof || "";
   document.querySelector("#salesPrice").textContent = product.price ? euro.format(product.price) : "Gratuit";
-  document.querySelector("#salesButton").textContent = page.buttonText || "Je découvre l’offre";
+  document.querySelector("#salesButton").textContent = page.buttonText || "Je dÃ©couvre lâoffre";
   document.querySelector("#salesButton").disabled = false;
   document.querySelector("#salesDisclosure").textContent =
     page.disclosure || `Produit digital vendu par ${seller}.`;
@@ -46,6 +65,7 @@ function applyPage({ page, product, profile }) {
   window.ExpertlyTracking?.track("sales_page_viewed", {
     sales_page_id: page.id,
     sales_page_slug: page.slug,
+    creator_slug: profile.slug,
     product_id: product.id,
     product_type: product.type,
     price: product.price,
@@ -69,7 +89,7 @@ function renderSalesSections(page, product) {
   if (blocks.benefits) {
     sections.push(`
       <article class="sales-section-card">
-        <span>Résultat</span>
+        <span>RÃ©sultat</span>
         <h2>Ce que tu obtiens</h2>
         <p>${escapeHtml(page.subheadline || product.description)}</p>
       </article>
@@ -88,7 +108,7 @@ function renderSalesSections(page, product) {
     sections.push(`
       <article class="sales-section-card quote">
         <span>Preuve</span>
-        <h2>Témoignage</h2>
+        <h2>TÃ©moignage</h2>
         <p>${escapeHtml(page.testimonial)}</p>
       </article>
     `);
@@ -97,7 +117,7 @@ function renderSalesSections(page, product) {
     sections.push(`
       <article class="sales-section-card">
         <span>FAQ</span>
-        <h2>Questions fréquentes</h2>
+        <h2>Questions frÃ©quentes</h2>
         <ul>${renderLines(page.faq)}</ul>
       </article>
     `);
@@ -106,7 +126,7 @@ function renderSalesSections(page, product) {
     sections.push(`
       <article class="sales-section-card">
         <span>Garantie</span>
-        <h2>Achat sécurisé</h2>
+        <h2>Achat sÃ©curisÃ©</h2>
         <p>${escapeHtml(page.proof)}</p>
       </article>
     `);
@@ -116,7 +136,7 @@ function renderSalesSections(page, product) {
       <article class="sales-section-card">
         <span>Lead magnet</span>
         <h2>Commence gratuitement</h2>
-        <p>Inscris-toi pour recevoir la ressource gratuite puis découvre l'offre complète.</p>
+        <p>Inscris-toi pour recevoir la ressource gratuite puis dÃ©couvre l'offre complÃ¨te.</p>
       </article>
     `);
   }
@@ -126,7 +146,7 @@ function renderSalesSections(page, product) {
 function openCheckout() {
   document.querySelector("#checkoutTitle").textContent = salesData.product.title;
   document.querySelector("#checkoutDescription").textContent =
-    salesData.product.price ? `${euro.format(salesData.product.price)} · paiement sécurisé par Stripe` : "Accès gratuit envoyé par email";
+    salesData.product.price ? `${euro.format(salesData.product.price)} Â· paiement sÃ©curisÃ© par Stripe` : "AccÃ¨s gratuit envoyÃ© par email";
   document.querySelector("#salesModal").classList.add("open");
   window.ExpertlyTracking?.track("sales_cta_clicked", {
     sales_page_id: salesData.page.id,
@@ -154,7 +174,7 @@ document.querySelector("#salesCheckoutForm").addEventListener("submit", async (e
   const button = event.currentTarget.querySelector("button");
   const error = document.querySelector("#salesError");
   button.disabled = true;
-  button.textContent = "Préparation…";
+  button.textContent = "PrÃ©parationâ¦";
   error.textContent = "";
   try {
     const response = await fetch("/api/checkout", {
@@ -192,7 +212,18 @@ document.querySelector("#salesCheckoutForm").addEventListener("submit", async (e
 
 if (new URLSearchParams(location.search).get("embed") === "1") document.body.classList.add("embed");
 
-fetch(`/api/page?slug=${encodeURIComponent(currentSlug())}`)
+const salesRoute = currentSalesRoute();
+const salesQuery = new URLSearchParams({ slug: salesRoute.slug });
+if (salesRoute.store) salesQuery.set("store", salesRoute.store);
+
+const salesLoadTimeout = setTimeout(() => {
+  if (!salesData) {
+    document.querySelector("#salesHeadline").textContent = "Chargement trop long";
+    document.querySelector("#salesSubheadline").textContent = "VÃ©rifie ta connexion et recharge la page.";
+  }
+}, 8000);
+
+fetch(`/api/page?${salesQuery.toString()}`)
   .then(async (response) => {
     const raw = await response.text();
     let data = {};
@@ -201,10 +232,12 @@ fetch(`/api/page?slug=${encodeURIComponent(currentSlug())}`)
     } catch {
       data = {};
     }
-    if (!response.ok) throw new Error(data.error || "Cette page n’est pas disponible.");
+    if (!response.ok) throw new Error(data.error || "Cette page n'est pas disponible.");
+    clearTimeout(salesLoadTimeout);
     applyPage(data);
   })
   .catch((error) => {
+    clearTimeout(salesLoadTimeout);
     document.querySelector("#salesHeadline").textContent = "Page indisponible";
-    document.querySelector("#salesSubheadline").textContent = error.message || "Cette page n’est pas publiée.";
+    document.querySelector("#salesSubheadline").textContent = error.message || "Cette page n'est pas publiÃ©e.";
   });
