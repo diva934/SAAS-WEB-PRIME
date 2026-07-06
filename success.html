@@ -5,20 +5,51 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Paiement confirmé · Expertly</title>
     <link rel="stylesheet" href="./access.css" />
+    <link rel="stylesheet" href="/assets/expertly-assistant.css" />
   </head>
   <body data-surface="payment_success">
     <main class="access-card">
       <span class="success">✓</span>
       <p class="eyebrow">Paiement confirmé</p>
       <h1>Ton produit est débloqué</h1>
-      <p>L’email d’accès est envoyé immédiatement à l’adresse utilisée lors du paiement.</p>
-      <a href="./store.html">Retourner à la boutique</a>
+      <p>L’email d’accès est envoyé immédiatement à l’adresse utilisée lors du paiement. Vérifie tes spams si tu ne le vois pas dans 2 minutes.</p>
+      <p id="orderRef" style="font-size:.85rem;opacity:.6;margin-top:-.5rem"></p>
+      <button id="shareBtn" style="margin-top:.5rem;display:none">Partager cette boutique 🔗</button>
+      <a id="returnLink" href="./store.html">Retourner à la boutique</a>
     </main>
-    <script src="./analytics.js"></script>
+    <script src="/assets/js/analytics.js"></script>
     <script>
-      window.ExpertlyTracking?.track("payment_success_page_viewed", {
-        order_id: new URLSearchParams(location.search).get("order")
-      });
+      (function () {
+        const params = new URLSearchParams(location.search);
+        const store = params.get("store");
+        const order = params.get("order");
+        const storeUrl = store ? `/b/${encodeURIComponent(store)}` : "./store.html";
+        if (store) document.querySelector("#returnLink").href = storeUrl;
+        if (order) document.querySelector("#orderRef").textContent = `Commande #${order}`;
+
+        const shareBtn = document.querySelector("#shareBtn");
+        if (store && navigator.share) {
+          shareBtn.style.display = "";
+          shareBtn.addEventListener("click", () => {
+            navigator.share({ title: "Boutique Expertly", url: `${location.origin}${storeUrl}` }).catch(() => {});
+          });
+        } else if (store) {
+          shareBtn.style.display = "";
+          shareBtn.textContent = "Copier le lien boutique 🔗";
+          shareBtn.addEventListener("click", () => {
+            navigator.clipboard.writeText(`${location.origin}${storeUrl}`).then(() => {
+              shareBtn.textContent = "Lien copié ✓";
+              setTimeout(() => { shareBtn.textContent = "Copier le lien boutique 🔗"; }, 2000);
+            });
+          });
+        }
+
+        window.ExpertlyTracking?.track("payment_success_page_viewed", {
+          order_id: order,
+          boutique_slug: store,
+        });
+      })();
     </script>
+    <script src="/assets/js/expertly-assistant.js"></script>
   </body>
 </html>

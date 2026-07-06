@@ -1,21 +1,22 @@
 {
-  "version": 2,
-  "builds": [
-    { "src": "api/*.js", "use": "@vercel/node" },
-    { "src": "api/**/*.js", "use": "@vercel/node" },
-    { "src": "*.html", "use": "@vercel/static" },
-    { "src": "*.css", "use": "@vercel/static" },
-    { "src": "*.js", "use": "@vercel/static" },
-    { "src": "*.json", "use": "@vercel/static" },
-    { "src": "assets/**", "use": "@vercel/static" }
+  "framework": null,
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "X-Frame-Options", "value": "DENY" },
+        { "key": "Strict-Transport-Security", "value": "max-age=63072000; includeSubDomains; preload" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+        { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=()" },
+        { "key": "Content-Security-Policy", "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https:; frame-ancestors 'none'; base-uri 'self'; form-action 'self' https://checkout.stripe.com https://connect.stripe.com" }
+      ]
+    }
   ],
-  "routes": [
-    { "src": "/api/(.*)", "dest": "/api/$1.js" },
-    { "src": "/", "dest": "/index.html" },
-    { "src": "/b/([a-z0-9-]+)", "dest": "/store.html?slug=$1" },
-    { "src": "/go/([a-z0-9-]+)", "dest": "/open.html?slug=$1" },
-    { "src": "/p/(.*)", "dest": "/sales.html" },
-    { "src": "/([a-z0-9]{6})", "dest": "/open.html?slug=$1" },
-    { "src": "/(.*)", "dest": "/$1" }
+  "rewrites": [
+    { "source": "/b/:slug", "destination": "/store.html" },
+    { "source": "/go/:slug", "destination": "/open.html" },
+    { "source": "/p/:path*", "destination": "/sales.html" },
+    { "source": "/:slug", "destination": "/open.html" }
   ]
 }

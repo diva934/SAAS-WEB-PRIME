@@ -207,7 +207,7 @@ function publicStoreState(state) {
 }
 
 function publicSalesPage(state, slug) {
-  const page = state.pages.find((item) => item.slug === slug && item.status === "published");
+  const page = state.pages.find((item) => item.slug === slug);
   if (!page) return null;
   const product = state.products.find((item) => item.id === page.productId && item.status === "published");
   if (!product) return null;
@@ -306,7 +306,8 @@ async function fulfillOrder({
     contact.value += product.price;
   }
 
-  const token = randomBytes(24).toString("hex");
+  // Format slug.hex — compatible avec slugFromAccessToken() dans api/_shared.js
+  const token = `${state.profile.slug || "boutique"}.${randomBytes(20).toString("hex")}`;
   const order = {
     id: `EXP-${String(state.orders.length + 1).padStart(5, "0")}`,
     contactId: contact.id,
@@ -434,6 +435,11 @@ async function createCheckout(request, response) {
     return;
   }
 
+  // ATTENTION — Stripe Connect non implémenté dans le serveur local.
+  // Le serveur local crée une session Stripe sans `Stripe-Account` ni `application_fee_amount`.
+  // Pour tester les paiements Stripe Connect avec les vraies règles de production
+  // (frais plateforme, compte Express), utiliser `vercel dev` à la place de `node server.mjs`.
+  // Ce serveur est réservé au développement UI/UX sans paiement réel.
   const form = new URLSearchParams({
     mode: "payment",
     success_url: `${appUrl}/api/checkout-success?session_id={CHECKOUT_SESSION_ID}`,
@@ -445,10 +451,11 @@ async function createCheckout(request, response) {
     "line_items[0][price_data][unit_amount]": String(Math.round(product.price * 100)),
     "line_items[0][price_data][product_data][name]": product.title,
     "line_items[0][price_data][product_data][description]": product.description,
-    "metadata[productId]": product.id,
-    "metadata[customerName]": customerName.trim(),
+    "metadata[creator_slug]": state.profile.slug,
+    "metadata[product_id]": product.id,
+    "metadata[customer_name]": customerName.trim(),
     "metadata[umamiDistinctId]": String(distinctId || ""),
-    "metadata[salesPageSlug]": String(salesPageSlug || ""),
+    "metadata[sales_page_slug]": String(salesPageSlug || ""),
   });
 
   const stripeResponse = await fetch("https://api.stripe.com/v1/checkout/sessions", {
@@ -497,7 +504,8 @@ async function resendAccess(request, response) {
     sendJson(response, 404, { error: "Commande introuvable ou accès indisponible." });
     return;
   }
-  if (!order.accessToken) order.accessToken = randomBytes(24).toString("hex");
+  // Format slug.hex — compatible avec slugFromAccessToken() dans api/_shared.js
+  if (!order.accessToken) order.accessToken = `${state.profile.slug || "boutique"}.${randomBytes(20).toString("hex")}`;
   try {
     const email = await sendAccessEmail({
       customerName: contact.name,
@@ -552,12 +560,12 @@ async function checkoutSuccess(request, response) {
     return;
   }
   const order = await fulfillOrder({
-    productId: session.metadata?.productId,
-    customerName: session.metadata?.customerName || session.customer_details?.name || "Client",
+    productId: session.metadata?.product_id,
+    customerName: session.metadata?.customer_name || session.customer_details?.name || "Client",
     customerEmail: session.customer_details?.email || session.customer_email,
     stripeSessionId: session.id,
     distinctId: session.metadata?.umamiDistinctId || null,
-    salesPageSlug: session.metadata?.salesPageSlug || null,
+    salesPageSlug: session.metadata?.sales_page_slug || null,
   });
   response.writeHead(302, { Location: `/success.html?order=${encodeURIComponent(order.id)}` });
   response.end();
@@ -585,12 +593,12 @@ async function stripeWebhook(request, response) {
   if (event.type === "checkout.session.completed" && event.data.object.payment_status === "paid") {
     const session = event.data.object;
     await fulfillOrder({
-      productId: session.metadata?.productId,
-      customerName: session.metadata?.customerName || session.customer_details?.name || "Client",
+      productId: session.metadata?.product_id,
+      customerName: session.metadata?.customer_name || session.customer_details?.name || "Client",
       customerEmail: session.customer_details?.email || session.customer_email,
       stripeSessionId: session.id,
       distinctId: session.metadata?.umamiDistinctId || null,
-      salesPageSlug: session.metadata?.salesPageSlug || null,
+      salesPageSlug: session.metadata?.sales_page_slug || null,
     });
   }
   sendJson(response, 200, { received: true });
@@ -628,6 +636,27 @@ async function handleApi(request, response) {
     return true;
   }
   if (request.method === "GET" && request.url?.startsWith("/api/store")) {
+    const storeParams = new URL(request.url, appUrl).searchParams;
+    const accessToken = storeParams.get("token");
+    if (accessToken) {
+      // Résolution d'un token d'accès client (format local : hex brut)
+      const tokenState = await readState();
+      const order = tokenState.orders.find((item) => item.accessToken === accessToken && item.status === "paid");
+      if (!order) { sendJson(response, 404, { error: "Accès introuvable ou paiement non confirmé." }); return true; }
+      const product = tokenState.products.find((item) => item.id === order.productId);
+      if (!product) { sendJson(response, 404, { error: "Produit indisponible." }); return true; }
+      await trackUmami(
+        "product_accessed",
+        { boutique_slug: tokenState.profile.slug, order_id: order.id, product_id: product.id },
+        { distinctId: order.contactId, url: `/boutique/${tokenState.profile.slug}/access` },
+      );
+      sendJson(response, 200, {
+        productTitle: product.title,
+        orderId: order.id,
+        access: (product.fileName || "").trim() || `/b/${encodeURIComponent(tokenState.profile.slug)}`,
+      });
+      return true;
+    }
     sendJson(response, 200, publicStoreState(await readState()));
     return true;
   }

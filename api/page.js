@@ -1,4 +1,4 @@
-import { normalizeState, sendJson, slugify, supabaseRequest } from "./_shared.js";
+import { assertRateLimit, normalizeState, sendJson, slugify, supabaseRequest } from "./_shared.js";
 
 function publicPayload(state, page, product) {
   const { fileName, ...publicProduct } = product;
@@ -13,37 +13,37 @@ function publicPayload(state, page, product) {
   };
 }
 
-// Récupère les états créateurs susceptibles de contenir une page avec ce slug :
-// containment JSONB (efficace) puis scan borné (robuste).
-async function collectStates(slug) {
-  const states = [];
-  try {
-    const filter = encodeURIComponent(JSON.stringify({ pages: [{ slug }] }));
+// Récupère les états créateurs susceptibles de contenir une page avec ce slug.
+// Quand storeSlug est fourni : recherche directe par slug de boutique (O(1) via index unique).
+// Sinon : recherche par containment JSONB indexée (requiert un index GIN sur creator_states.state).
+// Zéro résultat = page inexistante, pas une erreur. Le scan global n'est jamais utilisé.
+async function collectStates(slug, storeSlug = "") {
+  if (storeSlug) {
     const rows = await supabaseRequest(
-      `/rest/v1/creator_states?select=state&state=cs.${filter}&limit=5`,
+      `/rest/v1/creator_states?select=state&slug=eq.${encodeURIComponent(storeSlug)}&limit=1`,
     );
-    for (const row of Array.isArray(rows) ? rows : []) states.push(normalizeState(row.state));
-  } catch {
-    // containment indisponible : on bascule sur le scan.
+    return (Array.isArray(rows) ? rows : [])
+      .filter((row) => row?.state)
+      .map((row) => normalizeState(row.state));
   }
-  if (states.length === 0) {
-    const all = await supabaseRequest(`/rest/v1/creator_states?select=state&limit=1000`);
-    for (const row of Array.isArray(all) ? all : []) states.push(normalizeState(row.state));
-  }
-  return states;
+
+  const filter = encodeURIComponent(JSON.stringify({ pages: [{ slug }] }));
+  const rows = await supabaseRequest(
+    `/rest/v1/creator_states?select=state&state=cs.${filter}&limit=5`,
+  );
+  return (Array.isArray(rows) ? rows : [])
+    .filter((row) => row?.state)
+    .map((row) => normalizeState(row.state));
 }
 
 // Résout la page et explique précisément pourquoi elle n'est pas affichable.
-async function resolveSalesPage(slug) {
-  const states = await collectStates(slug);
+async function resolveSalesPage(slug, storeSlug = "") {
+  const states = await collectStates(slug, storeSlug);
   let sawPage = false;
-  let sawPublishedPage = false;
   for (const state of states) {
     const page = (state.pages || []).find((item) => item.slug === slug);
     if (!page) continue;
     sawPage = true;
-    if (page.status !== "published") continue;
-    sawPublishedPage = true;
     const product = (state.products || []).find(
       (item) => item.id === page.productId && item.status === "published",
     );
@@ -52,25 +52,25 @@ async function resolveSalesPage(slug) {
   if (!sawPage) {
     return { reason: "Page introuvable. Vérifie l'identifiant, et crée la page sur le site en ligne (pas en local)." };
   }
-  if (!sawPublishedPage) {
-    return { reason: "Cette page est en brouillon. Publie-la dans l'onglet Pages." };
-  }
-  return { reason: "La page est publiée mais le produit associé ne l'est pas. Publie le produit dans l'onglet Produits." };
+  return { reason: "Le produit associé à cette page n'est pas publié. Publie le produit dans l'onglet Produits." };
 }
 
-// GET /api/page?slug=ma-page
+// GET /api/page?store=ma-boutique&slug=ma-page
+// `store` reste optionnel pour préserver les anciens liens /p/ma-page.
 export default async function handler(req, res) {
   if (req.method !== "GET") {
     sendJson(res, 405, { error: "Method not allowed" });
     return;
   }
   try {
+    await assertRateLimit(req, "sales-page", 30, 60_000);
     const slug = slugify(req.query?.slug || "");
+    const storeSlug = req.query?.store ? slugify(req.query.store) : "";
     if (!slug) {
       sendJson(res, 400, { error: "Page requise." });
       return;
     }
-    const resolved = await resolveSalesPage(slug);
+    const resolved = await resolveSalesPage(slug, storeSlug);
     if (resolved.payload) {
       sendJson(res, 200, resolved.payload);
       return;

@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "start": "node server.mjs",
-    "check": "node --check app.js && node --check store.js && node --check sales.js && node --check server.mjs && node --check api/_shared.js && node --check api/state.js && node --check api/store.js && node --check api/checkout.js && node --check api/subscription-status.js"
+    "test": "node --test",
+    "check": "node --check assets/js/app.js && node --check assets/js/store.js && node --check assets/js/sales.js && node --check assets/js/open.js && node --check assets/js/analytics.js && node --check assets/js/expertly-assistant.js && node --check server.mjs && node --check api/_shared.js && node --check api/state.js && node --check api/store.js && node --check api/page.js && node --check api/checkout.js && node --check api/config.js && node --check api/billing-portal.js && node --check api/slug-available.js && node --check api/orders/resend-access.js && node --check api/events/visit.js && node --check api/stripe-webhook.js && node --check api/subscription-status.js"
   }
 }

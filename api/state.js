@@ -1,4 +1,5 @@
 import {
+  enforcePlanState,
   readCreatorState,
   requireActiveSubscription,
   saveCreatorState,
@@ -6,10 +7,12 @@ import {
   userFromRequest,
 } from "./_shared.js";
 
+export const config = { api: { bodyParser: { sizeLimit: "1mb" } } };
+
 export default async function handler(req, res) {
   try {
     const user = await userFromRequest(req);
-    await requireActiveSubscription(user.id);
+    const subscription = await requireActiveSubscription(user.id);
 
     if (req.method === "GET") {
       sendJson(res, 200, await readCreatorState(user.id));
@@ -17,7 +20,8 @@ export default async function handler(req, res) {
     }
 
     if (req.method === "PUT") {
-      const saved = await saveCreatorState(user.id, req.body || {});
+      const next = enforcePlanState(subscription.plan, req.body || {});
+      const saved = await saveCreatorState(user.id, next);
       sendJson(res, 200, { saved: true, state: saved });
       return;
     }

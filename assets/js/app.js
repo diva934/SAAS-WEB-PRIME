@@ -253,6 +253,7 @@ function loadState() {
 
 let state = DEMO_MODE ? normalizeState(demoState) : loadState();
 let activeView = "overview";
+let activeSubscriptionPlan = "";
 let integrationConfig = {
   stripe: false,
   stripeWebhook: false,
@@ -488,7 +489,7 @@ function marketingUrl() {
 
 async function loadPublicConfig() {
   try {
-    const response = await fetch("/api/config", { cache: "no-store" });
+    const response = await authenticatedFetch("/api/config", { cache: "no-store" });
     if (response.ok) publicConfig = { ...publicConfig, ...(await response.json()) };
   } catch {
     // En local, le serveur peut injecter directement la configuration dans la page.
@@ -592,6 +593,17 @@ async function ensureCreatorAccess() {
     });
     return false;
   }
+  activeSubscriptionPlan = subscription.plan || "";
+  const planTitle = document.querySelector("#currentPlanTitle");
+  const planDescription = document.querySelector("#currentPlanDescription");
+  const planCopy = {
+    launch: ["Expertly Launch", "Jusqu’à 5 produits, checkout et livraison automatique."],
+    scale: ["Expertly Scale", "Produits illimités, pages de vente, CRM et analytics."],
+    studio: ["Expertly Studio", "Toutes les fonctions Scale avec accompagnement prioritaire."],
+  };
+  const copy = planCopy[activeSubscriptionPlan] || ["Expertly", "Abonnement actif."];
+  if (planTitle) planTitle.textContent = copy[0];
+  if (planDescription) planDescription.textContent = copy[1];
   document.querySelector("#creatorAccessGate")?.remove();
   document.body.classList.remove("auth-pending", "auth-locked");
   return true;
@@ -1415,15 +1427,12 @@ function renderTunnel() {
   const lead = state.products.find((product) => product.offerRole === "lead");
   const tripwire = state.products.find((product) => product.offerRole === "tripwire");
   const core = state.products.find((product) => product.offerRole === "core");
-  const upsell = state.products.find((product) => product.offerRole === "upsell");
   const publishedPage = state.pages[0];
   const stages = [
     { title: "Bio / trafic", detail: `${state.analytics.visits} visite${state.analytics.visits > 1 ? "s" : ""}`, done: state.analytics.visits > 0, action: "analytics" },
     { title: "Lead magnet", detail: lead ? lead.title : "À créer", done: Boolean(lead), action: "products" },
     { title: "Page de vente", detail: publishedPage ? publishedPage.name : "Aucune page", done: Boolean(publishedPage), action: "pages" },
     { title: "Checkout", detail: integrationConfig.stripe ? "Stripe prêt" : "Stripe à connecter", done: Boolean(integrationConfig.stripe), action: "settings" },
-    { title: "Order bump", detail: state.products.some((product) => product.bumpProductId) ? "Configuré" : "À associer", done: state.products.some((product) => product.bumpProductId), action: "products" },
-    { title: "Upsell", detail: upsell || state.products.some((product) => product.upsellProductId) ? "Offre suivante prête" : "À créer", done: Boolean(upsell || state.products.some((product) => product.upsellProductId)), action: "products" },
     { title: "Livraison", detail: integrationConfig.email ? "Email automatique" : "Email à connecter", done: Boolean(integrationConfig.email), action: "emails" },
   ];
   document.querySelector("#tunnelBoard").innerHTML = stages
@@ -1440,7 +1449,6 @@ function renderTunnel() {
     ["Lead magnet", lead],
     ["Produit d'appel", tripwire],
     ["Offre principale", core],
-    ["Upsell", upsell],
   ];
   document.querySelector("#offerMap").innerHTML = roles
     .map(([label, product]) => `
@@ -1454,10 +1462,10 @@ function renderTunnel() {
 
   const upsellInsights = [];
   if (!core) upsellInsights.push(["Créer une offre principale", "Le tunnel a besoin d'une offre cœur pour convertir l'audience.", "products"]);
-  if (!lead) upsellInsights.push(["Ajouter un lead magnet", "La vitrine vend la capture email : ajoute une ressource gratuite.", "products"]);
-  if (!state.products.some((product) => product.bumpProductId)) upsellInsights.push(["Associer un order bump", "Ajoute une petite offre complémentaire au checkout.", "products"]);
-  if (!upsell && !state.products.some((product) => product.upsellProductId)) upsellInsights.push(["Créer un upsell", "Propose l'étape suivante après achat pour augmenter le panier moyen.", "products"]);
-  if (!upsellInsights.length) upsellInsights.push(["Tunnel prêt", "Tu peux maintenant concentrer l'effort sur le trafic et les relances email.", "analytics"]);
+  if (!lead) upsellInsights.push(["Ajouter un lead magnet", "Une ressource gratuite permet de collecter des contacts qualifiés.", "products"]);
+  if (!state.pages.length) upsellInsights.push(["Publier une page de vente", "Associe une page publique à ton offre principale.", "pages"]);
+  if (!integrationConfig.stripe) upsellInsights.push(["Connecter Stripe", "Termine Stripe Connect avant d'envoyer du trafic.", "settings"]);
+  if (!upsellInsights.length) upsellInsights.push(["Tunnel prêt", "Tu peux maintenant concentrer l'effort sur le trafic et le suivi des commandes.", "analytics"]);
   document.querySelector("#upsellInsights").innerHTML = upsellInsights
     .map(([title, detail, target]) => `
       <button class="insight-item" data-view-target="${target}">
@@ -1939,6 +1947,7 @@ function renderEmails() {
     `;
   }
   document.querySelector("#emailGrid").innerHTML = state.emails
+    .filter((email) => email.id === "em1")
     .map((email) => `
       <article class="email-card">
         <div class="email-card-head">
@@ -1953,8 +1962,6 @@ function renderEmails() {
           <span>Ouverture<br /><strong>${email.openRate} %</strong></span>
         </div>
         <div class="detail-actions" style="margin-top:.75rem">
-          <button class="secondary-button" style="font-size:.8rem;padding:.3rem .75rem" data-edit-email="${email.id}">Modifier</button>
-          <button class="secondary-button" style="font-size:.8rem;padding:.3rem .75rem;color:#e85a6a" data-delete-email="${email.id}">Supprimer</button>
         </div>
       </article>
     `)
@@ -1985,7 +1992,7 @@ function renderFinance() {
           </div>
         `;
       }).join("")
-    : '<div class="empty-state compact-empty">Les factures apparaîtront après les premières commandes.</div>';
+    : '<div class="empty-state compact-empty">Les lignes exportables apparaîtront après les premières commandes.</div>';
 
   const taxSteps = [
     ["Paiements Stripe", Boolean(integrationConfig.stripe), "Connecte Stripe pour encaisser et suivre les paiements."],
@@ -2196,7 +2203,17 @@ function openPageModal(page = null) {
   form.elements.id.value = page?.id || "";
   form.elements.name.value = page?.name || "";
   form.elements.productId.value = page?.productId || state.products[0].id;
-  form.elements.slug.value = page?.slug || "";
+  // Auto-génère un slug unique pour les nouvelles pages
+  if (!page) {
+    const base = slugify(form.elements.name.value || "") || `page-${Date.now().toString(36)}`;
+    let candidate = base;
+    let n = 2;
+    while (state.pages.some((p) => p.slug === candidate)) { candidate = `${base}-${n}`; n++; }
+    form.elements.slug.value = candidate;
+    delete form.elements.slug.dataset.touched;
+  } else {
+    form.elements.slug.value = page.slug;
+  }
   form.elements.headline.value = page?.headline || "";
   form.elements.subheadline.value = page?.subheadline || "";
   form.elements.buttonText.value = page?.buttonText || "Je découvre l'offre";
@@ -2240,11 +2257,14 @@ async function submitPage(event) {
   const data = new FormData(event.currentTarget);
   const id = data.get("id");
   const existing = state.pages.find((page) => page.id === id);
-  const requestedSlug = slugify(data.get("slug") || data.get("name"));
-  const slugTaken = state.pages.some((page) => page.id !== id && page.slug === requestedSlug);
-  if (!requestedSlug || slugTaken) {
-    showToast(slugTaken ? "Ce lien public est déjà utilisé." : "Le lien public est invalide.");
-    return;
+  const baseSlug = slugify(data.get("slug") || data.get("name"));
+  if (!baseSlug) { showToast("Le lien public est invalide."); return; }
+  // Garantit l'unicité automatiquement (infini)
+  let requestedSlug = baseSlug;
+  let n = 2;
+  while (state.pages.some((page) => page.id !== id && page.slug === requestedSlug)) {
+    requestedSlug = `${baseSlug}-${n}`;
+    n++;
   }
   let logoUrl = event.currentTarget.dataset.logo || data.get("logoUrl").trim();
   let productImageUrl = event.currentTarget.dataset.productImage || data.get("productImageUrl").trim();
@@ -2541,7 +2561,11 @@ document.querySelector("#orderProductSelect")?.addEventListener("change", (e) =>
 document.querySelector("#pageForm").addEventListener("input", (event) => {
   const form = event.currentTarget;
   if (event.target.name === "name" && !form.elements.id.value && !form.elements.slug.dataset.touched) {
-    form.elements.slug.value = slugify(event.target.value);
+    const base = slugify(event.target.value) || `page-${Date.now().toString(36)}`;
+    let candidate = base;
+    let n = 2;
+    while (state.pages.some((p) => p.id !== form.elements.id.value && p.slug === candidate)) { candidate = `${base}-${n}`; n++; }
+    form.elements.slug.value = candidate;
   }
   if (event.target.name === "slug") {
     form.elements.slug.dataset.touched = "true";
@@ -2585,6 +2609,24 @@ document.querySelector("#manageSubscription")?.addEventListener("click", async (
     location.assign(data.url);
   } catch (error) {
     showToast(error.message || "Impossible d'ouvrir la gestion d'abonnement.");
+    button.disabled = false;
+    button.textContent = previous;
+  }
+});
+
+document.querySelector("#connectStripe")?.addEventListener("click", async (event) => {
+  if (DEMO_MODE) return;
+  const button = event.currentTarget;
+  const previous = button.textContent;
+  button.disabled = true;
+  button.textContent = "Ouverture…";
+  try {
+    const response = await authenticatedFetch("/api/config", { method: "POST" });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || !data.url) throw new Error(data.error || "Connexion Stripe indisponible.");
+    location.assign(data.url);
+  } catch (error) {
+    showToast(error.message || "Impossible d'ouvrir Stripe Connect.");
     button.disabled = false;
     button.textContent = previous;
   }

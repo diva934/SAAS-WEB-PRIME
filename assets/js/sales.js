@@ -20,10 +20,23 @@ function escapeHtml(value = "") {
     .replaceAll("'", "&#039;");
 }
 
+function setOgMeta(property, content) {
+  if (!content) return;
+  let el = document.querySelector(`meta[property="${property}"]`);
+  if (!el) { el = document.createElement("meta"); el.setAttribute("property", property); document.head.appendChild(el); }
+  el.setAttribute("content", content);
+}
+
 function applyPage({ page, product, profile }) {
   salesData = { page, product, profile };
   const seller = profile.creatorName || "Expertly";
-  document.title = `${page.headline} · ${seller}`;
+  const title = `${page.headline} · ${seller}`;
+  document.title = title;
+  setOgMeta("og:title", title);
+  setOgMeta("og:description", page.subheadline || product.description || "");
+  setOgMeta("og:image", page.productImageUrl || profile.logo || "");
+  setOgMeta("og:url", location.href);
+  setOgMeta("og:type", "website");
   document.documentElement.style.setProperty("--page-accent", page.accent || "#6558f5");
   document.documentElement.style.setProperty("--page-bg", page.backgroundColor || "#f5f3ff");
   document.documentElement.style.setProperty("--page-text", page.textColor || "#17172a");
@@ -203,6 +216,13 @@ const salesRoute = currentSalesRoute();
 const salesQuery = new URLSearchParams({ slug: salesRoute.slug });
 if (salesRoute.store) salesQuery.set("store", salesRoute.store);
 
+const salesLoadTimeout = setTimeout(() => {
+  if (!salesData) {
+    document.querySelector("#salesHeadline").textContent = "Chargement trop long";
+    document.querySelector("#salesSubheadline").textContent = "Vérifie ta connexion et recharge la page.";
+  }
+}, 8000);
+
 fetch(`/api/page?${salesQuery.toString()}`)
   .then(async (response) => {
     const raw = await response.text();
@@ -212,10 +232,12 @@ fetch(`/api/page?${salesQuery.toString()}`)
     } catch {
       data = {};
     }
-    if (!response.ok) throw new Error(data.error || "Cette page n’est pas disponible.");
+    if (!response.ok) throw new Error(data.error || "Cette page n'est pas disponible.");
+    clearTimeout(salesLoadTimeout);
     applyPage(data);
   })
   .catch((error) => {
+    clearTimeout(salesLoadTimeout);
     document.querySelector("#salesHeadline").textContent = "Page indisponible";
-    document.querySelector("#salesSubheadline").textContent = error.message || "Cette page n’est pas publiée.";
+    document.querySelector("#salesSubheadline").textContent = error.message || "Cette page n'est pas publiée.";
   });

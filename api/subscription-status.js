@@ -74,8 +74,8 @@ export default async function handler(req, res) {
 
     // 1. Déjà actif en base : réponse immédiate.
     try {
-      await requireActiveSubscription(user.id);
-      sendJson(res, 200, { active: true, plan: metadata.expertly_plan || "" });
+      const subscription = await requireActiveSubscription(user.id);
+      sendJson(res, 200, { active: true, plan: subscription.plan || metadata.expertly_plan || "" });
       return;
     } catch {
       // pas (encore) actif en base : on tente une réconciliation Stripe.

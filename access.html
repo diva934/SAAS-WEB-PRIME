@@ -3,8 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
     <title>Accès au produit · Expertly</title>
     <link rel="stylesheet" href="./access.css" />
+    <link rel="stylesheet" href="/assets/expertly-assistant.css" />
   </head>
   <body data-surface="customer_access">
     <main class="access-card">
@@ -14,13 +16,13 @@
       <p id="message">Nous vérifions que le paiement a bien été confirmé.</p>
       <a id="accessButton" hidden target="_blank" rel="noopener">Ouvrir mon produit →</a>
     </main>
-    <script src="./analytics.js"></script>
     <script>
       const token = new URLSearchParams(location.search).get("token");
+      if (token) history.replaceState(null, "", location.pathname);
       const title = document.querySelector("#title");
       const message = document.querySelector("#message");
       const button = document.querySelector("#accessButton");
-      fetch(`/api/access?token=${encodeURIComponent(token || "")}`)
+      fetch(`/api/store?token=${encodeURIComponent(token || "")}`)
         .then(async (response) => {
           const data = await response.json();
           if (!response.ok) throw new Error(data.error || "Accès invalide.");
@@ -28,10 +30,6 @@
           message.textContent = `Paiement confirmé · commande ${data.orderId}`;
           button.href = data.access;
           button.hidden = false;
-          window.ExpertlyTracking?.track("product_accessed", {
-            product_title: data.productTitle,
-            order_id: data.orderId
-          });
         })
         .catch((error) => {
           title.textContent = "Accès indisponible";

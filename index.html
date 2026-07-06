@@ -16,6 +16,7 @@
     />
     <link rel="icon" href="./assets/expertly-logo.png" />
     <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="/assets/expertly-assistant.css" />
     <script>
       window.EXPERTLY_CONFIG = {
         supabaseUrl: "%SUPABASE_URL%",
@@ -241,7 +242,10 @@
                 <h1>Commandes</h1>
                 <p>Suis les paiements, remboursements et accès livrés.</p>
               </div>
-              <button class="secondary-button" id="exportOrders">Exporter en CSV</button>
+              <div style="display:flex;gap:.5rem;">
+                <button class="primary-button" data-action="new-order">＋ Enregistrer une vente</button>
+                <button class="secondary-button" id="exportOrders">Exporter en CSV</button>
+              </div>
             </div>
             <div class="metric-grid compact" id="orderMetrics"></div>
             <div class="panel table-panel">
@@ -274,7 +278,7 @@
                 <div class="offer-map" id="offerMap"></div>
               </article>
               <article class="panel">
-                <div class="panel-heading"><div><span class="panel-label">Optimisations</span><h2>Upsells et order bumps</h2></div></div>
+                <div class="panel-heading"><div><span class="panel-label">Optimisations</span><h2>Prérequis de vente</h2></div></div>
                 <div class="insight-list" id="upsellInsights"></div>
               </article>
             </div>
@@ -287,7 +291,10 @@
                 <h1>Contacts</h1>
                 <p>Centralise les leads, clients et opportunités de ton activité.</p>
               </div>
-              <button class="secondary-button" id="exportContacts">Exporter les contacts</button>
+              <div style="display:flex;gap:.5rem;">
+                <button class="primary-button" data-action="new-contact">＋ Ajouter un contact</button>
+                <button class="secondary-button" id="exportContacts">Exporter les contacts</button>
+              </div>
             </div>
             <div class="metric-grid compact" id="contactMetrics"></div>
             <div class="panel table-panel">
@@ -332,8 +339,7 @@
 
           <section class="view" id="emailsView">
             <div class="page-heading">
-              <div><p class="eyebrow">Automatisation</p><h1>Emails clients</h1><p>Envoie les bons messages aux bons moments, sans outil supplémentaire.</p></div>
-              <button class="primary-button" data-action="new-email">＋ Créer une automatisation</button>
+              <div><p class="eyebrow">Livraison</p><h1>Emails clients</h1><p>Suis l’envoi automatique des accès après une commande.</p></div>
             </div>
             <div class="email-status-panel" id="emailStatusPanel"></div>
             <div class="email-grid" id="emailGrid"></div>
@@ -341,7 +347,7 @@
 
           <section class="view" id="financeView">
             <div class="page-heading">
-              <div><p class="eyebrow">Europe-ready</p><h1>Finance</h1><p>Prépare factures, TVA, remboursements et exports comptables pour une boutique plus sérieuse.</p></div>
+              <div><p class="eyebrow">Suivi</p><h1>Finance</h1><p>Suis les encaissements et exporte les commandes pour ton outil comptable.</p></div>
               <button class="secondary-button" id="exportFinance">Exporter comptabilité</button>
             </div>
             <div class="metric-grid compact" id="financeMetrics"></div>
@@ -372,6 +378,9 @@
                   <label>Couleur principale<input name="accent" type="color" /></label>
                   <label class="full">Logo — URL<input name="logo" type="url" placeholder="https://monsite.fr/logo.png" /></label>
                   <label class="full media-upload">Ou importer un logo<input name="logoFile" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" /></label>
+                  <label>Instagram — URL<input name="instagram" type="url" placeholder="https://instagram.com/toncompte" /></label>
+                  <label>YouTube — URL<input name="youtube" type="url" placeholder="https://youtube.com/@tacreatrice" /></label>
+                  <label>TikTok — URL<input name="tiktok" type="url" placeholder="https://tiktok.com/@toncompte" /></label>
                 </div>
                 <div class="public-bio-link">
                   <span>Lien de bio Instagram <em>· ouvre la boutique hors d’Instagram</em></span>
@@ -387,23 +396,19 @@
               <div class="settings-stack">
                 <article class="panel integration-card">
                   <span class="integration-icon stripe">S</span>
-                  <span><strong>Stripe</strong><small>Paiements et abonnements</small></span>
+                  <span><strong>Stripe Connect</strong><small>Reçois directement tes ventes</small></span>
                   <span id="stripeStatus">À configurer</span>
+                  <button type="button" id="connectStripe">Connecter</button>
                 </article>
                 <article class="panel integration-card">
                   <span class="integration-icon" style="background:#17172a">✉</span>
                   <span><strong>Resend</strong><small>Envoi instantané des accès clients</small></span>
                   <span id="emailStatus">À configurer</span>
                 </article>
-                <article class="panel integration-card">
-                  <span class="integration-icon domain">↗</span>
-                  <span><strong>Domaine personnalisé</strong><small>Connecte ton domaine</small></span>
-                  <button type="button" id="configureDomain">Configurer</button>
-                </article>
                 <article class="panel plan-card">
                   <span class="panel-label">Abonnement</span>
-                  <h3>Expertly Scale</h3>
-                  <p>Produits illimités, emails automatisés et domaine personnalisé.</p>
+                  <h3 id="currentPlanTitle">Expertly</h3>
+                  <p id="currentPlanDescription">Abonnement actif.</p>
                   <button type="button" id="manageSubscription">Gérer mon abonnement</button>
                 </article>
               </div>
@@ -433,8 +438,8 @@
             <label>Type d'accès<select name="accessType"><option value="link">Lien privé</option><option value="file">Fichier</option><option value="calendar">Calendrier</option><option value="video">Vidéo</option><option value="member">Espace membre</option></select></label>
             <label>Prix barré<input name="compareAtPrice" type="number" min="0" step="1" placeholder="Ex. 1497" /></label>
             <label>Score de priorité<select name="funnelPriority"><option value="standard">Standard</option><option value="hero">Offre mise en avant</option><option value="support">Offre secondaire</option></select></label>
-            <label>Order bump associé<select name="bumpProductId" id="bumpProductSelect"></select></label>
-            <label>Upsell post-achat<select name="upsellProductId" id="upsellProductSelect"></select></label>
+            <label hidden>Order bump associé<select name="bumpProductId" id="bumpProductSelect" disabled></select></label>
+            <label hidden>Upsell post-achat<select name="upsellProductId" id="upsellProductSelect" disabled></select></label>
             <label class="full">Image de couverture<input name="coverUrl" type="url" placeholder="https://ton-site.fr/visuel-produit.jpg" /></label>
             <label class="full upload-zone">
               <span>↓</span>
@@ -532,10 +537,81 @@
         <div id="detailContent"></div>
       </div>
     </aside>
+    <!-- Contact modal -->
+    <div class="modal" id="contactModal" aria-hidden="true">
+      <div class="modal-card">
+        <div class="modal-heading">
+          <div><span class="panel-label">CRM</span><h2 id="contactModalTitle">Ajouter un contact</h2></div>
+          <button class="icon-button" data-close-contact-modal aria-label="Fermer">×</button>
+        </div>
+        <form id="contactForm">
+          <input type="hidden" name="id" />
+          <div class="form-grid">
+            <label class="full">Nom<input name="name" required placeholder="Ex. Marie Dupont" /></label>
+            <label class="full">Email<input name="email" type="email" required placeholder="marie@exemple.fr" /></label>
+            <label>Segment<select name="segment"><option value="Lead">Lead</option><option value="Client">Client</option><option value="Prospect">Prospect</option></select></label>
+            <label>Source<input name="source" placeholder="Instagram, Publicité…" /></label>
+            <label class="full">Prochaine action<input name="nextAction" placeholder="Relancer dans 3 jours…" /></label>
+            <label class="full">Notes<textarea name="notes" rows="3" placeholder="Notes internes…"></textarea></label>
+          </div>
+          <div class="modal-actions">
+            <button type="button" data-close-contact-modal>Annuler</button>
+            <button type="submit" class="btn-primary">Enregistrer</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Order modal -->
+    <div class="modal" id="orderModal" aria-hidden="true">
+      <div class="modal-card">
+        <div class="modal-heading">
+          <div><span class="panel-label">Commandes</span><h2>Ajouter une commande</h2></div>
+          <button class="icon-button" data-close-order-modal aria-label="Fermer">×</button>
+        </div>
+        <form id="orderForm">
+          <div class="form-grid">
+            <label class="full">Nom du client<input name="clientName" required placeholder="Marie Dupont" /></label>
+            <label class="full">Email du client<input name="clientEmail" type="email" required placeholder="marie@exemple.fr" /></label>
+            <label class="full">Produit<select name="productId" id="orderProductSelect"></select></label>
+            <label>Montant (€)<input name="amount" type="number" min="0" step="1" required /></label>
+            <label>Date<input name="date" type="date" required /></label>
+            <label>Statut<select name="status"><option value="paid">Payé</option><option value="refunded">Remboursé</option></select></label>
+          </div>
+          <div class="modal-actions">
+            <button type="button" data-close-order-modal>Annuler</button>
+            <button type="submit" class="btn-primary">Enregistrer</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Email automation modal -->
+    <div class="modal" id="emailModal" aria-hidden="true">
+      <div class="modal-card">
+        <div class="modal-heading">
+          <div><span class="panel-label">Emails</span><h2 id="emailModalTitle">Nouvelle automation</h2></div>
+          <button class="icon-button" data-close-email-modal aria-label="Fermer">×</button>
+        </div>
+        <form id="emailForm">
+          <input type="hidden" name="id" />
+          <div class="form-grid">
+            <label class="full">Nom de l'automation<input name="name" required placeholder="Email de bienvenue" /></label>
+            <label class="full">Description<textarea name="description" rows="2" placeholder="Envoyé après chaque achat…"></textarea></label>
+            <label class="full">Déclencheur<select name="trigger"><option>Achat confirmé</option><option>Inscription newsletter</option><option>Panier abandonné</option><option>J+3 après achat</option><option>J+7 après achat</option></select></label>
+            <label class="full"><input type="checkbox" name="active" checked /> Automation active</label>
+          </div>
+          <div class="modal-actions">
+            <button type="button" data-close-email-modal>Annuler</button>
+            <button type="submit" class="btn-primary">Enregistrer</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
     <div class="drawer-backdrop" id="drawerBackdrop"></div>
     <div class="toast-region" id="toastRegion" aria-live="polite"></div>
-    <script src="./analytics.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
-    <script src="./app.js"></script>
+    <script src="./assets/js/app.js"></script>
+    <script src="/assets/js/expertly-assistant.js"></script>
   </body>
 </html>

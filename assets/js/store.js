@@ -100,10 +100,23 @@ function renderFeaturedBanner(publishedProducts) {
   if (title) title.textContent = freeProduct.title || "Ressource gratuite offerte";
 }
 
+function setOgMeta(property, content) {
+  if (!content) return;
+  let el = document.querySelector(`meta[property="${property}"]`);
+  if (!el) { el = document.createElement("meta"); el.setAttribute("property", property); document.head.appendChild(el); }
+  el.setAttribute("content", content);
+}
+
 function renderStore() {
   const profile = state.profile;
   document.documentElement.style.setProperty("--accent", profile.accent || "#6558f5");
-  document.title = `${profile.creatorName} · Boutique`;
+  const storeTitle = `${profile.creatorName} · Boutique`;
+  document.title = storeTitle;
+  setOgMeta("og:title", storeTitle);
+  setOgMeta("og:description", profile.bio || `Découvre les offres de ${profile.creatorName}`);
+  setOgMeta("og:image", (profile.logo || "").trim().match(/^https?:\/\//i) ? profile.logo : "");
+  setOgMeta("og:url", location.href);
+  setOgMeta("og:type", "website");
   const avatar = document.querySelector("#creatorAvatar");
   const logo = (profile.logo || "").trim();
   const validLogo = /^https?:\/\//i.test(logo) || /^data:image\//i.test(logo);
@@ -307,7 +320,9 @@ document.querySelector("#leadForm").addEventListener("submit", async (event) => 
     });
     const result = await response.json();
     if (!response.ok) throw new Error(result.error);
-    location.assign(result.accessUrl);
+    closeLeadModal();
+    showToast("✓ Vérifie tes emails — la ressource arrive dans quelques secondes !");
+    setTimeout(() => { if (result.accessUrl) location.assign(result.accessUrl); }, 1800);
   } catch (error) {
     showToast(error.message || "Impossible d’envoyer la ressource.");
   }
@@ -333,8 +348,7 @@ async function startStore() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   } catch {
     try {
-      state = { ...fallback, ...JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}") };
-    } catch {
+      state = { ...fallback, ...JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}") };    } catch {
       state = fallback;
     }
     showToast("Mode hors ligne : paiement indisponible.");
