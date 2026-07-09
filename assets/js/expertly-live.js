@@ -305,7 +305,15 @@
     });
   }
 
-  function boot() { mountWidget(); startLive(); }
+  function setNavTooltips() {
+    try {
+      document.querySelectorAll(".nav-item").forEach(function (n) {
+        var l = n.querySelector("span:not(.nav-icon)");
+        if (l && !n.title) n.title = l.textContent.trim();
+      });
+    } catch (e) {}
+  }
+  function boot() { setNavTooltips(); mountWidget(); startLive(); }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
   else boot();
 })();
