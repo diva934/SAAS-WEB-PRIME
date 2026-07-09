@@ -105,7 +105,7 @@ export default async function handler(req, res) {
     const payload = {
       systemInstruction: { parts: [{ text: system }] },
       contents,
-      generationConfig: { temperature: 0.6, maxOutputTokens: 400 },
+      generationConfig: { temperature: 0.6, maxOutputTokens: 600, thinkingConfig: { thinkingBudget: 0 } },
     };
 
     const url =
