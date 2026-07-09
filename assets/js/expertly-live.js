@@ -1,6 +1,7 @@
-/* Expertly - robot chatbot + rafraichissement live du dashboard.
+/* Expertly - robot chatbot (data-aware) + rafraichissement live du dashboard.
  * Fichier autonome charge APRES app.js : il reutilise les globales du CRM
  * (state, normalizeState, renderView, activeView, STORAGE_KEY, authenticatedFetch).
+ * Le bot lit le CA/commandes/conversion reels dans `state` et adapte ses conseils.
  * Aucune donnee n'est envoyee a un service externe (assistant 100% local). */
 (function () {
   "use strict";
@@ -116,26 +117,70 @@
     refresh();
   }
 
-  /* ---------------- Robot chatbot (local) ---------------- */
-  var RULES = [
-    { k: /(vente|chiffre|ca\b|revenu|argent|gagn)/i, a: "Tes ventes et ton chiffre d'affaires apparaissent sur la vue d'ensemble et dans Finances. Chaque paiement Stripe valide s'ajoute automatiquement, en direct." },
-    { k: /(commande|order|achat)/i, a: "Retrouve toutes tes commandes dans l'onglet Commandes. Elles se creent seules des qu'un client paie sur ta boutique." },
-    { k: /(stripe|paiement|encaiss|connect)/i, a: "Pour encaisser, connecte ton compte Stripe depuis Reglages puis Paiements. Une fois connecte, les ventes remontent toutes seules dans le CRM." },
-    { k: /(produit|offre|catalogue)/i, a: "Ajoute ou modifie tes produits dans l'onglet Produits. Pense a une description claire (30+ caracteres) et a un fichier d'acces pour la livraison automatique." },
-    { k: /(client|contact|audience|lead)/i, a: "Tes contacts sont dans l'onglet Clients. Chaque acheteur y est ajoute automatiquement avec le total depense." },
-    { k: /(page|tunnel|lien|entonnoir)/i, a: "Cree tes pages de vente dans l'onglet Pages, et structure ton tunnel (lead magnet, offre principale, upsell) dans Tunnel." },
-    { k: /(email|mail|resend|livraison)/i, a: "La livraison par email se configure avec Resend dans Reglages. Le client recoit son acces automatiquement apres paiement." },
-    { k: /(commenc|demarr|debut|premier|quoi faire|aide|help)/i, a: "Commence par : 1) ton identite boutique, 2) ton premier produit, 3) connecter Stripe, 4) publier une page de vente. La checklist Lancement te suit pas a pas." },
-    { k: /(merci|thanks|top|super|cool|genial)/i, a: "Avec plaisir ! Je reste la si tu as besoin d'un coup de main." },
-    { k: /(bonjour|salut|hello|coucou|hey|bonsoir)/i, a: "Salut ! Dis-moi ce que tu veux faire : vendre plus, creer un produit, comprendre tes chiffres..." }
-  ];
+  /* ---------------- Metriques reelles (memes formules que le CRM) ---------------- */
+  function fmtEur(n) {
+    n = Math.round(Number(n) || 0);
+    return n.toLocaleString("fr-FR").replace(/[  ]/g, " ") + " €";
+  }
+  function pct(n) { return (Number(n) || 0).toFixed(1).replace(".", ","); }
+  function metrics() {
+    var s = (typeof state !== "undefined" && state) ? state : {};
+    var paid = Array.isArray(s.orders) ? s.orders.filter(function (o) { return o && o.status === "paid"; }) : [];
+    var revenue = paid.reduce(function (x, o) { return x + (Number(o.amount) || 0); }, 0);
+    var a = s.analytics || {};
+    var visits = Number(a.visits) || 0, purchases = Number(a.purchases) || 0;
+    return {
+      revenue: revenue,
+      orders: paid.length,
+      avg: paid.length ? Math.round(revenue / paid.length) : 0,
+      visits: visits,
+      conv: visits ? (purchases / visits * 100) : 0,
+      products: Array.isArray(s.products) ? s.products.filter(function (p) { return p && p.status === "published"; }).length : 0,
+      contacts: Array.isArray(s.contacts) ? s.contacts.length : 0
+    };
+  }
+
+  /* ---------------- Robot chatbot (reponses basees sur tes chiffres) ---------------- */
   function answerFor(q) {
     var text = (q || "").trim();
     if (!text) return "Pose-moi ta question : ventes, produits, Stripe, clients, pages...";
-    for (var i = 0; i < RULES.length; i++) if (RULES[i].k.test(text)) return RULES[i].a;
-    return "Je peux t'aider sur : tes ventes et ton CA, tes commandes, la connexion Stripe, tes produits, tes pages de vente et tes clients. Reformule avec un de ces sujets.";
+    var t = text.toLowerCase();
+    var m = metrics();
+
+    if (/(vente|chiffre|ca\b|revenu|argent|gagn|vendu)/.test(t)) {
+      if (m.revenue <= 0) return "Tu es a 0 € de CA pour l'instant. Priorite logique : 1) connecter Stripe (Reglages) pour encaisser, 2) publier au moins une page de vente, 3) amener du trafic dessus (ton lien de boutique en bio Insta et sur tes reseaux). La 1re vente, c'est surtout une question de visibilite.";
+      var base = "Tu es a " + fmtEur(m.revenue) + " de CA sur " + m.orders + " commande" + (m.orders > 1 ? "s" : "") + " (panier moyen " + fmtEur(m.avg) + "). ";
+      if (m.revenue < 500) return base + "Bon demarrage ! Pour accelerer : pousse le trafic vers ta page (poste regulierement, lien en bio) et ajoute un upsell apres achat pour monter le panier moyen.";
+      if (m.revenue < 2000) return base + "Tu as de la traction. Le levier le plus rentable : optimiser ta page de vente (promesse claire, preuve sociale) pour monter ta conversion (" + pct(m.conv) + " %), et relancer par email les paniers abandonnes.";
+      return base + "Beau volume. Structure un tunnel complet (lead magnet -> offre principale -> upsell) et fidelise tes clients existants (offres recurrentes, emails) : c'est bien moins cher que d'acquerir de nouveaux clients.";
+    }
+    if (/(conversion|taux|trafic|visite|audience)/.test(t)) {
+      if (m.visits === 0) return "Tu n'as pas encore de visites enregistrees. Avant de parler conversion, il faut du trafic : partage ton lien de boutique (bio Insta, stories, reseaux) et publie une page de vente claire.";
+      return "Ta conversion est de " + pct(m.conv) + " % sur " + m.visits + " visite" + (m.visits > 1 ? "s" : "") + ". " + (m.conv < 2 ? "C'est ameliorable : clarifie ta promesse en haut de page, ajoute des temoignages et un seul bouton d'action bien visible." : "C'est correct ! Pour progresser, teste un upsell et une relance email des paniers abandonnes.");
+    }
+    if (/(commande|order|achat)/.test(t)) {
+      if (m.orders === 0) return "0 commande pour l'instant. Concentre-toi sur la 1re vente : Stripe connecte + une page de vente partagee a ton audience.";
+      return "Tu as " + m.orders + " commande" + (m.orders > 1 ? "s" : "") + " pour " + fmtEur(m.revenue) + " de CA (panier moyen " + fmtEur(m.avg) + "). Pour en avoir plus : plus de trafic sur ta page + un upsell apres achat.";
+    }
+    if (/(panier|ticket moyen|moyen)/.test(t)) {
+      if (m.orders === 0) return "Pas encore de commande, donc pas de panier moyen. Reviens ici apres ta 1re vente et je te dirai comment le faire grimper.";
+      return "Ton panier moyen est de " + fmtEur(m.avg) + ". Pour le monter : ajoute un upsell (offre complementaire juste apres l'achat), un pack, ou une version premium de ton offre.";
+    }
+    if (/(stripe|paiement|encaiss|connect|payer)/.test(t)) return "Pour encaisser, connecte ton compte Stripe depuis Reglages puis Paiements. Une fois connecte, chaque vente remonte ici automatiquement (CA a jour : " + fmtEur(m.revenue) + ").";
+    if (/(produit|offre|catalogue)/.test(t)) return "Tu as " + m.products + " produit" + (m.products > 1 ? "s" : "") + " publie" + (m.products > 1 ? "s" : "") + ". " + (m.products === 0 ? "Cree ta 1re offre dans Produits, avec une description claire (30+ caracteres) et un fichier d'acces pour la livraison automatique." : "Pense a structurer : un lead magnet gratuit pour capter, une offre principale, et un upsell pour monter le panier.");
+    if (/(client|contact|audience|lead|abonn)/.test(t)) return "Tu as " + m.contacts + " contact" + (m.contacts > 1 ? "s" : "") + " dans ton CRM. " + (m.contacts === 0 ? "Ils s'ajoutent tout seuls a chaque achat ; en attendant, un lead magnet gratuit est le meilleur moyen d'en capter." : "Relance-les par email (nouveautes, offres) : ta base existante est ton actif le plus rentable.");
+    if (/(page|tunnel|lien|entonnoir)/.test(t)) return "Cree tes pages de vente dans Pages et structure ton tunnel (lead magnet -> offre -> upsell) dans Tunnel. Avec " + fmtEur(m.revenue) + " de CA, " + (m.revenue < 500 ? "l'urgence c'est une page claire qui recoit du trafic." : "l'enjeu c'est d'ajouter les etapes upsell pour monter le panier moyen.");
+    if (/(email|mail|resend|livraison|relance)/.test(t)) return "La livraison et les relances email se configurent avec Resend (Reglages). La relance 'panier abandonne' est le quick win le plus rentable" + (m.orders > 0 ? ", vu que tu convertis deja." : ".");
+    if (/(commenc|demarr|debut|premier|quoi faire|aide|help|conseil|prochaine|ameliorer)/.test(t)) {
+      if (m.revenue <= 0) return "Vu que tu es a 0 € : 1) connecte Stripe, 2) cree et publie ta 1re offre, 3) publie une page de vente, 4) partage son lien a ton audience. Fais ces 4 etapes dans l'ordre.";
+      return "Tu es a " + fmtEur(m.revenue) + " de CA. Prochaine action logique : " + (m.revenue < 500 ? "amener plus de trafic sur ta page + ajouter un upsell." : (m.revenue < 2000 ? "optimiser ta page de vente pour monter la conversion (" + pct(m.conv) + " %)." : "structurer un tunnel complet et fideliser tes clients existants."));
+    }
+    if (/(merci|thanks|top|super|cool|genial)/.test(t)) return "Avec plaisir ! Je reste la.";
+    if (/(bonjour|salut|hello|coucou|hey|bonsoir)/.test(t)) return "Salut ! Tu es a " + fmtEur(m.revenue) + " de CA. Dis-moi sur quoi t'aider : vendre plus, ta page, tes chiffres...";
+    return "Aujourd'hui : " + fmtEur(m.revenue) + " de CA, " + m.orders + " commande" + (m.orders > 1 ? "s" : "") + ", conversion " + pct(m.conv) + " %. Dis-moi un sujet (ventes, page de vente, Stripe, clients, upsell) et je te donne l'action la plus utile.";
   }
-  var CHIPS = ["Par ou commencer ?", "Ameliorer mes ventes", "Connecter Stripe", "Lire mes chiffres"];
+
+  var CHIPS = ["Ameliorer mes ventes", "Lire mes chiffres", "Ma prochaine action", "Monter mon panier moyen"];
 
   function mountWidget() {
     if (document.querySelector(".expertly-assistant")) return;
@@ -146,7 +191,7 @@
         '<header class="ea-head">' +
           '<div class="ea-avatar" aria-hidden="true">' + ROBOT + '</div>' +
           '<div class="ea-head-text"><strong>Assistant Expertly</strong>' +
-            '<span><i class="ea-dot"></i>Conseils instantanes</span></div>' +
+            '<span><i class="ea-dot"></i>Conseils bases sur tes chiffres</span></div>' +
           '<button class="ea-close" type="button" id="eaClose" aria-label="Fermer">×</button>' +
         '</header>' +
         '<div class="ea-conversation" id="eaConversation"></div>' +
@@ -194,7 +239,11 @@
     function greet() {
       if (greeted) return;
       greeted = true;
-      addMessage("Bonjour, je suis l'assistant Expertly. Je peux t'aider a choisir la prochaine action utile pour developper ta boutique.", "bot");
+      var m = metrics();
+      var intro = m.revenue > 0
+        ? ("Bonjour ! Tu es a " + fmtEur(m.revenue) + " de CA sur " + m.orders + " commande" + (m.orders > 1 ? "s" : "") + ". Sur quoi veux-tu que je t'aide ?")
+        : "Bonjour, je suis l'assistant Expertly. Tu es a 0 € de CA pour l'instant : je peux t'aider a declencher tes premieres ventes.";
+      addMessage(intro, "bot");
       addChips();
     }
     function ask(q) {
