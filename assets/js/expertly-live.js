@@ -191,7 +191,7 @@
         '<header class="ea-head">' +
           '<div class="ea-avatar" aria-hidden="true">' + ROBOT + '</div>' +
           '<div class="ea-head-text"><strong>Assistant Expertly</strong>' +
-            '<span><i class="ea-dot"></i>Conseils bases sur tes chiffres</span></div>' +
+            '<span><i class="ea-dot"></i>IA - base sur tes chiffres</span></div>' +
           '<button class="ea-close" type="button" id="eaClose" aria-label="Fermer">×</button>' +
         '</header>' +
         '<div class="ea-conversation" id="eaConversation"></div>' +
@@ -199,7 +199,7 @@
           '<textarea id="eaInput" rows="1" placeholder="Explique-moi ton besoin..." autocomplete="off"></textarea>' +
           '<button class="ea-send" type="submit" aria-label="Envoyer">↑</button>' +
         '</form>' +
-        '<p class="ea-note">Reponses locales - aucune donnee envoyee a un service externe.</p>' +
+        '<p class="ea-note">Assistant IA - tes chiffres servent a personnaliser les conseils.</p>' +
       '</div>' +
       '<button class="ea-launcher" type="button" id="eaLauncher" aria-label="Ouvrir l\'assistant">' +
         '<span class="ea-launcher-icon" aria-hidden="true">' + ROBOT + '</span>' +
@@ -214,6 +214,7 @@
     var form = root.querySelector("#eaForm");
     var input = root.querySelector("#eaInput");
     var greeted = false;
+    var history = [];
 
     function addMessage(text, who) {
       var b = document.createElement("div");
@@ -246,13 +247,46 @@
       addMessage(intro, "bot");
       addChips();
     }
+    function addTyping() {
+      var b = document.createElement("div");
+      b.className = "ea-msg ea-msg-bot ea-typing";
+      b.textContent = "...";
+      conversation.appendChild(b);
+      conversation.scrollTop = conversation.scrollHeight;
+      return b;
+    }
+    async function aiAnswer(text, priorHistory) {
+      try {
+        if (typeof authenticatedFetch !== "function") return answerFor(text);
+        var r = await authenticatedFetch("/api/assistant", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ question: text, history: priorHistory || [] })
+        });
+        if (r.ok) {
+          var d = await r.json().catch(function () { return null; });
+          if (d && d.answer) return d.answer;
+        } else if (r.status === 429) {
+          var e = await r.json().catch(function () { return null; });
+          return (e && e.error) || "Tu vas un peu vite, laisse-moi quelques minutes puis repose ta question.";
+        }
+      } catch (err) { /* repli local ci-dessous */ }
+      return answerFor(text);
+    }
     function ask(q) {
       var text = (q || "").trim();
       if (!text) return;
       addMessage(text, "user");
       input.value = "";
       input.style.height = "auto";
-      setTimeout(function () { addMessage(answerFor(text), "bot"); }, 260);
+      var priorHistory = history.slice(-6);
+      history.push({ role: "user", text: text });
+      var typing = addTyping();
+      aiAnswer(text, priorHistory).then(function (ans) {
+        if (typing && typing.parentNode) typing.parentNode.removeChild(typing);
+        addMessage(ans, "bot");
+        history.push({ role: "model", text: ans });
+      });
     }
     function setOpen(open) {
       panel.hidden = !open;
