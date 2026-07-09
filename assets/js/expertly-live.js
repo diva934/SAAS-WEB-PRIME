@@ -28,6 +28,7 @@
     '.ea-launcher-label{font-size:14px;font-weight:700;color:#12151f;padding-right:8px}',
     '.expertly-assistant.is-open .ea-launcher-label{display:none}',
     '.ea-panel{width:340px;max-width:calc(100vw - 32px);background:#fff;border:1px solid #e8e8f0;border-radius:20px;box-shadow:0 24px 60px rgba(39,56,105,.22);overflow:hidden;display:flex;flex-direction:column}',
+    '.ea-panel[hidden]{display:none}',
     '.ea-head{display:flex;align-items:center;gap:10px;padding:13px 14px;border-bottom:1px solid #eef0f6}',
     '.ea-avatar{width:38px;height:38px;flex:none;display:grid;place-items:center;border-radius:12px;color:#fff;background:linear-gradient(145deg,var(--a2),var(--a))}',
     '.ea-avatar svg{width:22px;height:22px}',
