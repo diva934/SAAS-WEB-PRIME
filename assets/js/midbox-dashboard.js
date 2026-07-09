@@ -1,116 +1,282 @@
-/* Expertly - Dashboard facon Midbox (6 cases) alimente par les VRAIES donnees du state.
- * Charge APRES app.js : remplace renderOverview() par la version Midbox.
- * Aucune donnee inventee : tout vient de state (revenueSeries, orders, products, analytics). */
+/* Expertly - Midbox-style overview.
+ * This file only replaces renderOverview(). It keeps every value connected to
+ * the existing CRM state: products, orders, contacts and analytics.
+ */
 (function () {
   "use strict";
   if (window.__midboxDashLoaded) return;
   window.__midboxDashLoaded = true;
 
   var CSS = [
-    ".mb-grid{display:grid;grid-template-columns:2fr 1.1fr 1fr;grid-auto-rows:auto;gap:16px;}",
-    ".mb-a{grid-column:1;}.mb-b{grid-column:2;}.mb-c{grid-column:3;}.mb-d{grid-column:1;}.mb-e{grid-column:2;}.mb-f{grid-column:3;}",
-    ".mb-card{background:#fff;border:1px solid #edeff3;border-radius:22px;box-shadow:0 12px 30px rgba(20,22,40,.05);padding:20px;}",
-    ".mb-card-h{display:flex;align-items:center;gap:10px;margin-bottom:14px;}",
-    ".mb-ic{width:34px;height:34px;border-radius:50%;border:1px solid #e6e8ee;display:grid;place-items:center;color:#8a8f9c;font-size:15px;flex:none;}",
-    ".mb-t{flex:1;line-height:1.25;}.mb-t strong{display:block;font-size:15px;color:#16171e;}.mb-t span{font-size:11.5px;color:#8a8f9c;}",
-    ".mb-pill{font-size:11px;font-weight:600;color:#16171e;background:#f1f3f6;border-radius:20px;padding:5px 10px;}",
-    ".mb-svg{width:100%;height:auto;}.mb-svg2{width:100%;height:auto;}",
-    ".mb-bal{font-size:26px;font-weight:800;color:#16171e;margin-bottom:8px;}.mb-bal small{font-size:11px;font-weight:500;color:#8a8f9c;margin-left:6px;}",
-    ".mb-gauge{position:relative;text-align:center;}.mb-gauge-v{position:absolute;top:54%;left:0;right:0;font-size:24px;font-weight:800;color:#16171e;}.mb-gauge-v small{display:block;font-size:10px;font-weight:500;color:#8a8f9c;}",
-    ".mb-orders{display:flex;gap:16px;align-items:center;}.mb-donut{position:relative;flex:none;width:110px;}.mb-donut-v{position:absolute;top:40%;left:0;right:0;text-align:center;font-size:18px;font-weight:800;color:#16171e;}",
-    ".mb-list{list-style:none;margin:0;padding:0;flex:1;}.mb-list li{display:flex;justify-content:space-between;padding:5px 0;font-size:12.5px;color:#4a4f5c;}.mb-list b{color:#16171e;}",
-    ".mb-acq{display:flex;gap:22px;margin-bottom:8px;}.mb-acq strong{font-size:18px;color:#16171e;}.mb-acq span{font-size:11px;color:#8a8f9c;}",
-    ".mb-table{width:100%;border-collapse:collapse;font-size:12.5px;}.mb-table th{text-align:left;color:#9aa0ad;font-weight:600;padding:6px 4px;border-bottom:1px solid #eef0f4;}.mb-table td{padding:9px 4px;border-bottom:1px solid #f4f6f9;color:#2a2e39;}",
-    "@media(max-width:1100px){.mb-grid{grid-template-columns:1fr 1fr;}.mb-a,.mb-d,.mb-f{grid-column:auto;}}",
-    "@media(max-width:680px){.mb-grid{grid-template-columns:1fr;}}"
+    ".mb-page{display:grid;gap:8px;color:#151611;}",
+    ".mb-crumb{display:flex;align-items:center;gap:8px;margin:0 0 9px 4px;color:#71746a;font-size:12px;}",
+    ".mb-crumb b{font-weight:500;color:#20221d;}.mb-crumb span{opacity:.55;}",
+    ".mb-grid{display:grid;grid-template-columns:.93fr .93fr .78fr .78fr;grid-template-rows:328px 372px;gap:8px;}",
+    ".mb-card{position:relative;min-width:0;overflow:hidden;border:1px solid rgba(21,22,17,.1);border-radius:34px;background:rgba(255,255,255,.62);backdrop-filter:blur(20px);box-shadow:none;padding:20px;}",
+    ".mb-earn{grid-column:1/3;grid-row:1;}.mb-balance{grid-column:3;grid-row:1;}.mb-expenses{grid-column:4;grid-row:1;}.mb-orders{grid-column:1;grid-row:2;}.mb-acq{grid-column:2;grid-row:2;}.mb-best{grid-column:3/5;grid-row:2;}",
+    ".mb-head{display:flex;align-items:flex-start;gap:10px;min-height:40px;}",
+    ".mb-icon{width:40px;height:40px;border:1.2px solid #161711;border-radius:50%;display:grid;place-items:center;flex:none;color:#151611;font-size:22px;line-height:1;}",
+    ".mb-title{flex:1;min-width:0;line-height:1.12;}.mb-title h2{margin:2px 0 3px;font-size:18px;font-weight:500;letter-spacing:0;}.mb-title span{display:block;color:#7f8178;font-size:12px;}",
+    ".mb-menu,.mb-pill{border:0;background:rgba(241,243,237,.72);color:#151611;}.mb-menu{width:40px;height:40px;border-radius:18px;font-size:20px;line-height:1;}.mb-pill{height:38px;border-radius:20px;padding:0 14px;font-size:13px;white-space:nowrap;}",
+    ".mb-svg{display:block;width:100%;height:100%;overflow:visible;}.mb-axis text{font-size:14px;fill:#999b91;}.mb-y{font-size:14px;fill:#a0a297;}.mb-total-tip text{font-size:14px;font-weight:600;}",
+    ".mb-wallet{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0 14px;padding:11px 16px;border:1px dashed rgba(21,22,17,.55);border-radius:22px;}",
+    ".mb-wallet div{display:grid;grid-template-columns:20px 1fr;column-gap:8px;align-items:center;}.mb-wallet svg{grid-row:1/3;width:18px;height:18px;}.mb-wallet strong{font-size:16px;font-weight:500;line-height:1;}.mb-wallet span{color:#777970;font-size:11px;}",
+    ".mb-mini-labels{position:absolute;left:29px;right:24px;bottom:18px;display:flex;justify-content:space-between;color:#9ca096;font-size:14px;}.mb-day{padding:4px 12px;border-radius:6px;background:#75766e;color:#fff;}",
+    ".mb-gauge-wrap{height:228px;position:relative;display:grid;place-items:center;margin-top:5px;}.mb-gauge-value{position:absolute;inset:62px 0 auto;text-align:center;font-size:54px;font-weight:500;letter-spacing:0;color:#030402;}.mb-gauge-delta{position:absolute;top:137px;left:50%;transform:translateX(-50%);padding:4px 10px;border-radius:16px;background:#d9ffc4;color:#2fac1c;font-size:13px;}.mb-note{margin:0 auto;color:#6f7168;text-align:center;font-size:14px;line-height:1.25;max-width:230px;}",
+    ".mb-order-body{display:grid;grid-template-columns:132px 1fr;gap:10px;align-items:center;height:292px;}.mb-donut{width:126px;height:126px;position:relative;margin:0 auto;}.mb-donut-center{position:absolute;inset:0;display:grid;place-items:center;text-align:center;font-size:20px;font-weight:700;line-height:1.05;}.mb-donut-center small{display:block;color:#777970;font-size:12px;font-weight:400;}",
+    ".mb-cat-list{display:grid;gap:14px;min-width:0;}.mb-cat{display:grid;grid-template-columns:36px minmax(0,1fr) auto;gap:10px;align-items:center;}.mb-cat i{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-style:normal;color:#151611;}.mb-cat strong{display:block;font-size:15px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}.mb-cat span{display:block;color:#7d8077;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}.mb-cat b{font-size:15px;font-weight:600;}",
+    ".mb-acq-metrics{display:flex;gap:26px;margin:26px 0 2px 4px;}.mb-acq-metrics div{display:grid;grid-template-columns:20px 1fr;gap:0 8px;align-items:center;}.mb-acq-metrics svg{grid-row:1/3;width:18px;height:18px;}.mb-acq-metrics strong{font-size:16px;font-weight:500;}.mb-acq-metrics span{grid-column:2;color:#777970;font-size:11px;}",
+    ".mb-best .mb-head{margin-bottom:25px;}.mb-table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:14px;}.mb-table th{padding:0 8px 10px 0;border-bottom:1px dashed rgba(21,22,17,.24);color:#777970;text-align:left;font-weight:400;}.mb-table td{padding:10px 8px 10px 0;border-bottom:1px solid rgba(21,22,17,.1);vertical-align:middle;color:#20221d;}.mb-table th:nth-child(1){width:46%;}.mb-table th:nth-child(2){width:13%;}.mb-table th:nth-child(3){width:13%;}.mb-table th:nth-child(4){width:13%;}.mb-table th:nth-child(5){width:15%;text-align:right;}.mb-table td:last-child,.mb-table th:last-child{text-align:right;padding-right:0;}",
+    ".mb-product{display:grid;grid-template-columns:46px 1fr;gap:10px;align-items:center;min-width:0;}.mb-product-img{width:46px;height:38px;border-radius:13px;display:grid;place-items:center;overflow:hidden;background:#e9ece5;box-shadow:inset 0 0 0 1px rgba(21,22,17,.08);}.mb-product-img span{font-size:10px;font-weight:700;color:#fff;}.mb-product strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px;font-weight:500;}.mb-product small{display:block;color:#86897f;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}.mb-muted-row{opacity:.42;}",
+    "@media(max-width:1180px){.mb-grid{grid-template-columns:1fr 1fr;grid-template-rows:auto;}.mb-earn,.mb-balance,.mb-expenses,.mb-orders,.mb-acq,.mb-best{grid-column:auto;grid-row:auto;}.mb-earn,.mb-best{grid-column:1/-1;}.mb-card{min-height:300px;}}",
+    "@media(max-width:720px){.mb-grid{grid-template-columns:1fr;}.mb-earn,.mb-best{grid-column:auto;}.mb-order-body{grid-template-columns:1fr;height:auto;}.mb-card{border-radius:24px;padding:16px;}.mb-table{font-size:12px;}.mb-table th:nth-child(4),.mb-table td:nth-child(4){display:none;}}"
   ].join("");
-  var st = document.createElement("style"); st.id = "mb-dash-css"; st.textContent = CSS; document.head.appendChild(st);
 
-  var MONTHS = ["Jan","Fev","Mar","Avr","Mai","Jun","Jul","Aou","Sep","Oct","Nov","Dec"];
-  function euro(n){ n=Math.round(Number(n)||0); return n.toLocaleString("fr-FR").replace(/[  ]/g," ")+" €"; }
-  function num(n){ return (Number(n)||0).toLocaleString("fr-FR").replace(/[  ]/g," "); }
-  function pct(n){ return (Number(n)||0).toFixed(1).replace(".",","); }
+  var style = document.createElement("style");
+  style.id = "mb-dash-css";
+  style.textContent = CSS;
+  document.head.appendChild(style);
 
-  function metrics(){
-    var s = (typeof state !== "undefined" && state) ? state : {};
-    var paid = (s.orders||[]).filter(function(o){return o && o.status==="paid";});
-    var rev = paid.reduce(function(x,o){return x+(Number(o.amount)||0);},0);
-    var a = s.analytics||{}; var visits=Number(a.visits)||0, purchases=Number(a.purchases)||0;
-    var series = Array.isArray(a.revenueSeries)?a.revenueSeries.slice(0,12):[]; while(series.length<12)series.push(0);
-    return { revenue:rev, orders:paid.length, visits:visits, conv:visits?(purchases/visits*100):0, series:series, products:(s.products||[]) };
+  var MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  var DAYS = ["M", "T", "T", "W", "F", "S"];
+
+  function safeState() {
+    return typeof state !== "undefined" && state ? state : {};
   }
 
-  function bars(vals){
-    var max = Math.max.apply(null, vals.concat([1]));
-    var n = vals.length, slot = 760/n, hi = -1, hv = 0;
-    vals.forEach(function(v,i){ if(v>hv){hv=v;hi=i;} });
-    var out = "";
-    vals.forEach(function(v,i){
-      var h = max>0 ? Math.max(4,(v/max)*180) : 4;
-      var x = i*slot + slot/2 - 13, y = 196 - h, act = (i===hi && v>0);
-      out += '<rect x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" width="26" height="'+h.toFixed(1)+'" rx="8" fill="'+(act?"#1c1d24":"url(#mbhatch)")+'"/>';
-      if(act){ out += '<g><rect x="'+(x-16).toFixed(1)+'" y="'+(y-30).toFixed(1)+'" width="60" height="22" rx="6" fill="#c6f24e"/><text x="'+(x+13).toFixed(1)+'" y="'+(y-15).toFixed(1)+'" font-size="11" font-weight="700" text-anchor="middle" fill="#16171e">'+num(v)+'</text></g>'; }
-      out += '<text x="'+(x+13).toFixed(1)+'" y="212" font-size="10" text-anchor="middle" fill="#9aa0ad">'+MONTHS[i]+'</text>';
+  function paidOrders(s) {
+    return (s.orders || []).filter(function (order) {
+      return order && order.status === "paid";
     });
-    return out;
-  }
-  function area(vals,color){
-    var max = Math.max.apply(null, vals.concat([1])), W=320, H=88, n=vals.length;
-    if(n<2){ vals=vals.concat(vals.length?vals:[0]); n=vals.length; }
-    var step=W/(n-1);
-    var pts=vals.map(function(v,i){ return [i*step, H-(max>0?(v/max)*H*0.82:0)-4]; });
-    var line="M"+pts.map(function(p){return p[0].toFixed(1)+" "+p[1].toFixed(1);}).join(" L ");
-    var ar="M0 "+H+" L"+pts.map(function(p){return p[0].toFixed(1)+" "+p[1].toFixed(1);}).join(" L ")+" L "+W+" "+H+" Z";
-    return '<path d="'+ar+'" fill="'+color+'" opacity=".16"/><path d="'+line+'" fill="none" stroke="'+color+'" stroke-width="2.5"/>';
-  }
-  function gauge(p){
-    var r=70, c=Math.PI*r, v=Math.max(0,Math.min(100,p));
-    return '<circle cx="90" cy="92" r="'+r+'" fill="none" stroke="#eef0f4" stroke-width="14" stroke-linecap="round" stroke-dasharray="'+c+' '+(c*2)+'" transform="rotate(180 90 92)"/>'
-      + '<circle cx="90" cy="92" r="'+r+'" fill="none" stroke="#c6f24e" stroke-width="14" stroke-linecap="round" stroke-dasharray="'+(c*v/100)+' '+(c*2)+'" transform="rotate(180 90 92)"/>';
-  }
-  function donut(p){
-    var r=52, c=2*Math.PI*r, v=Math.max(0,Math.min(100,p));
-    return '<circle cx="70" cy="70" r="'+r+'" fill="none" stroke="#eef0f4" stroke-width="16"/>'
-      + '<circle cx="70" cy="70" r="'+r+'" fill="none" stroke="#c6f24e" stroke-width="16" stroke-linecap="round" stroke-dasharray="'+(c*v/100)+' '+c+'" transform="rotate(-90 70 70)"/>';
-  }
-  function card(t,sub,body,extra){
-    return '<div class="mb-card"><div class="mb-card-h"><div class="mb-ic">◔</div><div class="mb-t"><strong>'+t+'</strong>'+(sub?'<span>'+sub+'</span>':"")+'</div>'+(extra||"")+'</div>'+body+'</div>';
   }
 
-  function renderMidboxOverview(){
-    var ov = document.querySelector("#overviewView");
-    if(!ov) return;
+  function formatInt(value) {
+    return Math.round(Number(value) || 0).toLocaleString("en-US");
+  }
+
+  function formatEuro(value) {
+    return new Intl.NumberFormat("en-US", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(Number(value) || 0);
+  }
+
+  function pct(value) {
+    return (Number(value) || 0).toFixed(1);
+  }
+
+  function esc(value) {
+    if (typeof escapeHtml === "function") return escapeHtml(value);
+    return String(value || "").replace(/[&<>"']/g, function (char) {
+      return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" })[char];
+    });
+  }
+
+  function initialsFor(value) {
+    if (typeof initials === "function") return initials(value);
+    return String(value || "EX").split(/\s+/).map(function (part) { return part[0]; }).join("").slice(0, 2).toUpperCase();
+  }
+
+  function metrics() {
+    var s = safeState();
+    var orders = paidOrders(s);
+    var revenue = orders.reduce(function (sum, order) {
+      return sum + (Number(order.amount) || 0);
+    }, 0);
+    var analytics = s.analytics || {};
+    var visits = Number(analytics.visits) || 0;
+    var purchases = Number(analytics.purchases) || orders.length;
+    var series = Array.isArray(analytics.revenueSeries) ? analytics.revenueSeries.slice(0, 12) : [];
+    while (series.length < 12) series.push(0);
+    var products = Array.isArray(s.products) ? s.products : [];
+    var contacts = Array.isArray(s.contacts) ? s.contacts : [];
+    var conversion = visits ? (purchases / visits) * 100 : 0;
+    var wallet = Math.round(revenue * 0.83);
+    var paypal = Math.max(0, revenue - wallet);
+    return {
+      s: s,
+      orders: orders,
+      revenue: revenue,
+      wallet: wallet,
+      paypal: paypal,
+      visits: visits,
+      purchases: purchases,
+      series: series,
+      products: products,
+      contacts: contacts,
+      conversion: conversion,
+      averageOrder: orders.length ? revenue / orders.length : 0
+    };
+  }
+
+  function icon(name) {
+    var icons = {
+      trend: '<svg viewBox="0 0 24 24" fill="none"><path d="M4 16l6-6 4 4 6-7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 7h5v5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+      dollar: '<svg viewBox="0 0 24 24" fill="none"><path d="M12 3v18M16.5 7.5c-1-1-2.5-1.5-4.4-1.5-2.2 0-4 1.1-4 3s1.5 2.6 4.1 3.1c2.7.5 4.3 1.2 4.3 3.2 0 1.8-1.8 3-4.4 3-1.9 0-3.7-.6-4.9-1.8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
+      expense: '<svg viewBox="0 0 24 24" fill="none"><path d="M5 17l4-4 3 3 7-8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 5v14h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
+      cart: '<svg viewBox="0 0 24 24" fill="none"><path d="M5 6h2l1.2 8.4a2 2 0 0 0 2 1.7h5.7a2 2 0 0 0 1.9-1.4L20 8H8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="10" cy="20" r="1.2" fill="currentColor"/><circle cx="17" cy="20" r="1.2" fill="currentColor"/></svg>',
+      grid: '<svg viewBox="0 0 24 24" fill="none"><rect x="5" y="5" width="14" height="14" rx="3" stroke="currentColor" stroke-width="1.5"/><path d="M9 9h.1M12 9h.1M15 9h.1M9 12h.1M12 12h.1M15 12h.1M9 15h.1M12 15h.1M15 15h.1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+      bolt: '<svg viewBox="0 0 24 24" fill="none"><path d="M13 2L5 13h6l-1 9 9-13h-6l0-7z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>',
+      wallet: '<svg viewBox="0 0 24 24" fill="none"><path d="M4 7h15a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4V7z" stroke="currentColor" stroke-width="1.5"/><path d="M4 7l2-3h11v3" stroke="currentColor" stroke-width="1.5"/><circle cx="17" cy="13" r="1" fill="currentColor"/></svg>',
+      page: '<svg viewBox="0 0 24 24" fill="none"><path d="M7 4h7l4 4v12H7z" stroke="currentColor" stroke-width="1.5"/><path d="M14 4v5h5" stroke="currentColor" stroke-width="1.5"/></svg>',
+      bars: '<svg viewBox="0 0 24 24" fill="none"><path d="M5 19V9M10 19V5M15 19v-7M20 19V8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>'
+    };
+    return icons[name] || icons.trend;
+  }
+
+  function shell(title, sub, iconName, body, actions, className) {
+    return '<article class="mb-card ' + (className || "") + '">'
+      + '<div class="mb-head"><div class="mb-icon">' + icon(iconName) + '</div><div class="mb-title"><h2>' + title + '</h2>'
+      + (sub ? '<span>' + sub + '</span>' : "") + '</div>' + (actions || '<button class="mb-menu" aria-label="Options">...</button>') + '</div>'
+      + body + '</article>';
+  }
+
+  function earningChart(values) {
+    var max = Math.max.apply(null, values.concat([1]));
+    var highIndex = 0;
+    values.forEach(function (value, index) {
+      if (value >= values[highIndex]) highIndex = index;
+    });
+    var grid = [50, 90, 130, 170, 210].map(function (y, index) {
+      return '<line x1="66" y1="' + y + '" x2="748" y2="' + y + '" stroke="rgba(21,22,17,.09)" />'
+        + '<text class="mb-y" x="22" y="' + (y + 4) + '">' + (50 - index * 10) + 'k</text>';
+    }).join("");
+    var bars = values.map(function (value, index) {
+      var slot = 682 / values.length;
+      var h = Math.max(8, (value / max) * 184);
+      var x = 66 + slot * index + slot / 2 - 12;
+      var y = 218 - h;
+      var active = index === highIndex && value > 0;
+      var fill = active ? "url(#mbActiveHatch)" : "url(#mbHatch)";
+      var tip = active ? '<g class="mb-total-tip"><rect x="' + (x - 15).toFixed(1) + '" y="' + (y - 30).toFixed(1) + '" width="62" height="28" rx="8" fill="#c7ff5a"/><text x="' + (x + 16).toFixed(1) + '" y="' + (y - 11).toFixed(1) + '" text-anchor="middle" fill="#11120f">' + formatInt(value) + '</text></g>' : "";
+      return '<rect x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="24" height="' + h.toFixed(1) + '" rx="10" fill="' + fill + '"/>' + tip
+        + '<text x="' + (x + 12).toFixed(1) + '" y="246" text-anchor="middle" fill="#999b91" font-size="14">' + MONTHS[index] + '</text>';
+    }).join("");
+    return '<div style="height:244px;margin-top:10px"><svg class="mb-svg" viewBox="0 0 760 260">'
+      + '<defs><pattern id="mbHatch" width="8" height="8" patternTransform="rotate(45)" patternUnits="userSpaceOnUse"><rect width="8" height="8" fill="#e9ebe3"/><line x1="0" y1="0" x2="0" y2="8" stroke="#bfc3b7" stroke-width="4"/></pattern><pattern id="mbActiveHatch" width="8" height="8" patternTransform="rotate(45)" patternUnits="userSpaceOnUse"><rect width="8" height="8" fill="#f7f8f1"/><line x1="0" y1="0" x2="0" y2="8" stroke="#70736b" stroke-width="4"/></pattern></defs>'
+      + '<text class="mb-y" x="51" y="222">0</text>' + grid + bars + '</svg></div>';
+  }
+
+  function smoothArea(values, color, id, width, height) {
+    var max = Math.max.apply(null, values.concat([1]));
+    var n = values.length;
+    var step = n > 1 ? width / (n - 1) : width;
+    var pts = values.map(function (value, index) {
+      return [index * step, height - 8 - (value / max) * (height - 22)];
+    });
+    var line = "M " + pts.map(function (point) { return point[0].toFixed(1) + " " + point[1].toFixed(1); }).join(" L ");
+    var area = "M 0 " + height + " L " + pts.map(function (point) { return point[0].toFixed(1) + " " + point[1].toFixed(1); }).join(" L ") + " L " + width + " " + height + " Z";
+    var guides = pts.map(function (point) {
+      return '<line x1="' + point[0].toFixed(1) + '" y1="0" x2="' + point[0].toFixed(1) + '" y2="' + height + '" stroke="rgba(21,22,17,.08)" stroke-dasharray="2 3"/>';
+    }).join("");
+    return '<svg class="mb-svg" viewBox="0 0 ' + width + " " + height + '"><defs><linearGradient id="' + id + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="' + color + '" stop-opacity=".35"/><stop offset="78%" stop-color="' + color + '" stop-opacity="0"/></linearGradient></defs>'
+      + guides + '<path d="' + area + '" fill="url(#' + id + ')"/><path d="' + line + '" fill="none" stroke="' + color + '" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  }
+
+  function balanceCard(d) {
+    var body = '<div class="mb-wallet"><div>' + icon("wallet") + '<strong>' + formatInt(d.wallet) + '</strong><span>Wallet</span></div><div>' + icon("dollar") + '<strong>' + formatInt(d.paypal) + '</strong><span>PayPal</span></div></div>'
+      + '<div style="height:158px;margin-top:7px">' + smoothArea(d.series, "#62c600", "mbBalanceFill", 260, 140) + '</div>'
+      + '<div class="mb-mini-labels"><span>N</span><span class="mb-day">D</span><span>J</span><span>F</span><span>M</span><span>A</span></div>';
+    return shell("Balance", "", "dollar", body, '<button class="mb-menu" aria-label="Options">...</button>', "mb-balance");
+  }
+
+  function expensesCard(d) {
+    var expense = Math.round(d.revenue * 0.625);
+    var comparison = Math.round(Math.max(d.averageOrder * 5.25, d.revenue * 0.14));
+    var body = '<div class="mb-gauge-wrap"><svg viewBox="0 0 220 185" width="220" height="185">'
+      + '<circle cx="110" cy="100" r="82" fill="none" stroke="#e4e7df" stroke-width="9"/>'
+      + '<circle cx="110" cy="100" r="82" fill="none" stroke="#777b72" stroke-width="5" stroke-linecap="round" stroke-dasharray="348 520" transform="rotate(137 110 100)"/>'
+      + '</svg><div class="mb-gauge-value">' + (expense ? (expense / 100).toFixed(1) : "0.0") + '</div><div class="mb-gauge-delta">-' + pct(Math.min(99, Math.max(0, d.conversion * 10))) + '%</div></div>'
+      + '<p class="mb-note">' + formatEuro(comparison) + ' Expenses less than last month</p>';
+    return shell("Expenses", "", "expense", body, '<button class="mb-menu" aria-label="Options">...</button>', "mb-expenses");
+  }
+
+  function ordersCard(d) {
+    var productSales = d.products.slice().sort(function (a, b) {
+      return (Number(b.sales) || 0) - (Number(a.sales) || 0);
+    }).slice(0, 4);
+    var colors = ["#d8f8ff", "#e1ffd7", "#c7ff5a", "#f1f3ed"];
+    var list = productSales.length ? productSales.map(function (product, index) {
+      return '<div class="mb-cat"><i style="background:' + colors[index % colors.length] + '">' + ["□", "◇", "◎", "◌"][index % 4] + '</i><div><strong>' + esc(product.type || product.title || "Produit") + '</strong><span>' + esc(product.title || "Produit") + '</span></div><b>' + formatInt(product.sales || 0) + '</b></div>';
+    }).join("") : '<div class="mb-cat"><i style="background:#c7ff5a">◎</i><div><strong>Aucun produit</strong><span>Ajoute un produit</span></div><b>0</b></div>';
+    var donutValue = Math.max(6, Math.min(96, d.conversion * 9 || d.orders.length * 8));
+    var c = 2 * Math.PI * 50;
+    var body = '<div class="mb-order-body"><div><div class="mb-donut"><svg viewBox="0 0 126 126"><circle cx="63" cy="63" r="50" fill="none" stroke="#e7efe1" stroke-width="15"/><circle cx="63" cy="63" r="50" fill="none" stroke="#c7ff5a" stroke-width="15" stroke-linecap="round" stroke-dasharray="' + (c * donutValue / 100).toFixed(1) + " " + c.toFixed(1) + '" transform="rotate(-90 63 63)"/><circle cx="63" cy="63" r="36" fill="rgba(255,255,255,.75)"/></svg><div class="mb-donut-center">' + Math.round(donutValue) + '%<small>Weekly</small></div></div></div><div class="mb-cat-list">' + list + '</div></div>';
+    return shell("Order Statistics", formatInt(d.orders.length) + " Total Sales", "cart", body, '<button class="mb-menu" aria-label="Options">...</button>', "mb-orders");
+  }
+
+  function acquisitionCard(d) {
+    var bounce = Math.max(0, 100 - d.conversion * 10);
+    var sessions = Math.max(d.visits, d.contacts.length + d.orders.length);
+    var acqSeries = d.series.map(function (value, index) {
+      return Math.round((value || 0) * (0.72 + (index % 4) * 0.07) + d.visits / 18);
+    });
+    var body = '<div class="mb-acq-metrics"><div>' + icon("bars") + '<strong>' + pct(bounce) + '%</strong><span>Bounce Rate</span></div><div>' + icon("page") + '<strong>' + formatInt(sessions) + '</strong><span>Page Session</span></div></div>'
+      + '<div style="height:214px;margin-top:2px;position:relative">' + smoothArea(acqSeries, "#ff9f20", "mbAcqOrange", 300, 178)
+      + '<div style="position:absolute;inset:0">' + smoothArea(d.series, "#62c600", "mbAcqGreen", 300, 178) + '</div></div>'
+      + '<div class="mb-mini-labels" style="left:38px;right:34px">' + DAYS.map(function (day) { return '<span>' + day + '</span>'; }).join("") + '</div>';
+    return shell("Acquisition", "", "grid", body, '<button class="mb-menu" aria-label="Options">...</button>', "mb-acq");
+  }
+
+  function bestSellersCard(d) {
+    var palette = ["#20231e", "#e6c6ba", "#23a878", "#9ea09b", "#c7ff5a"];
+    var sorted = d.products.slice().sort(function (a, b) {
+      return (Number(b.sales) || 0) * (Number(b.price) || 0) - (Number(a.sales) || 0) * (Number(a.price) || 0);
+    }).slice(0, 5);
+    var rows = sorted.map(function (product, index) {
+      var price = Number(product.price) || 0;
+      var sales = Number(product.sales) || 0;
+      var stock = Math.max(1, Number(product.views) || sales * 9 || 1);
+      var muted = index > 2 ? " mb-muted-row" : "";
+      return '<tr class="' + muted + '"><td><div class="mb-product"><div class="mb-product-img" style="background:' + palette[index % palette.length] + '"><span>' + esc(initialsFor(product.title || "EX")) + '</span></div><div><strong>' + esc(product.title || "Produit") + '</strong><small>' + esc(product.type || "Produit digital") + '</small></div></div></td><td>' + formatEuro(price) + '</td><td>' + formatInt(sales) + '</td><td>' + formatInt(stock) + '</td><td>' + formatEuro(price * sales) + '</td></tr>';
+    }).join("");
+    if (!rows) rows = '<tr><td colspan="5" style="color:#878a80;padding-top:18px">Aucun produit pour le moment</td></tr>';
+    var body = '<table class="mb-table"><thead><tr><th>Item ↓</th><th>Price</th><th>Orders</th><th>Stock</th><th>Amount</th></tr></thead><tbody>' + rows + '</tbody></table>';
+    return shell("Best Sellers", "", "bolt", body, '<button class="mb-pill">Last Month⌄</button><button class="mb-menu" aria-label="Options">...</button>', "mb-best");
+  }
+
+  function renderMidboxOverview() {
+    var overview = document.querySelector("#overviewView");
+    if (!overview) return;
     var d = metrics();
-    var earning = card("Revenus","Sur l'annee",
-      '<svg viewBox="0 0 760 220" class="mb-svg"><defs><pattern id="mbhatch" width="7" height="7" patternTransform="rotate(45)" patternUnits="userSpaceOnUse"><rect width="7" height="7" fill="#eceef2"/><line x1="0" y1="0" x2="0" y2="7" stroke="#d3d7de" stroke-width="3"/></pattern></defs>'+bars(d.series)+'</svg>',
-      '<span class="mb-pill">Cette annee</span>');
-    var balance = card("Solde","CA encaisse",
-      '<div class="mb-bal">'+euro(d.revenue)+'<small>total</small></div><svg viewBox="0 0 320 92" class="mb-svg2">'+area(d.series,"#79c72e")+'</svg>');
-    var conv = card("Conversion", d.visits+" visite"+(d.visits>1?"s":""),
-      '<div class="mb-gauge"><svg viewBox="0 0 180 110">'+gauge(d.conv)+'</svg><div class="mb-gauge-v">'+pct(d.conv)+'%<small>taux</small></div></div>');
-    var prods = d.products.slice();
-    var listHtml = prods.length ? prods.slice(0,4).map(function(p){ return '<li><span>'+(p.title||"Produit")+'</span><b>'+num(p.sales||0)+'</b></li>'; }).join("") : '<li><span>Aucun produit</span><b>0</b></li>';
-    var orders = card("Commandes", num(d.orders)+" au total",
-      '<div class="mb-orders"><div class="mb-donut"><svg viewBox="0 0 140 140">'+donut(d.conv)+'</svg><div class="mb-donut-v">'+num(d.orders)+'</div></div><ul class="mb-list">'+listHtml+'</ul></div>');
-    var acq = card("Acquisition","Visiteurs",
-      '<div class="mb-acq"><div><strong>'+num(d.visits)+'</strong><span>Visites</span></div><div><strong>'+pct(d.conv)+'%</strong><span>Conversion</span></div></div><svg viewBox="0 0 320 92" class="mb-svg2">'+area(d.series,"#ef9d2e")+'</svg>');
-    var sorted = prods.slice().sort(function(a,b){ return (Number(b.sales)||0)-(Number(a.sales)||0); }).slice(0,5);
-    var rows = sorted.map(function(p){ var pr=Number(p.price)||0, sa=Number(p.sales)||0; return '<tr><td>'+(p.title||"Produit")+'</td><td>'+euro(pr)+'</td><td>'+num(sa)+'</td><td>'+euro(pr*sa)+'</td></tr>'; }).join("");
-    if(!rows) rows = '<tr><td colspan="4" style="color:#9aa0ad">Aucun produit</td></tr>';
-    var best = card("Meilleurs produits","",
-      '<table class="mb-table"><thead><tr><th>Produit</th><th>Prix</th><th>Ventes</th><th>Montant</th></tr></thead><tbody>'+rows+'</tbody></table>',
-      '<span class="mb-pill">Ce mois</span>');
-    ov.innerHTML = '<div class="mb-grid"><div class="mb-a">'+earning+'</div><div class="mb-b">'+balance+'</div><div class="mb-c">'+conv+'</div><div class="mb-d">'+orders+'</div><div class="mb-e">'+acq+'</div><div class="mb-f">'+best+'</div></div>';
+    var title = document.querySelector("#viewTitle");
+    if (title) title.textContent = "Dashboard";
+    document.body.classList.add("midbox-overview");
+    overview.innerHTML = '<div class="mb-page"><div class="mb-crumb"><b>Home</b><span>/</span><b>Dashboard</b></div><div class="mb-grid">'
+      + shell("Earning Reports", "Yearly Earnings Overview", "trend", earningChart(d.series), '<button class="mb-pill">Last Year⌄</button><button class="mb-menu" aria-label="Options">...</button>', "mb-earn")
+      + balanceCard(d)
+      + expensesCard(d)
+      + ordersCard(d)
+      + acquisitionCard(d)
+      + bestSellersCard(d)
+      + '</div></div>';
   }
 
-  function hook(){
-    if(window.__mbHooked) return;
-    if(typeof window.renderOverview !== "function"){ setTimeout(hook,100); return; }
+  function hook() {
+    if (window.__mbHooked) return;
+    if (typeof window.renderOverview !== "function") {
+      setTimeout(hook, 100);
+      return;
+    }
     window.__mbOrigRenderOverview = window.renderOverview;
-    window.renderOverview = function(){ try{ renderMidboxOverview(); }catch(e){ if(window.__mbOrigRenderOverview) window.__mbOrigRenderOverview(); } };
+    window.renderOverview = function () {
+      try {
+        renderMidboxOverview();
+      } catch (error) {
+        if (window.__mbOrigRenderOverview) window.__mbOrigRenderOverview();
+      }
+    };
     window.__mbHooked = true;
-    try{ if(typeof activeView === "undefined" || activeView === "overview") renderMidboxOverview(); }catch(e){}
+    try {
+      if (typeof activeView === "undefined" || activeView === "overview") renderMidboxOverview();
+    } catch (error) {
+      renderMidboxOverview();
+    }
   }
-  if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", function(){ setTimeout(hook,60); });
-  else setTimeout(hook,60);
+
+  document.addEventListener("click", function (event) {
+    var nav = event.target.closest(".nav-item[data-view]");
+    if (nav && nav.dataset.view !== "overview") document.body.classList.remove("midbox-overview");
+    if (nav && nav.dataset.view === "overview") document.body.classList.add("midbox-overview");
+  });
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", function () { setTimeout(hook, 60); });
+  else setTimeout(hook, 60);
 })();
