@@ -132,7 +132,7 @@
   root.innerHTML = `
     <section class="ea-panel" id="eaPanel" aria-label="Conversation avec l’assistant Expertly" hidden>
       <header class="ea-header">
-        <div class="ea-avatar" aria-hidden="true">E</div>
+        <div class="ea-avatar" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none"><path d="M12 3.2V5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="2.6" r="1.05" fill="currentColor"/><rect x="4.6" y="6.8" width="14.8" height="12" rx="3.6" stroke="currentColor" stroke-width="1.8"/><path d="M2.6 11.4v3.2M21.4 11.4v3.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="9.1" cy="12.4" r="1.45" fill="currentColor"/><circle cx="14.9" cy="12.4" r="1.45" fill="currentColor"/><path d="M9.4 15.9h5.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div>
         <div class="ea-heading"><strong>Assistant Expertly</strong><span><i class="ea-status"></i>Conseils instantanés</span></div>
         <button class="ea-icon-button" type="button" data-ea-close aria-label="Fermer l’assistant">×</button>
       </header>
@@ -147,7 +147,7 @@
     </section>
     <span class="ea-launcher-label">Besoin d’un conseil ?</span>
     <button class="ea-launcher" type="button" aria-controls="eaPanel" aria-expanded="false" aria-label="Ouvrir l’assistant Expertly">
-      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6.5 18.2 3 21v-5.3A8.5 8.5 0 1 1 6.5 18.2Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M8 10.5h.01M12 10.5h.01M16 10.5h.01" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3.2V5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="2.6" r="1.05" fill="currentColor"/><rect x="4.6" y="6.8" width="14.8" height="12" rx="3.6" stroke="currentColor" stroke-width="1.8"/><path d="M2.6 11.4v3.2M21.4 11.4v3.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="9.1" cy="12.4" r="1.45" fill="currentColor"/><circle cx="14.9" cy="12.4" r="1.45" fill="currentColor"/><path d="M9.4 15.9h5.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
     </button>`;
 
   const panel = root.querySelector(".ea-panel");
