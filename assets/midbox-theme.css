@@ -1,0 +1,50 @@
+/* ===== Expertly - Theme Midbox =====
+   Skin charge APRES styles.css : sidebar sombre a icones + accent vert-citron,
+   fond gris clair, cartes blanches arrondies, boutons sombres. */
+:root{ --sidebar-width:120px !important; }
+body, .app-shell{ background:#f3f4f6 !important; }
+.app-shell{ grid-template-columns:120px 1fr !important; }
+.content{ background:transparent !important; }
+
+/* Sidebar icones sombre flottante */
+aside.sidebar#sidebar{ width:88px !important; min-width:88px !important; background:#16171e !important; border:none !important; border-radius:26px !important; margin:16px 0 16px 16px !important; height:calc(100vh - 32px) !important; box-shadow:0 20px 44px rgba(16,17,26,.2) !important; overflow:hidden !important; }
+.sidebar .brand-row{ justify-content:center !important; padding:18px 0 10px !important; }
+.sidebar .brand-row *:not(img):not(svg){ display:none !important; }
+.sidebar .brand-row img, .sidebar .brand-row svg{ width:32px !important; height:auto !important; }
+.sidebar .workspace-switcher{ display:none !important; }
+.sidebar .sidebar-bottom{ display:none !important; }
+.main-nav{ display:flex !important; flex-direction:column !important; align-items:center !important; gap:4px !important; padding:6px 0 !important; }
+.main-nav > :not(.nav-item){ display:none !important; }
+.nav-item{ width:54px !important; height:54px !important; padding:0 !important; margin:2px 0 !important; display:flex !important; align-items:center !important; justify-content:center !important; border-radius:16px !important; color:#b9bdca !important; }
+.nav-item > span:not(.nav-icon){ display:none !important; }
+.nav-item .nav-icon{ font-size:21px !important; }
+.nav-item:hover{ background:rgba(255,255,255,.08) !important; color:#fff !important; }
+.nav-item.active{ background:#c6f24e !important; color:#15161c !important; box-shadow:0 8px 20px rgba(198,242,78,.35) !important; }
+.nav-item.active .nav-icon{ color:#15161c !important; }
+
+/* Top bar epuree */
+.topbar{ background:transparent !important; border:none !important; box-shadow:none !important; }
+
+/* Cartes blanches arrondies */
+.metric-card, .panel, .launch-card, .detail-panel-card, [class*="card"]:not(.nav-item):not(.account-button):not(.modal-card){ background:#fff !important; border:1px solid #edeff3 !important; border-radius:22px !important; box-shadow:0 12px 30px rgba(20,22,40,.05) !important; }
+.metric-card{ padding:22px !important; }
+.metric-card .metric-card-head span, .metric-card .icon{ background:#eef7d6 !important; color:#3d6b12 !important; border-radius:12px !important; }
+
+/* Boutons */
+.primary-button, .btn-primary{ background:#16171e !important; color:#fff !important; border:none !important; border-radius:14px !important; font-weight:700 !important; box-shadow:0 12px 26px rgba(16,17,26,.2) !important; }
+.account-button{ border-radius:16px !important; background:#fff !important; border:1px solid #edeff3 !important; }
+.icon-button{ border-radius:12px !important; background:#fff !important; border:1px solid #edeff3 !important; }
+.store-link{ border-radius:12px !important; background:#16171e !important; color:#fff !important; }
+.store-link span{ color:#c6f24e !important; }
+
+/* Graphique revenus -> vert */
+#revenueChart path[stroke]{ stroke:#6fb52a !important; }
+#revenueChart [stroke="#6558f5"]{ stroke:#6fb52a !important; }
+#revenueChart circle{ fill:#6fb52a !important; stroke:#6fb52a !important; }
+#revenueChart linearGradient stop{ stop-color:#8fd14f !important; }
+[class*="progress-bar"]{ background:#c6f24e !important; }
+
+@media (max-width:640px){
+  .app-shell{ grid-template-columns:1fr !important; }
+  aside.sidebar#sidebar{ margin:8px !important; }
+}
