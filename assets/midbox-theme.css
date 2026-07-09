@@ -1,6 +1,6 @@
 /* Expertly dashboard skin based on the provided Midbox-style reference. */
 :root {
-  --sidebar-width: 120px !important;
+  --sidebar-width: 104px !important;
   --mb-ink: #11120f;
   --mb-muted: #7a7c73;
   --mb-line: rgba(24, 26, 20, 0.1);
@@ -20,7 +20,7 @@ body,
 }
 
 .app-shell {
-  grid-template-columns: 120px 1fr !important;
+  grid-template-columns: 104px 1fr !important;
   min-height: 100vh !important;
 }
 
@@ -29,20 +29,20 @@ body,
 }
 
 .content {
-  width: min(1288px, calc(100vw - 152px)) !important;
+  width: min(1288px, calc(100vw - 136px)) !important;
   margin: 0 auto !important;
   padding: 14px 0 28px !important;
   background: transparent !important;
 }
 
 aside.sidebar#sidebar {
-  width: 88px !important;
-  min-width: 88px !important;
+  width: 72px !important;
+  min-width: 72px !important;
   height: calc(100vh - 210px) !important;
   min-height: 550px !important;
   margin: 105px 0 16px 16px !important;
   border: 0 !important;
-  border-radius: 28px !important;
+  border-radius: 24px !important;
   background: #050604 !important;
   box-shadow: 0 24px 42px rgba(11, 13, 10, 0.18) !important;
   overflow: hidden !important;
@@ -56,14 +56,14 @@ aside.sidebar#sidebar {
 
 .sidebar .brand-row::before {
   content: "";
-  width: 56px;
-  height: 56px;
-  border-radius: 20px;
+  width: 48px;
+  height: 48px;
+  border-radius: 18px;
   background: var(--mb-green);
   display: block;
   position: absolute;
   top: 16px;
-  left: 16px;
+  left: 12px;
 }
 
 .sidebar .brand-row img,
@@ -93,17 +93,17 @@ aside.sidebar#sidebar {
   flex-direction: column !important;
   align-items: center !important;
   gap: 5px !important;
-  padding: 20px 0 0 !important;
+  padding: 16px 0 0 !important;
 }
 
 .nav-item {
-  width: 56px !important;
-  height: 52px !important;
+  width: 46px !important;
+  height: 48px !important;
   margin: 0 !important;
   padding: 0 !important;
   display: grid !important;
   place-items: center !important;
-  border-radius: 17px !important;
+  border-radius: 15px !important;
   color: #dbded6 !important;
   background: transparent !important;
 }
@@ -129,7 +129,7 @@ aside.sidebar#sidebar {
 }
 
 .topbar {
-  width: min(1288px, calc(100vw - 152px)) !important;
+  width: min(1288px, calc(100vw - 136px)) !important;
   height: 88px !important;
   margin: 0 auto !important;
   padding: 0 !important;
