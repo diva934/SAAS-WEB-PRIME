@@ -48,3 +48,17 @@ aside.sidebar#sidebar{ width:88px !important; min-width:88px !important; backgro
   .app-shell{ grid-template-columns:1fr !important; }
   aside.sidebar#sidebar{ margin:8px !important; }
 }
+
+/* Top bar epuree : masque "En direct" + le losange (notifications), avatar rond a droite. */
+.live-indicator{ display:none !important; }
+.topbar-actions .notification-button, #notificationButton{ display:none !important; }
+.account-button{
+  width:46px !important; height:46px !important; min-width:46px !important; padding:0 !important;
+  border-radius:50% !important; border:2px solid #c6f24e !important;
+  display:grid !important; place-items:center !important; overflow:hidden !important;
+  background:linear-gradient(145deg,#2b2d38,#16171e) !important; background-size:cover !important; background-position:center !important;
+  box-shadow:0 6px 16px rgba(16,17,26,.18) !important;
+}
+.account-button .account-copy, .account-button > b{ display:none !important; }
+.account-button #accountInitials{ display:block !important; color:#fff !important; font-weight:700 !important; font-size:15px !important; }
+.account-button.has-photo #accountInitials{ display:none !important; }
