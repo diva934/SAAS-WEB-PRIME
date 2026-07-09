@@ -17,17 +17,17 @@
     ".mb-head{display:flex;align-items:flex-start;gap:10px;min-height:40px;}",
     ".mb-icon{width:40px;height:40px;border:1.2px solid #161711;border-radius:50%;display:grid;place-items:center;flex:none;color:#151611;font-size:22px;line-height:1;}",
     ".mb-title{flex:1;min-width:0;line-height:1.12;}.mb-title h2{margin:2px 0 3px;font-size:18px;font-weight:500;letter-spacing:0;}.mb-title span{display:block;color:#7f8178;font-size:12px;}",
-    ".mb-menu,.mb-pill{border:0;background:rgba(241,243,237,.72);color:#151611;}.mb-menu{width:40px;height:40px;border-radius:18px;font-size:20px;line-height:1;}.mb-pill{height:38px;border-radius:20px;padding:0 14px;font-size:13px;white-space:nowrap;}",
+    ".mb-menu,.mb-pill{border:0;background:rgba(241,243,237,.72);color:#151611;cursor:pointer;}.mb-menu{width:40px;height:40px;border-radius:18px;font-size:20px;line-height:1;}.mb-pill{height:38px;border-radius:20px;padding:0 14px;font-size:13px;white-space:nowrap;}",
     ".mb-svg{display:block;width:100%;height:100%;overflow:visible;}.mb-axis text{font-size:14px;fill:#999b91;}.mb-y{font-size:14px;fill:#a0a297;}.mb-total-tip text{font-size:14px;font-weight:600;}",
     ".mb-wallet{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0 14px;padding:11px 16px;border:1px dashed rgba(21,22,17,.55);border-radius:22px;}",
     ".mb-wallet div{display:grid;grid-template-columns:20px 1fr;column-gap:8px;align-items:center;}.mb-wallet svg{grid-row:1/3;width:18px;height:18px;}.mb-wallet strong{font-size:16px;font-weight:500;line-height:1;}.mb-wallet span{color:#777970;font-size:11px;}",
     ".mb-mini-labels{position:absolute;left:29px;right:24px;bottom:18px;display:flex;justify-content:space-between;color:#9ca096;font-size:14px;}.mb-day{padding:4px 12px;border-radius:6px;background:#75766e;color:#fff;}",
     ".mb-gauge-wrap{height:228px;position:relative;display:grid;place-items:center;margin-top:5px;}.mb-gauge-value{position:absolute;inset:62px 0 auto;text-align:center;font-size:54px;font-weight:500;letter-spacing:0;color:#030402;}.mb-gauge-delta{position:absolute;top:137px;left:50%;transform:translateX(-50%);padding:4px 10px;border-radius:16px;background:#d9ffc4;color:#2fac1c;font-size:13px;}.mb-note{margin:0 auto;color:#6f7168;text-align:center;font-size:14px;line-height:1.25;max-width:230px;}",
     ".mb-order-body{display:grid;grid-template-columns:132px 1fr;gap:10px;align-items:center;height:292px;}.mb-donut{width:126px;height:126px;position:relative;margin:0 auto;}.mb-donut-center{position:absolute;inset:0;display:grid;place-items:center;text-align:center;font-size:20px;font-weight:700;line-height:1.05;}.mb-donut-center small{display:block;color:#777970;font-size:12px;font-weight:400;}",
-    ".mb-cat-list{display:grid;gap:14px;min-width:0;}.mb-cat{display:grid;grid-template-columns:36px minmax(0,1fr) auto;gap:10px;align-items:center;}.mb-cat i{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-style:normal;color:#151611;}.mb-cat strong{display:block;font-size:15px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}.mb-cat span{display:block;color:#7d8077;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}.mb-cat b{font-size:15px;font-weight:600;}",
+    ".mb-cat-list{display:grid;gap:14px;min-width:0;}.mb-cat{display:grid;grid-template-columns:36px minmax(0,1fr) auto;gap:10px;align-items:center;cursor:pointer;}.mb-cat i{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-style:normal;color:#151611;}.mb-cat strong{display:block;font-size:15px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}.mb-cat span{display:block;color:#7d8077;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}.mb-cat b{font-size:15px;font-weight:600;}",
     ".mb-acq-metrics{display:flex;gap:26px;margin:26px 0 2px 4px;}.mb-acq-metrics div{display:grid;grid-template-columns:20px 1fr;gap:0 8px;align-items:center;}.mb-acq-metrics svg{grid-row:1/3;width:18px;height:18px;}.mb-acq-metrics strong{font-size:16px;font-weight:500;}.mb-acq-metrics span{grid-column:2;color:#777970;font-size:11px;}",
     ".mb-best .mb-head{margin-bottom:25px;}.mb-table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:14px;}.mb-table th{padding:0 8px 10px 0;border-bottom:1px dashed rgba(21,22,17,.24);color:#777970;text-align:left;font-weight:400;}.mb-table td{padding:10px 8px 10px 0;border-bottom:1px solid rgba(21,22,17,.1);vertical-align:middle;color:#20221d;}.mb-table th:nth-child(1){width:46%;}.mb-table th:nth-child(2){width:13%;}.mb-table th:nth-child(3){width:13%;}.mb-table th:nth-child(4){width:13%;}.mb-table th:nth-child(5){width:15%;text-align:right;}.mb-table td:last-child,.mb-table th:last-child{text-align:right;padding-right:0;}",
-    ".mb-product{display:grid;grid-template-columns:46px 1fr;gap:10px;align-items:center;min-width:0;}.mb-product-img{width:46px;height:38px;border-radius:13px;display:grid;place-items:center;overflow:hidden;background:#e9ece5;box-shadow:inset 0 0 0 1px rgba(21,22,17,.08);}.mb-product-img span{font-size:10px;font-weight:700;color:#fff;}.mb-product strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px;font-weight:500;}.mb-product small{display:block;color:#86897f;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}.mb-muted-row{opacity:.42;}",
+    ".mb-product{display:grid;grid-template-columns:46px 1fr;gap:10px;align-items:center;min-width:0;cursor:pointer;}.mb-product-img{width:46px;height:38px;border-radius:13px;display:grid;place-items:center;overflow:hidden;background:#e9ece5;box-shadow:inset 0 0 0 1px rgba(21,22,17,.08);}.mb-product-img span{font-size:10px;font-weight:700;color:#fff;}.mb-product strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px;font-weight:500;}.mb-product small{display:block;color:#86897f;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}.mb-muted-row{opacity:.42;}",
     "@media(max-width:1180px){.mb-grid{grid-template-columns:1fr 1fr;grid-template-rows:auto;}.mb-earn,.mb-balance,.mb-expenses,.mb-orders,.mb-acq,.mb-best{grid-column:auto;grid-row:auto;}.mb-earn,.mb-best{grid-column:1/-1;}.mb-card{min-height:300px;}}",
     "@media(max-width:720px){.mb-grid{grid-template-columns:1fr;}.mb-earn,.mb-best{grid-column:auto;}.mb-order-body{grid-template-columns:1fr;height:auto;}.mb-card{border-radius:24px;padding:16px;}.mb-table{font-size:12px;}.mb-table th:nth-child(4),.mb-table td:nth-child(4){display:none;}}"
   ].join("");
@@ -122,9 +122,16 @@
   }
 
   function shell(title, sub, iconName, body, actions, className) {
-    return '<article class="mb-card ' + (className || "") + '">'
+    var view = "";
+    if ((className || "").indexOf("mb-earn") >= 0) view = "analytics";
+    else if ((className || "").indexOf("mb-balance") >= 0) view = "finance";
+    else if ((className || "").indexOf("mb-expenses") >= 0) view = "finance";
+    else if ((className || "").indexOf("mb-orders") >= 0) view = "orders";
+    else if ((className || "").indexOf("mb-acq") >= 0) view = "analytics";
+    else if ((className || "").indexOf("mb-best") >= 0) view = "products";
+    return '<article class="mb-card ' + (className || "") + '"' + (view ? ' data-mb-view="' + view + '"' : "") + '>'
       + '<div class="mb-head"><div class="mb-icon">' + icon(iconName) + '</div><div class="mb-title"><h2>' + title + '</h2>'
-      + (sub ? '<span>' + sub + '</span>' : "") + '</div>' + (actions || '<button class="mb-menu" aria-label="Options">...</button>') + '</div>'
+      + (sub ? '<span>' + sub + '</span>' : "") + '</div>' + (actions || '<button class="mb-menu" aria-label="Options" data-mb-view="overview">...</button>') + '</div>'
       + body + '</article>';
   }
 
@@ -174,7 +181,7 @@
     var body = '<div class="mb-wallet"><div>' + icon("wallet") + '<strong>' + formatInt(d.wallet) + '</strong><span>Wallet</span></div><div>' + icon("dollar") + '<strong>' + formatInt(d.paypal) + '</strong><span>PayPal</span></div></div>'
       + '<div style="height:158px;margin-top:7px">' + smoothArea(d.series, "#62c600", "mbBalanceFill", 260, 140) + '</div>'
       + '<div class="mb-mini-labels"><span>N</span><span class="mb-day">D</span><span>J</span><span>F</span><span>M</span><span>A</span></div>';
-    return shell("Balance", "", "dollar", body, '<button class="mb-menu" aria-label="Options">...</button>', "mb-balance");
+    return shell("Balance", "", "dollar", body, '<button class="mb-menu" aria-label="Ouvrir Finance" data-mb-view="finance">...</button>', "mb-balance");
   }
 
   function expensesCard(d) {
@@ -185,7 +192,7 @@
       + '<circle cx="110" cy="100" r="82" fill="none" stroke="#777b72" stroke-width="5" stroke-linecap="round" stroke-dasharray="348 520" transform="rotate(137 110 100)"/>'
       + '</svg><div class="mb-gauge-value">' + (expense ? (expense / 100).toFixed(1) : "0.0") + '</div><div class="mb-gauge-delta">-' + pct(Math.min(99, Math.max(0, d.conversion * 10))) + '%</div></div>'
       + '<p class="mb-note">' + formatEuro(comparison) + ' Expenses less than last month</p>';
-    return shell("Expenses", "", "expense", body, '<button class="mb-menu" aria-label="Options">...</button>', "mb-expenses");
+    return shell("Expenses", "", "expense", body, '<button class="mb-menu" aria-label="Ouvrir Finance" data-mb-view="finance">...</button>', "mb-expenses");
   }
 
   function ordersCard(d) {
@@ -199,7 +206,7 @@
     var donutValue = Math.max(6, Math.min(96, d.conversion * 9 || d.orders.length * 8));
     var c = 2 * Math.PI * 50;
     var body = '<div class="mb-order-body"><div><div class="mb-donut"><svg viewBox="0 0 126 126"><circle cx="63" cy="63" r="50" fill="none" stroke="#e7efe1" stroke-width="15"/><circle cx="63" cy="63" r="50" fill="none" stroke="#c7ff5a" stroke-width="15" stroke-linecap="round" stroke-dasharray="' + (c * donutValue / 100).toFixed(1) + " " + c.toFixed(1) + '" transform="rotate(-90 63 63)"/><circle cx="63" cy="63" r="36" fill="rgba(255,255,255,.75)"/></svg><div class="mb-donut-center">' + Math.round(donutValue) + '%<small>Weekly</small></div></div></div><div class="mb-cat-list">' + list + '</div></div>';
-    return shell("Order Statistics", formatInt(d.orders.length) + " Total Sales", "cart", body, '<button class="mb-menu" aria-label="Options">...</button>', "mb-orders");
+    return shell("Order Statistics", formatInt(d.orders.length) + " Total Sales", "cart", body, '<button class="mb-menu" aria-label="Ouvrir Commandes" data-mb-view="orders">...</button>', "mb-orders");
   }
 
   function acquisitionCard(d) {
@@ -212,7 +219,7 @@
       + '<div style="height:214px;margin-top:2px;position:relative">' + smoothArea(acqSeries, "#ff9f20", "mbAcqOrange", 300, 178)
       + '<div style="position:absolute;inset:0">' + smoothArea(d.series, "#62c600", "mbAcqGreen", 300, 178) + '</div></div>'
       + '<div class="mb-mini-labels" style="left:38px;right:34px">' + DAYS.map(function (day) { return '<span>' + day + '</span>'; }).join("") + '</div>';
-    return shell("Acquisition", "", "grid", body, '<button class="mb-menu" aria-label="Options">...</button>', "mb-acq");
+    return shell("Acquisition", "", "grid", body, '<button class="mb-menu" aria-label="Ouvrir Analytics" data-mb-view="analytics">...</button>', "mb-acq");
   }
 
   function bestSellersCard(d) {
@@ -229,7 +236,7 @@
     }).join("");
     if (!rows) rows = '<tr><td colspan="5" style="color:#878a80;padding-top:18px">Aucun produit pour le moment</td></tr>';
     var body = '<table class="mb-table"><thead><tr><th>Item ↓</th><th>Price</th><th>Orders</th><th>Stock</th><th>Amount</th></tr></thead><tbody>' + rows + '</tbody></table>';
-    return shell("Best Sellers", "", "bolt", body, '<button class="mb-pill">Last Month⌄</button><button class="mb-menu" aria-label="Options">...</button>', "mb-best");
+    return shell("Best Sellers", "", "bolt", body, '<button class="mb-pill" data-mb-view="products">Last Month⌄</button><button class="mb-menu" aria-label="Ouvrir Produits" data-mb-view="products">...</button>', "mb-best");
   }
 
   function renderMidboxOverview() {
@@ -240,7 +247,7 @@
     if (title) title.textContent = "Dashboard";
     document.body.classList.add("midbox-overview");
     overview.innerHTML = '<div class="mb-page"><div class="mb-crumb"><b>Home</b><span>/</span><b>Dashboard</b></div><div class="mb-grid">'
-      + shell("Earning Reports", "Yearly Earnings Overview", "trend", earningChart(d.series), '<button class="mb-pill">Last Year⌄</button><button class="mb-menu" aria-label="Options">...</button>', "mb-earn")
+      + shell("Earning Reports", "Yearly Earnings Overview", "trend", earningChart(d.series), '<button class="mb-pill" data-mb-view="analytics">Last Year⌄</button><button class="mb-menu" aria-label="Ouvrir Analytics" data-mb-view="analytics">...</button>', "mb-earn")
       + balanceCard(d)
       + expensesCard(d)
       + ordersCard(d)
@@ -272,6 +279,14 @@
   }
 
   document.addEventListener("click", function (event) {
+    var midboxTarget = event.target.closest("[data-mb-view]");
+    if (midboxTarget) {
+      event.preventDefault();
+      event.stopPropagation();
+      if (typeof setView === "function") setView(midboxTarget.dataset.mbView);
+      else window.location.hash = midboxTarget.dataset.mbView;
+      return;
+    }
     var nav = event.target.closest(".nav-item[data-view]");
     if (nav && nav.dataset.view !== "overview") document.body.classList.remove("midbox-overview");
     if (nav && nav.dataset.view === "overview") document.body.classList.add("midbox-overview");
