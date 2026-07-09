@@ -34,6 +34,16 @@
     ".mb-focus-panel .mb-earn,.mb-focus-panel .mb-best{min-height:560px;}",
     ".mb-focus-panel .mb-svg{height:100%;}",
     ".mb-focus-close{position:fixed;top:24px;right:24px;width:46px;height:46px;border:0;border-radius:18px;background:rgba(241,243,237,.9);color:#151611;font-size:22px;cursor:pointer;}",
+    ".mb-drill{display:grid;gap:16px;color:#151611;}",
+    ".mb-drill-head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:4px;}",
+    ".mb-drill-head h1{margin:0;font-size:28px;font-weight:500;letter-spacing:0;}",
+    ".mb-drill-head button{height:42px;border:0;border-radius:18px;padding:0 16px;background:rgba(241,243,237,.88);color:#151611;cursor:pointer;}",
+    ".mb-drill-grid{display:grid;grid-template-columns:1fr;gap:10px;}",
+    ".mb-drill-grid.two{grid-template-columns:1fr 1fr;}",
+    ".mb-drill .mb-card{min-height:560px;cursor:default;}",
+    ".mb-drill .mb-earn,.mb-drill .mb-best{grid-column:auto;grid-row:auto;}",
+    ".mb-drill .mb-balance,.mb-drill .mb-expenses,.mb-drill .mb-orders,.mb-drill .mb-acq{grid-column:auto;grid-row:auto;}",
+    "@media(max-width:900px){.mb-drill-grid.two{grid-template-columns:1fr;}}",
     "@media(max-width:1180px){.mb-grid{grid-template-columns:1fr 1fr;grid-template-rows:auto;}.mb-earn,.mb-balance,.mb-expenses,.mb-orders,.mb-acq,.mb-best{grid-column:auto;grid-row:auto;}.mb-earn,.mb-best{grid-column:1/-1;}.mb-card{min-height:300px;}}",
     "@media(max-width:720px){.mb-grid{grid-template-columns:1fr;}.mb-earn,.mb-best{grid-column:auto;}.mb-order-body{grid-template-columns:1fr;height:auto;}.mb-card{border-radius:24px;padding:16px;}.mb-table{font-size:12px;}.mb-table th:nth-child(4),.mb-table td:nth-child(4){display:none;}}"
   ].join("");
@@ -262,6 +272,39 @@
       + '</div></div>';
   }
 
+  function renderMetricPage(view) {
+    var section = document.querySelector("#" + view + "View");
+    if (!section) return false;
+    var d = metrics();
+    var titles = {
+      products: "Best Sellers",
+      orders: "Order Statistics",
+      analytics: "Earning Reports",
+      finance: "Balance"
+    };
+    var content = {
+      products: bestSellersCard(d),
+      orders: ordersCard(d),
+      analytics: earningChartPage(d),
+      finance: financeChartPage(d)
+    }[view];
+    if (!content) return false;
+    var title = document.querySelector("#viewTitle");
+    if (title) title.textContent = titles[view] || "Dashboard";
+    document.body.classList.add("midbox-overview");
+    section.innerHTML = '<div class="mb-drill"><div class="mb-drill-head"><h1>' + (titles[view] || "Dashboard") + '</h1><button type="button" data-mb-view="overview">Dashboard</button></div>' + content + '</div>';
+    return true;
+  }
+
+  function earningChartPage(d) {
+    return '<div class="mb-drill-grid two">' + shell("Earning Reports", "Yearly Earnings Overview", "trend", earningChart(d.series), '<button class="mb-pill" data-mb-view="overview">Dashboard</button>', "mb-earn")
+      + acquisitionCard(d) + '</div>';
+  }
+
+  function financeChartPage(d) {
+    return '<div class="mb-drill-grid two">' + balanceCard(d) + expensesCard(d) + '</div>';
+  }
+
   function hook() {
     if (window.__mbHooked) return;
     if (typeof window.renderOverview !== "function") {
@@ -276,6 +319,12 @@
         if (window.__mbOrigRenderOverview) window.__mbOrigRenderOverview();
       }
     };
+    window.__mbOrigRenderView = window.renderView;
+    window.renderView = function (view) {
+      if (renderMetricPage(view)) return;
+      if (window.__mbOrigRenderView) window.__mbOrigRenderView(view);
+    };
+    try { renderView = window.renderView; } catch (error) {}
     window.__mbHooked = true;
     try {
       if (typeof activeView === "undefined" || activeView === "overview") renderMidboxOverview();
