@@ -12,7 +12,7 @@
     ".mb-crumb{display:flex;align-items:center;gap:8px;margin:0 0 9px 4px;color:#71746a;font-size:12px;}",
     ".mb-crumb b{font-weight:500;color:#20221d;}.mb-crumb span{opacity:.55;}",
     ".mb-grid{display:grid;grid-template-columns:.93fr .93fr .78fr .78fr;grid-template-rows:328px 372px;gap:8px;}",
-    ".mb-card{position:relative;min-width:0;overflow:hidden;border:1px solid rgba(21,22,17,.1);border-radius:34px;background:rgba(255,255,255,.62);backdrop-filter:blur(20px);box-shadow:none;padding:20px;}",
+    ".mb-card{position:relative;min-width:0;overflow:hidden;border:1px solid rgba(21,22,17,.1);border-radius:34px;background:rgba(255,255,255,.62);backdrop-filter:blur(20px);box-shadow:none;padding:20px;cursor:pointer;}",
     ".mb-earn{grid-column:1/3;grid-row:1;}.mb-balance{grid-column:3;grid-row:1;}.mb-expenses{grid-column:4;grid-row:1;}.mb-orders{grid-column:1;grid-row:2;}.mb-acq{grid-column:2;grid-row:2;}.mb-best{grid-column:3/5;grid-row:2;}",
     ".mb-head{display:flex;align-items:flex-start;gap:10px;min-height:40px;}",
     ".mb-icon{width:40px;height:40px;border:1.2px solid #161711;border-radius:50%;display:grid;place-items:center;flex:none;color:#151611;font-size:22px;line-height:1;}",
@@ -28,6 +28,12 @@
     ".mb-acq-metrics{display:flex;gap:26px;margin:26px 0 2px 4px;}.mb-acq-metrics div{display:grid;grid-template-columns:20px 1fr;gap:0 8px;align-items:center;}.mb-acq-metrics svg{grid-row:1/3;width:18px;height:18px;}.mb-acq-metrics strong{font-size:16px;font-weight:500;}.mb-acq-metrics span{grid-column:2;color:#777970;font-size:11px;}",
     ".mb-best .mb-head{margin-bottom:25px;}.mb-table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:14px;}.mb-table th{padding:0 8px 10px 0;border-bottom:1px dashed rgba(21,22,17,.24);color:#777970;text-align:left;font-weight:400;}.mb-table td{padding:10px 8px 10px 0;border-bottom:1px solid rgba(21,22,17,.1);vertical-align:middle;color:#20221d;}.mb-table th:nth-child(1){width:46%;}.mb-table th:nth-child(2){width:13%;}.mb-table th:nth-child(3){width:13%;}.mb-table th:nth-child(4){width:13%;}.mb-table th:nth-child(5){width:15%;text-align:right;}.mb-table td:last-child,.mb-table th:last-child{text-align:right;padding-right:0;}",
     ".mb-product{display:grid;grid-template-columns:46px 1fr;gap:10px;align-items:center;min-width:0;cursor:pointer;}.mb-product-img{width:46px;height:38px;border-radius:13px;display:grid;place-items:center;overflow:hidden;background:#e9ece5;box-shadow:inset 0 0 0 1px rgba(21,22,17,.08);}.mb-product-img span{font-size:10px;font-weight:700;color:#fff;}.mb-product strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px;font-weight:500;}.mb-product small{display:block;color:#86897f;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}.mb-muted-row{opacity:.42;}",
+    ".mb-focus{position:fixed;inset:0;z-index:1200;display:grid;place-items:center;padding:24px;background:rgba(247,248,241,.72);backdrop-filter:blur(18px);}",
+    ".mb-focus-panel{width:min(980px,calc(100vw - 48px));max-height:calc(100vh - 48px);overflow:auto;}",
+    ".mb-focus-panel .mb-card{min-height:520px;cursor:default;transform:none;}",
+    ".mb-focus-panel .mb-earn,.mb-focus-panel .mb-best{min-height:560px;}",
+    ".mb-focus-panel .mb-svg{height:100%;}",
+    ".mb-focus-close{position:fixed;top:24px;right:24px;width:46px;height:46px;border:0;border-radius:18px;background:rgba(241,243,237,.9);color:#151611;font-size:22px;cursor:pointer;}",
     "@media(max-width:1180px){.mb-grid{grid-template-columns:1fr 1fr;grid-template-rows:auto;}.mb-earn,.mb-balance,.mb-expenses,.mb-orders,.mb-acq,.mb-best{grid-column:auto;grid-row:auto;}.mb-earn,.mb-best{grid-column:1/-1;}.mb-card{min-height:300px;}}",
     "@media(max-width:720px){.mb-grid{grid-template-columns:1fr;}.mb-earn,.mb-best{grid-column:auto;}.mb-order-body{grid-template-columns:1fr;height:auto;}.mb-card{border-radius:24px;padding:16px;}.mb-table{font-size:12px;}.mb-table th:nth-child(4),.mb-table td:nth-child(4){display:none;}}"
   ].join("");
@@ -129,7 +135,7 @@
     else if ((className || "").indexOf("mb-orders") >= 0) view = "orders";
     else if ((className || "").indexOf("mb-acq") >= 0) view = "analytics";
     else if ((className || "").indexOf("mb-best") >= 0) view = "products";
-    return '<article class="mb-card ' + (className || "") + '"' + (view ? ' data-mb-view="' + view + '"' : "") + '>'
+    return '<article class="mb-card ' + (className || "") + '"' + (view ? ' data-mb-focus="' + view + '"' : "") + '>'
       + '<div class="mb-head"><div class="mb-icon">' + icon(iconName) + '</div><div class="mb-title"><h2>' + title + '</h2>'
       + (sub ? '<span>' + sub + '</span>' : "") + '</div>' + (actions || '<button class="mb-menu" aria-label="Options" data-mb-view="overview">...</button>') + '</div>'
       + body + '</article>';
@@ -278,6 +284,22 @@
     }
   }
 
+  function openFocus(card) {
+    var existing = document.querySelector(".mb-focus");
+    if (existing) existing.remove();
+    var overlay = document.createElement("div");
+    overlay.className = "mb-focus";
+    overlay.innerHTML = '<button class="mb-focus-close" type="button" aria-label="Fermer">×</button><div class="mb-focus-panel"></div>';
+    var clone = card.cloneNode(true);
+    clone.removeAttribute("data-mb-focus");
+    clone.querySelectorAll("[data-mb-view],[data-mb-focus]").forEach(function (node) {
+      node.removeAttribute("data-mb-view");
+      node.removeAttribute("data-mb-focus");
+    });
+    overlay.querySelector(".mb-focus-panel").appendChild(clone);
+    document.body.appendChild(overlay);
+  }
+
   document.addEventListener("click", function (event) {
     var midboxTarget = event.target.closest("[data-mb-view]");
     if (midboxTarget) {
@@ -287,9 +309,24 @@
       else window.location.hash = midboxTarget.dataset.mbView;
       return;
     }
+    var focusCard = event.target.closest(".mb-card[data-mb-focus]");
+    if (focusCard) {
+      event.preventDefault();
+      openFocus(focusCard);
+      return;
+    }
+    if (event.target.closest(".mb-focus-close") || event.target.classList.contains("mb-focus")) {
+      event.preventDefault();
+      event.target.closest(".mb-focus")?.remove();
+      return;
+    }
     var nav = event.target.closest(".nav-item[data-view]");
     if (nav && nav.dataset.view !== "overview") document.body.classList.remove("midbox-overview");
     if (nav && nav.dataset.view === "overview") document.body.classList.add("midbox-overview");
+  });
+
+  document.addEventListener("keydown", function (event) {
+    if (event.key === "Escape") document.querySelector(".mb-focus")?.remove();
   });
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", function () { setTimeout(hook, 60); });
