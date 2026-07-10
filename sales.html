@@ -4,50 +4,37 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="noindex,nofollow" />
-    <title>Offre Â· Expertly</title>
+    <title>Offre · Expertly</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="/sales.css" />
+    <link rel="stylesheet" href="/store.css" />
   </head>
   <body data-surface="sales_page">
-    <main class="sales-shell" id="salesShell">
-      <div class="sales-overlay"></div>
-      <section class="sales-copy">
-        <img class="sales-logo" id="salesLogo" alt="Logo" hidden />
-        <span class="sales-badge" id="salesBadge"></span>
-        <p class="seller-name" id="sellerName"></p>
-        <h1 id="salesHeadline">Chargement de lâoffreâ¦</h1>
-        <p class="sales-subheadline" id="salesSubheadline"></p>
-        <div class="sales-proof" id="salesProof"></div>
-        <div class="sales-buy">
-          <strong id="salesPrice"></strong>
-          <button id="salesButton" disabled>Continuer</button>
+    <main class="store-shell">
+      <header class="creator-header">
+        <div class="creator-avatar is-empty" id="creatorAvatar"></div>
+        <div class="creator-copy">
+          <h1 id="creatorName">Boutique</h1>
+          <p class="creator-role" id="creatorRole"></p>
+          <p class="creator-bio" id="creatorBio"></p>
+          <div class="social-links" id="creatorSocials" hidden></div>
         </div>
-      </section>
-      <figure class="sales-visual" id="salesVisual" hidden>
-        <img id="salesProductImage" alt="Visuel du produit" />
-      </figure>
-    </main>
-    <section class="sales-sections" id="salesSections"></section>
-    <footer class="sales-footer">
-      <span id="salesDisclosure"></span>
-      <span>Paiement sÃ©curisÃ© Â· PropulsÃ© par Expertly</span>
-    </footer>
+      </header>
 
-    <div class="sales-modal" id="salesModal" aria-hidden="true">
-      <div class="sales-modal-card">
-        <button class="sales-modal-close" data-close-sales>Ã</button>
-        <h2 id="checkoutTitle">Finaliser ma commande</h2>
-        <p id="checkoutDescription"></p>
-        <form id="salesCheckoutForm">
-          <label>PrÃ©nom et nom<input name="name" required autocomplete="name" /></label>
-          <label>Email<input name="email" type="email" required autocomplete="email" /></label>
-          <button type="submit">Continuer vers le paiement</button>
-          <p id="salesError" class="sales-error"></p>
-        </form>
+      <section class="link-list" id="publicOffers"></section>
+    </main>
+
+    <footer><span class="mini-mark">E</span> Propulsé par <strong>Expertly</strong></footer>
+
+    <div class="modal" id="checkoutModal" aria-hidden="true">
+      <div class="modal-card">
+        <button class="close-button" data-close-checkout>×</button>
+        <div id="checkoutContent"></div>
       </div>
     </div>
+
+    <div class="store-toast" id="storeToast"></div>
     <script src="/assets/js/analytics.js"></script>
     <script src="/assets/js/sales.js"></script>
   </body>
