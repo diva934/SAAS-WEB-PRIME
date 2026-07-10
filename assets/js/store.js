@@ -3,9 +3,9 @@ const STORAGE_KEY = "expertly_client_v2";
 const fallback = {
   profile: {
     firstName: "Expertly",
-    creatorName: "Boutique Expertly",
-    creatorRole: "Infopreneur",
-    bio: "Bienvenue dans ma boutique de produits digitaux.",
+    creatorName: "Boutique",
+    creatorRole: "",
+    bio: "",
     slug: "boutique",
     accent: "#6558f5",
   },
@@ -58,9 +58,9 @@ function safeUrl(value = "") {
   return /^https?:\/\//i.test(trimmed) ? trimmed : "";
 }
 
-function safeColor(value = "", fallback = "#6558f5") {
+function safeColor(value = "", fallbackColor = "#6558f5") {
   const trimmed = String(value).trim();
-  return /^#[0-9a-f]{3,8}$|^(rgb|hsl)a?\([\d.,%\s/]+\)$/i.test(trimmed) ? trimmed : fallback;
+  return /^#[0-9a-f]{3,8}$|^(rgb|hsl)a?\([\d.,%\s/]+\)$/i.test(trimmed) ? trimmed : fallbackColor;
 }
 
 function renderSocials(profile) {
@@ -85,19 +85,10 @@ function renderSocials(profile) {
     .join("");
 }
 
-function renderFeaturedBanner(publishedProducts) {
+function renderFeaturedBanner() {
+  // La banniere "ressource gratuite" a ete remplacee par un bouton dans la liste.
   const banner = document.querySelector("#featuredBanner");
-  if (!banner) return;
-  const freeProduct = publishedProducts.find((product) => Number(product.price) === 0);
-  if (!freeProduct) {
-    banner.hidden = true;
-    banner.style.display = "none";
-    return;
-  }
-  banner.hidden = false;
-  banner.style.display = "";
-  const title = document.querySelector("#featuredBannerTitle");
-  if (title) title.textContent = freeProduct.title || "Ressource gratuite offerte";
+  if (banner) { banner.hidden = true; banner.style.display = "none"; }
 }
 
 function setOgMeta(property, content) {
@@ -110,26 +101,30 @@ function setOgMeta(property, content) {
 function renderStore() {
   const profile = state.profile;
   document.documentElement.style.setProperty("--accent", profile.accent || "#6558f5");
-  const storeTitle = `${profile.creatorName} Â· Boutique`;
+  const storeTitle = `${profile.creatorName || "Boutique"} · Boutique`;
   document.title = storeTitle;
   setOgMeta("og:title", storeTitle);
-  setOgMeta("og:description", profile.bio || `DÃ©couvre les offres de ${profile.creatorName}`);
+  setOgMeta("og:description", profile.bio || `Découvre les offres de ${profile.creatorName || "cette boutique"}`);
   setOgMeta("og:image", (profile.logo || "").trim().match(/^https?:\/\//i) ? profile.logo : "");
   setOgMeta("og:url", location.href);
   setOgMeta("og:type", "website");
+
   const avatar = document.querySelector("#creatorAvatar");
   const logo = (profile.logo || "").trim();
   const validLogo = /^https?:\/\//i.test(logo) || /^data:image\//i.test(logo);
   if (validLogo) {
     avatar.classList.add("has-logo");
-    avatar.innerHTML = `<img class="creator-avatar-img" src="${escapeHtml(logo)}" alt="${escapeHtml(profile.creatorName)}" />`;
+    avatar.classList.remove("is-empty");
+    avatar.innerHTML = `<img class="creator-avatar-img" src="${escapeHtml(logo)}" alt="${escapeHtml(profile.creatorName || "")}" />`;
   } else {
     avatar.classList.remove("has-logo");
-    avatar.textContent = initials(profile.creatorName);
+    avatar.classList.add("is-empty");
+    avatar.innerHTML = '<svg class="creator-avatar-ph" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.6" r="3.6"/><path d="M5.2 19.2c.9-3.4 3.5-5.2 6.8-5.2s5.9 1.8 6.8 5.2"/></svg>';
   }
-  document.querySelector("#creatorName").textContent = profile.creatorName;
-  document.querySelector("#creatorRole").textContent = profile.creatorRole;
-  document.querySelector("#creatorBio").textContent = profile.bio;
+
+  document.querySelector("#creatorName").textContent = profile.creatorName || "Boutique";
+  document.querySelector("#creatorRole").textContent = profile.creatorRole || "";
+  document.querySelector("#creatorBio").textContent = profile.bio || "";
 
   renderSocials(profile);
 
@@ -137,38 +132,19 @@ function renderStore() {
     .filter((product) => product.status === "published")
     .sort((a, b) => Number(b.featured) - Number(a.featured));
 
-  document.querySelector("#offerCount").textContent = `${products.length} offre${products.length > 1 ? "s" : ""}`;
-  const singleProduct = products.length === 1;
-  const accent = safeColor(profile.accent, "#6558f5");
   document.querySelector("#publicOffers").innerHTML =
     products
       .map((product) => {
-        const requested = ["s", "m", "l", "xl"].includes(product.cardSize) ? product.cardSize : "m";
-        const size = singleProduct ? "l" : requested;
-        const cover = (product.coverUrl || "").trim();
-        const hasCover = /^https?:\/\//i.test(cover) || /^data:image\//i.test(cover);
-        const offerColor = safeColor(product.color, accent);
-        const media = hasCover
-          ? `<img class="offer-cover" src="${escapeHtml(cover)}" alt="${escapeHtml(product.title)}" loading="lazy" />`
-          : `<div class="offer-cover offer-cover-fallback"><span>${initials(product.title)}</span></div>`;
+        const priceLabel = Number(product.price) ? euro.format(product.price) : "Gratuit";
         return `
-        <article class="public-offer size-${size} ${product.featured ? "featured" : ""}" style="--offer-color:${offerColor}">
-          <div class="offer-media">
-            ${media}
-            ${product.featured ? '<span class="featured-label">â RecommandÃ©</span>' : ""}
-            <span class="offer-price">${product.price ? euro.format(product.price) : "Gratuit"}</span>
-          </div>
-          <div class="offer-body">
-            ${product.type ? `<span class="offer-type">${escapeHtml(product.type)}</span>` : ""}
-            <h3>${escapeHtml(product.title)}</h3>
-            <p>${escapeHtml(product.description || "")}</p>
-            <button data-buy="${product.id}">${product.price ? "Acheter" : "AccÃ©der"}</button>
-          </div>
-        </article>`;
+        <button class="store-link ${product.featured ? "is-featured" : ""}" data-buy="${product.id}">
+          <span class="store-link-label">${escapeHtml(product.title)}</span>
+          <span class="store-link-price">${priceLabel}</span>
+        </button>`;
       })
-      .join("") || "<p>Aucun produit publiÃ© pour le moment.</p>";
+      .join("") || '<p class="store-empty">Aucun produit publié pour le moment.</p>';
 
-  renderFeaturedBanner(products);
+  renderFeaturedBanner();
 
   window.ExpertlyTracking?.track("store_viewed", {
     product_count: products.length,
@@ -179,22 +155,22 @@ function renderStore() {
 function openCheckout(product) {
   if (!product) return;
   selectedProduct = product;
-  const isFree = product.price === 0;
+  const isFree = Number(product.price) === 0;
   document.querySelector("#checkoutContent").innerHTML = `
     <div class="checkout-product">
       <div class="public-offer-icon" style="--offer-color:${safeColor(product.color, safeColor(state.profile.accent, "#6558f5"))}">${initials(product.title)}</div>
-      <div><h2>${escapeHtml(product.title)}</h2><p>${escapeHtml(product.type)} Â· AccÃ¨s immÃ©diat aprÃ¨s confirmation</p></div>
+      <div><h2>${escapeHtml(product.title)}</h2><p>${escapeHtml(product.type || "")} · Accès immédiat après confirmation</p></div>
     </div>
     <div class="checkout-summary">
       <div><span>Sous-total</span><span>${isFree ? "Gratuit" : euro.format(product.price)}</span></div>
-      <div><span>TVA incluse</span><span>${isFree ? "0 â¬" : euro.format(Math.round(product.price * 0.2))}</span></div>
+      <div><span>TVA incluse</span><span>${isFree ? "0 €" : euro.format(Math.round(product.price * 0.2))}</span></div>
       <div><span>Total</span><span>${isFree ? "Gratuit" : euro.format(product.price)}</span></div>
     </div>
     <form id="checkoutForm">
-      <label>PrÃ©nom et nom<input name="name" required autocomplete="name" placeholder="Sofia Bernard" /></label>
+      <label>Prénom et nom<input name="name" required autocomplete="name" placeholder="Sofia Bernard" /></label>
       <label>Email<input name="email" type="email" required autocomplete="email" placeholder="sofia@email.com" /></label>
-      <button type="submit">${isFree ? "Recevoir lâaccÃ¨s" : `Continuer vers Stripe Â· ${euro.format(product.price)}`}</button>
-      <p class="secure-note">${isFree ? "Aucun paiement requis." : "Le produit est dÃ©bloquÃ© uniquement aprÃ¨s confirmation du paiement Stripe."}</p>
+      <button type="submit">${isFree ? "Recevoir l'accès" : `Continuer vers Stripe · ${euro.format(product.price)}`}</button>
+      <p class="secure-note">${isFree ? "Aucun paiement requis." : "Le produit est débloqué uniquement après confirmation du paiement Stripe."}</p>
       <p class="checkout-error" id="checkoutError" role="alert"></p>
     </form>
   `;
@@ -225,7 +201,7 @@ async function completeCheckout(event) {
   const button = event.currentTarget.querySelector("button[type='submit']");
   const errorRegion = document.querySelector("#checkoutError");
   button.disabled = true;
-  button.textContent = "PrÃ©paration du paiementâ¦";
+  button.textContent = "Préparation du paiement…";
   errorRegion.textContent = "";
 
   try {
@@ -242,7 +218,7 @@ async function completeCheckout(event) {
       }),
     });
     const result = await response.json();
-    if (!response.ok) throw new Error(result.error || "Impossible de dÃ©marrer le paiement.");
+    if (!response.ok) throw new Error(result.error || "Impossible de démarrer le paiement.");
     window.ExpertlyTracking?.track("checkout_request_succeeded", {
       product_id: selectedProduct.id,
       source: "store",
@@ -256,13 +232,13 @@ async function completeCheckout(event) {
       location.assign(result.accessUrl);
       return;
     }
-    throw new Error("RÃ©ponse de paiement invalide.");
+    throw new Error("Réponse de paiement invalide.");
   } catch (error) {
     errorRegion.textContent = error.message;
     button.disabled = false;
     button.textContent = selectedProduct.price
-      ? `Continuer vers Stripe Â· ${euro.format(selectedProduct.price)}`
-      : "Recevoir lâaccÃ¨s";
+      ? `Continuer vers Stripe · ${euro.format(selectedProduct.price)}`
+      : "Recevoir l'accès";
     window.ExpertlyTracking?.track("checkout_request_failed", {
       product_id: selectedProduct.id,
       source: "store",
@@ -297,13 +273,13 @@ document.addEventListener("click", (event) => {
   if (event.target.closest("[data-close-lead]") || event.target === document.querySelector("#leadModal")) closeLeadModal();
 });
 
-document.querySelector("#leadButton").addEventListener("click", openLeadModal);
-document.querySelector("#leadForm").addEventListener("submit", async (event) => {
+document.querySelector("#leadButton")?.addEventListener("click", openLeadModal);
+document.querySelector("#leadForm")?.addEventListener("submit", async (event) => {
   event.preventDefault();
   const data = new FormData(event.currentTarget);
   const freeProduct = state.products.find((product) => product.price === 0 && product.status === "published");
   if (!freeProduct) {
-    showToast("Aucune ressource gratuite nâest encore configurÃ©e.");
+    showToast("Aucune ressource gratuite n'est encore configurée.");
     closeLeadModal();
     return;
   }
@@ -321,10 +297,10 @@ document.querySelector("#leadForm").addEventListener("submit", async (event) => 
     const result = await response.json();
     if (!response.ok) throw new Error(result.error);
     closeLeadModal();
-    showToast("â VÃ©rifie tes emails â la ressource arrive dans quelques secondes !");
+    showToast("Vérifie tes emails — la ressource arrive dans quelques secondes !");
     setTimeout(() => { if (result.accessUrl) location.assign(result.accessUrl); }, 1800);
   } catch (error) {
-    showToast(error.message || "Impossible dâenvoyer la ressource.");
+    showToast(error.message || "Impossible d'envoyer la ressource.");
   }
 });
 
@@ -348,7 +324,8 @@ async function startStore() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   } catch {
     try {
-      state = { ...fallback, ...JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}") };    } catch {
+      state = { ...fallback, ...JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}") };
+    } catch {
       state = fallback;
     }
     showToast("Mode hors ligne : paiement indisponible.");
