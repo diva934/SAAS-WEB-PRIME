@@ -67,3 +67,9 @@ aside.sidebar#sidebar{ width:88px !important; min-width:88px !important; backgro
    On le retire du rail d'icones (le menu ecran reste accessible via le bouton du haut). */
 aside#sidebar .brand-row{ display:none !important; }
 .main-nav{ padding-top:16px !important; }
+
+/* Fix vue Emails : la page 403 "Access Denied" etait alignee a gauche.
+   On centre le bloc (illustration + titre + texte) horizontalement et verticalement. */
+#emailsView .mb-denied{ min-height:62vh !important; display:flex !important; flex-direction:column !important; align-items:center !important; justify-content:center !important; text-align:center !important; }
+#emailsView .mb-denied-main{ display:flex !important; flex-direction:column !important; align-items:center !important; text-align:center !important; margin:0 auto !important; }
+#emailsView .mb-denied-footer{ text-align:center !important; }
