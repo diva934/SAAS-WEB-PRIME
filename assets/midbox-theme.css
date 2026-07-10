@@ -73,3 +73,28 @@ aside#sidebar .brand-row{ display:none !important; }
 #emailsView .mb-denied{ min-height:62vh !important; display:flex !important; flex-direction:column !important; align-items:center !important; justify-content:center !important; text-align:center !important; }
 #emailsView .mb-denied-main{ display:flex !important; flex-direction:column !important; align-items:center !important; text-align:center !important; margin:0 auto !important; }
 #emailsView .mb-denied-footer{ text-align:center !important; }
+
+/* Formulaire "Creer une page" simplifie : les pages se rendent en link-in-bio comme la boutique,
+   donc on masque les champs "landing" devenus inutiles. On garde : nom, produit mis en avant, lien. */
+#pageForm label:has([name="headline"]),
+#pageForm label:has([name="subheadline"]),
+#pageForm label:has([name="buttonText"]),
+#pageForm label:has([name="badge"]),
+#pageForm label:has([name="accent"]),
+#pageForm label:has([name="backgroundColor"]),
+#pageForm label:has([name="textColor"]),
+#pageForm label:has([name="layout"]),
+#pageForm label:has([name="logoUrl"]),
+#pageForm label:has([name="logoFile"]),
+#pageForm label:has([name="productImageUrl"]),
+#pageForm label:has([name="productImageFile"]),
+#pageForm label:has([name="backgroundImageUrl"]),
+#pageForm label:has([name="backgroundImageFile"]),
+#pageForm label:has([name="proof"]),
+#pageForm label:has([name="program"]),
+#pageForm label:has([name="faq"]),
+#pageForm label:has([name="testimonial"]),
+#pageForm label:has([name="disclosure"]),
+#pageForm fieldset.block-picker,
+#pageForm .page-editor-preview{ display:none !important; }
+#pageForm .page-editor-grid{ display:block !important; }
