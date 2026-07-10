@@ -66,14 +66,30 @@ aside.sidebar#sidebar {
   left: 9px;
 }
 
-.sidebar .brand-row img,
-.sidebar .brand-row svg {
-  position: relative !important;
+.sidebar .brand {
+  position: absolute !important;
+  top: 18px !important;
+  left: 9px !important;
   z-index: 1 !important;
-  width: 20px !important;
-  height: 20px !important;
-  object-fit: contain !important;
-  filter: brightness(0) !important;
+  display: grid !important;
+  width: 40px !important;
+  height: 40px !important;
+  place-items: center !important;
+  overflow: hidden !important;
+}
+
+.sidebar .brand img,
+.sidebar .brand svg {
+  display: none !important;
+}
+
+.sidebar .brand::after {
+  content: "";
+  width: 8px;
+  height: 12px;
+  background: #050604;
+  box-shadow: 10px 6px 0 #050604, 0 16px 0 #050604;
+  transform: skewY(28deg);
 }
 
 .sidebar .brand-row *:not(img):not(svg):not(a) {
