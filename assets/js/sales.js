@@ -106,6 +106,15 @@ function renderPageStore() {
   document.querySelector("#creatorRole").textContent = profile.creatorRole || "";
   document.querySelector("#creatorBio").textContent = (page && (page.subheadline || page.headline)) || profile.bio || "";
 
+  // Couleur de texte personnalisee (nom / role / description), pour rester lisible sur le fond choisi.
+  const textColor = (page && (page.textColor || "").trim()) || "";
+  if (/^(#|rgb|hsl)/i.test(textColor)) {
+    ["#creatorName", "#creatorRole", "#creatorBio"].forEach((sel) => {
+      const el = document.querySelector(sel);
+      if (el) el.style.color = textColor;
+    });
+  }
+
   renderSocials(profile);
 
   // Produits : ceux selectionnes pour la page (page.productIds) sinon tous les publies.

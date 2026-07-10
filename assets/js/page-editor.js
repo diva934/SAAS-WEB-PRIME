@@ -103,11 +103,13 @@
     var links = list.map(function (p) {
       return '<div class="pe-link">' + esc(p.title) + '<span class="p">' + eur(p.price) + '</span></div>';
     }).join("") || '<div class="pe-desc">Aucun produit sélectionné</div>';
+    var tc = (draft.textColor || "").trim();
+    var tcStyle = /^(#|rgb|hsl)/i.test(tc) ? ' style="color:' + esc(tc) + '"' : '';
     host.innerHTML =
       '<div class="pe-screen" style="background:' + esc(bg) + '">' +
         '<div class="pe-av">' + (validLogo ? '<img src="' + esc(logo) + '" alt="" />' : AV_PH) + '</div>' +
-        '<p class="pe-name">' + esc(name) + '</p>' +
-        (desc ? '<p class="pe-desc">' + esc(desc) + '</p>' : '') +
+        '<p class="pe-name"' + tcStyle + '>' + esc(name) + '</p>' +
+        (desc ? '<p class="pe-desc"' + tcStyle + '>' + esc(desc) + '</p>' : '') +
         '<div class="pe-links">' + links + '</div>' +
       '</div>';
   }
@@ -136,6 +138,7 @@
           backgroundImageUrl: page.backgroundImageUrl || "",
           logoUrl: page.logoUrl || "",
           subheadline: page.subheadline || "",
+          textColor: page.textColor || "",
           productIds: Array.isArray(page.productIds) ? page.productIds.slice() : []
         };
         buildEditor(modal, close, page, profile, products, draft);
@@ -159,6 +162,10 @@
             '<input type="color" class="pe-color" id="peColor" value="' + esc(/^#/.test(draft.backgroundColor) ? draft.backgroundColor : "#ffffff") + '" />' +
             '<button type="button" class="pe-btn" id="peColorReset">Blanc</button>' +
           '</div></div>' +
+          '<div class="pe-field"><label>Couleur du texte</label><div class="pe-row">' +
+            '<input type="color" class="pe-color" id="peTextColor" value="' + esc(/^#/.test(draft.textColor) ? draft.textColor : "#15161c") + '" />' +
+            '<button type="button" class="pe-btn" id="peTextReset">Auto</button>' +
+          '</div><p class="pe-hint">Choisis une couleur lisible sur ton fond.</p></div>' +
           '<div class="pe-field"><label>Image de fond</label><div class="pe-row">' +
             '<button type="button" class="pe-btn" id="peBgPick">Importer une image</button>' +
             '<button type="button" class="pe-btn" id="peBgClear">Retirer</button>' +
@@ -185,6 +192,8 @@
 
     modal.querySelector("#peColor").addEventListener("input", function (e) { draft.backgroundColor = e.target.value; refresh(); });
     modal.querySelector("#peColorReset").addEventListener("click", function () { draft.backgroundColor = ""; modal.querySelector("#peColor").value = "#ffffff"; refresh(); });
+    modal.querySelector("#peTextColor").addEventListener("input", function (e) { draft.textColor = e.target.value; refresh(); });
+    modal.querySelector("#peTextReset").addEventListener("click", function () { draft.textColor = ""; modal.querySelector("#peTextColor").value = "#15161c"; refresh(); });
     modal.querySelector("#peBgPick").addEventListener("click", function () { modal.querySelector("#peBgFile").click(); });
     modal.querySelector("#peBgClear").addEventListener("click", function () { draft.backgroundImageUrl = ""; refresh(); });
     modal.querySelector("#peBgFile").addEventListener("change", function (e) {
@@ -214,6 +223,7 @@
         target.backgroundImageUrl = draft.backgroundImageUrl;
         target.logoUrl = draft.logoUrl;
         target.subheadline = draft.subheadline;
+        target.textColor = draft.textColor;
         target.productIds = draft.productIds;
       }
       authFetch("/api/state", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(fullState) })
