@@ -84,12 +84,18 @@ aside.sidebar#sidebar {
 }
 
 .sidebar .brand::after {
-  content: "";
-  width: 6px;
-  height: 10px;
-  background: #050604;
-  box-shadow: 8px 5px 0 #050604, 0 14px 0 #050604;
-  transform: skewY(28deg) scale(.86);
+  content: "E";
+  display: grid;
+  width: 22px;
+  height: 22px;
+  place-items: center;
+  border-radius: 7px;
+  color: #050604;
+  font-family: "Manrope", "DM Sans", sans-serif;
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0;
 }
 
 .sidebar .brand-row *:not(img):not(svg):not(a) {
