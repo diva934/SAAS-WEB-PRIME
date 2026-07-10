@@ -148,7 +148,7 @@
 
   function shell(title, sub, iconName, body, actions, className) {
     var view = "";
-    if ((className || "").indexOf("mb-earn") >= 0) view = "analytics";
+    if ((className || "").indexOf("mb-earn") >= 0) view = "finance";
     else if ((className || "").indexOf("mb-balance") >= 0) view = "finance";
     else if ((className || "").indexOf("mb-expenses") >= 0) view = "finance";
     else if ((className || "").indexOf("mb-orders") >= 0) view = "orders";
@@ -272,7 +272,7 @@
     if (title) title.textContent = "Dashboard";
     document.body.classList.add("midbox-overview");
     overview.innerHTML = '<div class="mb-page"><div class="mb-crumb"><b>Home</b><span>/</span><b>Dashboard</b></div><div class="mb-grid">'
-      + shell("Earning Reports", "Yearly Earnings Overview", "trend", earningChart(d.series), '<button class="mb-pill" data-mb-view="analytics">Last Year⌄</button><button class="mb-menu" aria-label="Ouvrir Analytics" data-mb-view="analytics">...</button>', "mb-earn")
+      + shell("Earning Reports", "Yearly Earnings Overview", "trend", earningChart(d.series), '<button class="mb-pill" data-mb-view="finance">Last Year⌄</button><button class="mb-menu" aria-label="Ouvrir Finance" data-mb-view="finance">...</button>', "mb-earn")
       + balanceCard(d)
       + expensesCard(d)
       + ordersCard(d)
@@ -289,13 +289,13 @@
     var titles = {
       products: "Best Sellers",
       orders: "Order Statistics",
-      analytics: "Earning Reports",
-      finance: "Balance"
+      analytics: "Acquisition",
+      finance: "Finance"
     };
     var content = {
       products: bestSellersCard(d),
       orders: ordersCard(d),
-      analytics: earningChartPage(d),
+      analytics: acquisitionChartPage(d),
       finance: financeChartPage(d)
     }[view];
     if (!content) return false;
@@ -306,13 +306,13 @@
     return true;
   }
 
-  function earningChartPage(d) {
-    return '<div class="mb-drill-grid two">' + shell("Earning Reports", "Yearly Earnings Overview", "trend", earningChart(d.series), '<button class="mb-pill" data-mb-view="overview">Dashboard</button>', "mb-earn")
-      + acquisitionCard(d) + '</div>';
+  function acquisitionChartPage(d) {
+    return '<div class="mb-drill-grid">' + acquisitionCard(d) + '</div>';
   }
 
   function financeChartPage(d) {
-    return '<div class="mb-drill-grid two">' + balanceCard(d) + expensesCard(d) + '</div>';
+    return '<div class="mb-drill-grid two">' + shell("Earning Reports", "Yearly Earnings Overview", "trend", earningChart(d.series), '<button class="mb-pill" data-mb-view="overview">Dashboard</button>', "mb-earn")
+      + balanceCard(d) + expensesCard(d) + '</div>';
   }
 
   function renderDeniedPage(section) {
