@@ -1,5 +1,5 @@
 /* Expertly - Section Reseaux sociaux (coach IA).
- * Ajoute un onglet sidebar + une vue avec formulaire (@ / plateforme / contenus / objectif)
+ * Ajoute un onglet sidebar + une vue avec formulaire (@ / plateforme / infos compte / contenus / objectif)
  * qui appelle /api/assistant en mode "social". Autonome (CSS inclus). */
 (function () {
   "use strict";
@@ -20,6 +20,7 @@
     ".sc-go{width:100%;margin-top:16px;padding:12px;border:0;border-radius:14px;background:#16171e;color:#fff;font:inherit;font-weight:700;cursor:pointer;}",
     ".sc-go:disabled{opacity:.6;cursor:default;}",
     ".sc-note{font-size:11px;color:#9aa0ad;margin-top:12px;line-height:1.45;}",
+    ".sc-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}",
     ".sc-result{min-height:220px;}",
     ".sc-empty{color:#9aa0ad;font-size:13px;}",
     ".sc-res-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}",
@@ -52,13 +53,15 @@
         '<div class="sc-card">' +
           '<div class="sc-plat"><button type="button" class="sc-plat-btn is-on" data-p="Instagram">Instagram</button><button type="button" class="sc-plat-btn" data-p="TikTok">TikTok</button></div>' +
           '<label class="sc-label">Ton pseudo (@)</label><input id="scHandle" class="sc-input" placeholder="@ton_compte" autocomplete="off"/>' +
-          '<label class="sc-label">Nombre d\'abonnes</label><input id="scFollowers" class="sc-input" placeholder="Ex: 12 400" inputmode="numeric" autocomplete="off"/>' +
-          '<label class="sc-label">Scripts, legendes ou liens de posts (5 a 10)</label><textarea id="scSamples" class="sc-input sc-textarea sc-samples" placeholder="Colle ici 5 a 10 contenus du compte. Exemple :&#10;1. Script/Reel : ...&#10;2. Legende : ...&#10;3. Lien + texte du post : ..."></textarea>' +
+          '<div class="sc-grid"><div><label class="sc-label">Compte</label><select id="scVisibility" class="sc-input"><option value="Public">Public</option><option value="Prive">Prive</option><option value="Non renseigne">Non renseigne</option></select></div><div><label class="sc-label">Nombre d\'abonnes</label><input id="scFollowers" class="sc-input" placeholder="Ex: 12 400" inputmode="numeric" autocomplete="off"/></div></div>' +
+          '<label class="sc-label">Bio du compte</label><textarea id="scBio" class="sc-input sc-textarea" placeholder="Colle la bio exacte du compte"></textarea>' +
+          '<label class="sc-label">Lien en bio</label><input id="scBioLink" class="sc-input" placeholder="https://..." autocomplete="off"/>' +
+          '<label class="sc-label">Posts, legendes et hashtags utilises</label><textarea id="scSamples" class="sc-input sc-textarea sc-samples" placeholder="Colle 5 a 10 posts. Exemple :&#10;Post 1 - lien : ...&#10;Legende : ...&#10;Hashtags : #... #...&#10;&#10;Post 2 - lien : ...&#10;Legende : ...&#10;Hashtags : #..."></textarea>' +
           '<label class="sc-label">Ton objectif / theme (optionnel)</label><textarea id="scObj" class="sc-input sc-textarea" placeholder="Ex: vendre mon accompagnement, cible entrepreneurs debutants"></textarea>' +
           '<button id="scGo" class="sc-go" type="button">Generer le compte rendu reel</button>' +
           '<p class="sc-note">L\'IA analyse uniquement les contenus que tu colles ici. Elle ne visite pas le compte et n\'invente pas de vues, abonnes ou statistiques.</p>' +
         '</div>' +
-        '<div class="sc-card sc-result"><div class="sc-res-head"><strong>Ton compte rendu apparaitra ici</strong></div><p class="sc-empty">Colle plusieurs scripts, legendes ou liens accompagnes de leur texte : Gemini sortira une synthese du compte, les forces, les faiblesses, des recommandations et des idees de posts.</p></div>' +
+        '<div class="sc-card sc-result"><div class="sc-res-head"><strong>Ton compte rendu apparaitra ici</strong></div><p class="sc-empty">Renseigne les infos du compte puis colle les posts avec leurs legendes et hashtags : Gemini sortira une synthese du compte, les forces, les faiblesses, des recommandations et des idees de posts.</p></div>' +
       '</div>';
     content.appendChild(view);
 
@@ -83,14 +86,17 @@
     var result = view.querySelector(".sc-result");
     go.addEventListener("click", function () {
       var handle = view.querySelector("#scHandle").value.trim();
+      var visibility = view.querySelector("#scVisibility").value;
       var followers = view.querySelector("#scFollowers").value.trim();
+      var bio = view.querySelector("#scBio").value.trim();
+      var bioLink = view.querySelector("#scBioLink").value.trim();
       var samples = view.querySelector("#scSamples").value.trim();
       var objective = view.querySelector("#scObj").value.trim();
       if (!handle) { view.querySelector("#scHandle").focus(); return; }
       if (!samples) { view.querySelector("#scSamples").focus(); return; }
       go.disabled = true; go.textContent = "Analyse en cours...";
       result.innerHTML = '<div class="sc-res-head"><strong>Analyse en cours...</strong><span>' + platform + '</span></div><p class="sc-empty">L\'IA lit les contenus fournis et prepare le compte rendu pour ' + handle + '...</p>';
-      analyze(handle, followers, samples, objective).then(function (out) {
+      analyze({ handle: handle, visibility: visibility, followers: followers, bio: bio, bioLink: bioLink, samples: samples, objective: objective }).then(function (out) {
         if (out.ok) {
           result.innerHTML = '<div class="sc-res-head"><strong>Compte rendu base sur les contenus fournis</strong><span>' + platform + '</span></div><div class="sc-res-body"></div>';
           result.querySelector(".sc-res-body").textContent = out.text;
@@ -103,13 +109,23 @@
       });
     });
 
-    async function analyze(handle, followers, samples, objective) {
+    async function analyze(data) {
       try {
         if (typeof authenticatedFetch !== "function") return { ok: false, text: "Assistant indisponible." };
         var r = await authenticatedFetch("/api/assistant", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ mode: "social", platform: platform, handle: handle, followers: followers, samples: samples, objective: objective })
+          body: JSON.stringify({
+            mode: "social",
+            platform: platform,
+            handle: data.handle,
+            visibility: data.visibility,
+            followers: data.followers,
+            bio: data.bio,
+            bioLink: data.bioLink,
+            samples: data.samples,
+            objective: data.objective
+          })
         });
         if (r.ok) { var d = await r.json().catch(function () { return null; }); if (d && d.answer) return { ok: true, text: d.answer }; }
         if (r.status === 429) return { ok: false, text: "Tu vas un peu vite, reessaie dans quelques minutes." };
