@@ -70,6 +70,12 @@ export default async function handler(req, res) {
       return;
     }
 
+    // Compte Stripe connecte du createur : si l'onboarding est termine (charges_enabled),
+    // les fonds sont transferes directement sur SON compte (destination charge). La session
+    // reste creee sur la plateforme -> le webhook de livraison actuel fonctionne inchange.
+    const connect = state.profile?.stripeConnect;
+    const destinationAcct = connect?.accountId && connect?.chargesEnabled ? connect.accountId : null;
+
     const origin = appOrigin(req);
     const form = new URLSearchParams({
       mode: "payment",
@@ -88,6 +94,10 @@ export default async function handler(req, res) {
       "metadata[sales_page_slug]": String(salesPageSlug || ""),
       "metadata[source]": String(source || "store"),
     });
+
+    if (destinationAcct) {
+      form.set("payment_intent_data[transfer_data][destination]", destinationAcct);
+    }
 
     const stripeResponse = await fetch("https://api.stripe.com/v1/checkout/sessions", {
       method: "POST",
