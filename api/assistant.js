@@ -63,15 +63,20 @@ export default async function handler(req, res) {
       const platform = String(body.platform || "Instagram").slice(0, 24).trim();
       const handle = String(body.handle || "").slice(0, 60).trim();
       const objective = String(body.objective || "").slice(0, 500).trim();
+      const samples = String(body.samples || "").slice(0, 7000).trim();
       if (!handle) { sendJson(res, 400, { error: "Pseudo requis." }); return; }
+      if (!samples) { sendJson(res, 400, { error: "Contenus requis." }); return; }
       system =
         "Tu es un coach reseaux sociaux pour createurs et infopreneurs qui vendent des produits digitaux avec Expertly. " +
-        "TRES IMPORTANT: tu n'as PAS acces aux vraies statistiques du compte (abonnes, vues, engagement) : n'invente JAMAIS de chiffres ni de donnees du compte. " +
-        "Donne un audit strategique et un plan de contenu concret, oriente vente, base uniquement sur la plateforme, le pseudo et l'objectif fournis. " +
-        "Reponds en francais, ton direct et motivant, en texte simple SANS markdown (pas d'asterisques, pas de dieze). Utilise des tirets et des titres courts. " +
-        "Structure ta reponse ainsi : 1) Positionnement conseille (1-2 phrases). 2) 5 idees de contenus concretes adaptees a la plateforme. 3) 3 accroches (hooks) pretes a copier. 4) Rythme de publication conseille. 5) Comment transformer l'audience en ventes (lien en bio vers la boutique Expertly, offre d'appel). " +
+        "Tu analyses uniquement les scripts, legendes, descriptions ou liens accompagnes de texte que l'utilisateur fournit. " +
+        "TRES IMPORTANT: tu n'as PAS visite le compte et tu n'as PAS acces aux vraies statistiques du compte (abonnes, vues, engagement). N'invente JAMAIS de chiffres ni de donnees du compte. " +
+        "Si l'utilisateur donne seulement des liens sans texte exploitable, dis clairement que les liens seuls sont insuffisants et demande les scripts ou legendes. " +
+        "Base toute ton analyse sur le contenu fourni, la plateforme, le pseudo et l'objectif. Reponds en francais, ton direct et professionnel, en texte simple SANS markdown (pas d'asterisques, pas de dieze). Utilise des tirets et des titres courts. " +
+        "Structure ta reponse ainsi : 1) Synthese du compte percu. 2) Ce qui ressort des contenus fournis. 3) Positionnement percu. 4) Forces. 5) Faiblesses / risques. 6) 5 recommandations concretes. 7) 5 idees de posts ou scripts adaptes. 8) Plan d'action 7 jours. " +
         "Plateforme: " + platform + ". Pseudo: " + handle + ". Objectif du createur: " + (objective || "developper mon audience et vendre mes produits") + ".";
-      question = "Fais mon audit et mon plan de contenu pour " + handle + " sur " + platform + ".";
+      question =
+        "Genere un compte rendu pour " + handle + " sur " + platform + " a partir de ces contenus fournis par l'utilisateur. " +
+        "Objectif: " + (objective || "developper mon audience et vendre mes produits") + ".\n\nContenus fournis:\n" + samples;
     } else {
       question = String(body.question || "").slice(0, 800).trim();
       if (!question) { sendJson(res, 400, { error: "Question vide." }); return; }
@@ -96,7 +101,7 @@ export default async function handler(req, res) {
     const payload = {
       systemInstruction: { parts: [{ text: system }] },
       contents,
-      generationConfig: { temperature: 0.6, maxOutputTokens: mode === "social" ? 900 : 600, thinkingConfig: { thinkingBudget: 0 } },
+      generationConfig: { temperature: 0.6, maxOutputTokens: mode === "social" ? 1200 : 600, thinkingConfig: { thinkingBudget: 0 } },
     };
 
     const url = "https://generativelanguage.googleapis.com/v1beta/models/" + encodeURIComponent(MODEL) + ":generateContent?key=" + encodeURIComponent(apiKey);

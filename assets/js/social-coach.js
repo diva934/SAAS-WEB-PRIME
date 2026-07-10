@@ -1,5 +1,5 @@
 /* Expertly - Section Reseaux sociaux (coach IA).
- * Ajoute un onglet sidebar + une vue avec formulaire (@ / plateforme / objectif)
+ * Ajoute un onglet sidebar + une vue avec formulaire (@ / plateforme / contenus / objectif)
  * qui appelle /api/assistant en mode "social". Autonome (CSS inclus). */
 (function () {
   "use strict";
@@ -16,6 +16,7 @@
     ".sc-input{width:100%;box-sizing:border-box;border:1px solid #e2e4ec;border-radius:12px;padding:11px 12px;font:inherit;font-size:14px;color:#16171e;outline:none;}",
     ".sc-input:focus{border-color:#c6f24e;}",
     ".sc-textarea{min-height:74px;resize:vertical;line-height:1.4;}",
+    ".sc-samples{min-height:170px;}",
     ".sc-go{width:100%;margin-top:16px;padding:12px;border:0;border-radius:14px;background:#16171e;color:#fff;font:inherit;font-weight:700;cursor:pointer;}",
     ".sc-go:disabled{opacity:.6;cursor:default;}",
     ".sc-note{font-size:11px;color:#9aa0ad;margin-top:12px;line-height:1.45;}",
@@ -46,16 +47,17 @@
     view.className = "view";
     view.id = "socialView";
     view.innerHTML =
-      '<div class="page-heading"><div><p class="eyebrow">Croissance</p><h1>Reseaux sociaux</h1><p>Audit IA de ton compte + plan de contenu oriente vente.</p></div></div>' +
+      '<div class="page-heading"><div><p class="eyebrow">Croissance</p><h1>Reseaux sociaux</h1><p>Compte rendu IA base sur les contenus reels que tu fournis.</p></div></div>' +
       '<div class="sc-wrap">' +
         '<div class="sc-card">' +
           '<div class="sc-plat"><button type="button" class="sc-plat-btn is-on" data-p="Instagram">Instagram</button><button type="button" class="sc-plat-btn" data-p="TikTok">TikTok</button></div>' +
           '<label class="sc-label">Ton pseudo (@)</label><input id="scHandle" class="sc-input" placeholder="@ton_compte" autocomplete="off"/>' +
+          '<label class="sc-label">Scripts, legendes ou liens de posts (5 a 10)</label><textarea id="scSamples" class="sc-input sc-textarea sc-samples" placeholder="Colle ici 5 a 10 contenus du compte. Exemple :&#10;1. Script/Reel : ...&#10;2. Legende : ...&#10;3. Lien + texte du post : ..."></textarea>' +
           '<label class="sc-label">Ton objectif / theme (optionnel)</label><textarea id="scObj" class="sc-input sc-textarea" placeholder="Ex: vendre mon accompagnement, cible entrepreneurs debutants"></textarea>' +
-          '<button id="scGo" class="sc-go" type="button">Lancer l\'analyse IA</button>' +
-          '<p class="sc-note">L\'IA n\'a pas acces a tes vraies stats : elle te donne une strategie et des idees concretes, sans inventer de chiffres.</p>' +
+          '<button id="scGo" class="sc-go" type="button">Generer le compte rendu reel</button>' +
+          '<p class="sc-note">L\'IA analyse uniquement les contenus que tu colles ici. Elle ne visite pas le compte et n\'invente pas de vues, abonnes ou statistiques.</p>' +
         '</div>' +
-        '<div class="sc-card sc-result"><div class="sc-res-head"><strong>Ton audit apparaitra ici</strong></div><p class="sc-empty">Renseigne ton pseudo et lance l\'analyse : tu recevras un positionnement, 5 idees de contenu, 3 accroches, un rythme de publication et comment convertir en ventes.</p></div>' +
+        '<div class="sc-card sc-result"><div class="sc-res-head"><strong>Ton compte rendu apparaitra ici</strong></div><p class="sc-empty">Colle plusieurs scripts, legendes ou liens accompagnes de leur texte : Gemini sortira une synthese du compte, les forces, les faiblesses, des recommandations et des idees de posts.</p></div>' +
       '</div>';
     content.appendChild(view);
 
@@ -80,15 +82,17 @@
     var result = view.querySelector(".sc-result");
     go.addEventListener("click", function () {
       var handle = view.querySelector("#scHandle").value.trim();
+      var samples = view.querySelector("#scSamples").value.trim();
       var objective = view.querySelector("#scObj").value.trim();
       if (!handle) { view.querySelector("#scHandle").focus(); return; }
+      if (!samples) { view.querySelector("#scSamples").focus(); return; }
       go.disabled = true; go.textContent = "Analyse en cours...";
-      result.innerHTML = '<div class="sc-res-head"><strong>Analyse en cours...</strong><span>' + platform + '</span></div><p class="sc-empty">L\'IA prepare ton audit et ton plan de contenu pour ' + handle + '...</p>';
-      analyze(handle, objective).then(function (out) {
+      result.innerHTML = '<div class="sc-res-head"><strong>Analyse en cours...</strong><span>' + platform + '</span></div><p class="sc-empty">L\'IA lit les contenus fournis et prepare le compte rendu pour ' + handle + '...</p>';
+      analyze(handle, samples, objective).then(function (out) {
         if (out.ok) {
-          result.innerHTML = '<div class="sc-res-head"><strong>Audit & plan de contenu</strong><span>' + platform + '</span></div><div class="sc-res-body"></div>';
+          result.innerHTML = '<div class="sc-res-head"><strong>Compte rendu base sur les contenus fournis</strong><span>' + platform + '</span></div><div class="sc-res-body"></div>';
           result.querySelector(".sc-res-body").textContent = out.text;
-          go.textContent = "Relancer l'analyse";
+          go.textContent = "Regenerer le compte rendu";
         } else {
           result.innerHTML = '<div class="sc-res-head"><strong>Oups</strong></div><p class="sc-empty">' + out.text + '</p>';
           go.textContent = "Reessayer";
@@ -97,13 +101,13 @@
       });
     });
 
-    async function analyze(handle, objective) {
+    async function analyze(handle, samples, objective) {
       try {
         if (typeof authenticatedFetch !== "function") return { ok: false, text: "Assistant indisponible." };
         var r = await authenticatedFetch("/api/assistant", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ mode: "social", platform: platform, handle: handle, objective: objective })
+          body: JSON.stringify({ mode: "social", platform: platform, handle: handle, samples: samples, objective: objective })
         });
         if (r.ok) { var d = await r.json().catch(function () { return null; }); if (d && d.answer) return { ok: true, text: d.answer }; }
         if (r.status === 429) return { ok: false, text: "Tu vas un peu vite, reessaie dans quelques minutes." };
