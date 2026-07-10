@@ -1,5 +1,13 @@
-import { requireActiveSubscription, sendJson, userFromRequest } from "../_shared.js";
-import { assertProviderConfigured, createOauthState, oauthUrl, providerConfig } from "./_shared.js";
+import { appOrigin, requireActiveSubscription, sendJson, userFromRequest } from "../_shared.js";
+import {
+  assertProviderConfigured,
+  createOauthState,
+  exchangeCode,
+  oauthUrl,
+  providerConfig,
+  saveConnection,
+  verifyOauthState,
+} from "./_shared.js";
 
 async function readBody(req) {
   if (req.body && typeof req.body === "object") return req.body;
@@ -8,7 +16,30 @@ async function readBody(req) {
   try { return JSON.parse(raw || "{}"); } catch { return {}; }
 }
 
+// Endpoint OAuth social unique (plan Hobby = 12 fonctions serverless max).
+// POST /api/social/connect -> initie la connexion (renvoie l'URL OAuth du provider).
+// GET  /api/social/connect -> callback OAuth (echange le code, enregistre le token, redirige).
 export default async function handler(req, res) {
+  if (req.method === "GET") {
+    try {
+      const url = new URL(req.url, appOrigin(req));
+      const code = url.searchParams.get("code");
+      const stateValue = url.searchParams.get("state");
+      if (!code || !stateValue) throw new Error("Code OAuth manquant.");
+      const state = verifyOauthState(stateValue);
+      const config = providerConfig(state.provider, req);
+      assertProviderConfigured(config);
+      const token = await exchangeCode(config, code);
+      await saveConnection({ userId: state.userId, provider: config.key, handle: state.handle || "", token });
+      res.writeHead(302, { Location: `/app.html?social=connected&provider=${encodeURIComponent(config.key)}` });
+      res.end();
+    } catch (error) {
+      res.writeHead(302, { Location: `/app.html?social=error&message=${encodeURIComponent(error.message || "Connexion impossible")}` });
+      res.end();
+    }
+    return;
+  }
+
   if (req.method !== "POST") { sendJson(res, 405, { error: "Method not allowed" }); return; }
   try {
     const user = await userFromRequest(req);
