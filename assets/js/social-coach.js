@@ -1,5 +1,5 @@
 /* Expertly - Section Reseaux sociaux (coach IA).
- * Ajoute un onglet sidebar + une vue avec formulaire (@ / plateforme / infos compte / contenus / objectif)
+ * Ajoute un onglet sidebar + une vue avec formulaire (@ / plateforme / objectif)
  * qui appelle /api/assistant en mode "social". Autonome (CSS inclus). */
 (function () {
   "use strict";
@@ -15,12 +15,12 @@
     ".sc-label{display:block;font-size:12px;font-weight:600;color:#8a8f9c;margin:10px 0 6px;}",
     ".sc-input{width:100%;box-sizing:border-box;border:1px solid #e2e4ec;border-radius:12px;padding:11px 12px;font:inherit;font-size:14px;color:#16171e;outline:none;}",
     ".sc-input:focus{border-color:#c6f24e;}",
-    ".sc-textarea{min-height:74px;resize:vertical;line-height:1.4;}",
-    ".sc-samples{min-height:170px;}",
+    ".sc-textarea{min-height:92px;resize:vertical;line-height:1.4;}",
     ".sc-go{width:100%;margin-top:16px;padding:12px;border:0;border-radius:14px;background:#16171e;color:#fff;font:inherit;font-weight:700;cursor:pointer;}",
+    ".sc-connect{width:100%;margin-top:12px;padding:12px;border:1px solid #dfe3ea;border-radius:14px;background:#f8faf5;color:#16171e;font:inherit;font-weight:700;cursor:pointer;}",
     ".sc-go:disabled{opacity:.6;cursor:default;}",
     ".sc-note{font-size:11px;color:#9aa0ad;margin-top:12px;line-height:1.45;}",
-    ".sc-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}",
+    ".sc-status{margin-top:12px;padding:10px 12px;border-radius:12px;background:#f5f7fb;color:#646b78;font-size:12px;line-height:1.4;}",
     ".sc-result{min-height:220px;}",
     ".sc-empty{color:#9aa0ad;font-size:13px;}",
     ".sc-res-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}",
@@ -48,20 +48,18 @@
     view.className = "view";
     view.id = "socialView";
     view.innerHTML =
-      '<div class="page-heading"><div><p class="eyebrow">Croissance</p><h1>Reseaux sociaux</h1><p>Compte rendu IA base sur les contenus reels que tu fournis.</p></div></div>' +
+      '<div class="page-heading"><div><p class="eyebrow">Croissance</p><h1>Reseaux sociaux</h1><p>Connecte ton compte, puis Gemini analyse automatiquement les donnees officielles.</p></div></div>' +
       '<div class="sc-wrap">' +
         '<div class="sc-card">' +
           '<div class="sc-plat"><button type="button" class="sc-plat-btn is-on" data-p="Instagram">Instagram</button><button type="button" class="sc-plat-btn" data-p="TikTok">TikTok</button></div>' +
           '<label class="sc-label">Ton pseudo (@)</label><input id="scHandle" class="sc-input" placeholder="@ton_compte" autocomplete="off"/>' +
-          '<div class="sc-grid"><div><label class="sc-label">Compte</label><select id="scVisibility" class="sc-input"><option value="Public">Public</option><option value="Prive">Prive</option><option value="Non renseigne">Non renseigne</option></select></div><div><label class="sc-label">Nombre d\'abonnes</label><input id="scFollowers" class="sc-input" placeholder="Ex: 12 400" inputmode="numeric" autocomplete="off"/></div></div>' +
-          '<label class="sc-label">Bio du compte</label><textarea id="scBio" class="sc-input sc-textarea" placeholder="Colle la bio exacte du compte"></textarea>' +
-          '<label class="sc-label">Lien en bio</label><input id="scBioLink" class="sc-input" placeholder="https://..." autocomplete="off"/>' +
-          '<label class="sc-label">Posts, legendes et hashtags utilises</label><textarea id="scSamples" class="sc-input sc-textarea sc-samples" placeholder="Colle 5 a 10 posts. Exemple :&#10;Post 1 - lien : ...&#10;Legende : ...&#10;Hashtags : #... #...&#10;&#10;Post 2 - lien : ...&#10;Legende : ...&#10;Hashtags : #..."></textarea>' +
           '<label class="sc-label">Ton objectif / theme (optionnel)</label><textarea id="scObj" class="sc-input sc-textarea" placeholder="Ex: vendre mon accompagnement, cible entrepreneurs debutants"></textarea>' +
-          '<button id="scGo" class="sc-go" type="button">Generer le compte rendu reel</button>' +
-          '<p class="sc-note">L\'IA analyse uniquement les contenus que tu colles ici. Elle ne visite pas le compte et n\'invente pas de vues, abonnes ou statistiques.</p>' +
+          '<button id="scConnect" class="sc-connect" type="button">Connecter le compte</button>' +
+          '<button id="scGo" class="sc-go" type="button">Analyser avec Gemini</button>' +
+          '<div id="scStatus" class="sc-status">Connecte Instagram ou TikTok pour recuperer automatiquement bio, abonnes, lien en bio, posts, legendes et hashtags.</div>' +
+          '<p class="sc-note">Instagram demande un compte professionnel relie a Meta. TikTok demande l\'autorisation officielle du createur.</p>' +
         '</div>' +
-        '<div class="sc-card sc-result"><div class="sc-res-head"><strong>Ton compte rendu apparaitra ici</strong></div><p class="sc-empty">Renseigne les infos du compte puis colle les posts avec leurs legendes et hashtags : Gemini sortira une synthese du compte, les forces, les faiblesses, des recommandations et des idees de posts.</p></div>' +
+        '<div class="sc-card sc-result"><div class="sc-res-head"><strong>Ton compte rendu apparaitra ici</strong></div><p class="sc-empty">Entre ton pseudo, connecte le compte, puis lance l\'analyse. Le backend recupere les infos disponibles via l\'API officielle et les envoie a Gemini.</p></div>' +
       '</div>';
     content.appendChild(view);
 
@@ -83,24 +81,37 @@
     });
 
     var go = view.querySelector("#scGo");
+    var connect = view.querySelector("#scConnect");
+    var status = view.querySelector("#scStatus");
     var result = view.querySelector(".sc-result");
+    var params = new URLSearchParams(window.location.search);
+    if (params.get("social") === "connected") status.textContent = "Compte connecte. Tu peux lancer l'analyse Gemini.";
+    if (params.get("social") === "error") status.textContent = params.get("message") || "Connexion impossible.";
+
+    connect.addEventListener("click", function () {
+      var handle = view.querySelector("#scHandle").value.trim();
+      if (!handle) { view.querySelector("#scHandle").focus(); return; }
+      connect.disabled = true; connect.textContent = "Redirection...";
+      startConnect(handle).then(function (out) {
+        if (out.ok && out.url) window.location.href = out.url;
+        else {
+          status.textContent = out.text;
+          connect.disabled = false; connect.textContent = "Connecter le compte";
+        }
+      });
+    });
+
     go.addEventListener("click", function () {
       var handle = view.querySelector("#scHandle").value.trim();
-      var visibility = view.querySelector("#scVisibility").value;
-      var followers = view.querySelector("#scFollowers").value.trim();
-      var bio = view.querySelector("#scBio").value.trim();
-      var bioLink = view.querySelector("#scBioLink").value.trim();
-      var samples = view.querySelector("#scSamples").value.trim();
       var objective = view.querySelector("#scObj").value.trim();
       if (!handle) { view.querySelector("#scHandle").focus(); return; }
-      if (!samples) { view.querySelector("#scSamples").focus(); return; }
       go.disabled = true; go.textContent = "Analyse en cours...";
-      result.innerHTML = '<div class="sc-res-head"><strong>Analyse en cours...</strong><span>' + platform + '</span></div><p class="sc-empty">L\'IA lit les contenus fournis et prepare le compte rendu pour ' + handle + '...</p>';
-      analyze({ handle: handle, visibility: visibility, followers: followers, bio: bio, bioLink: bioLink, samples: samples, objective: objective }).then(function (out) {
+      result.innerHTML = '<div class="sc-res-head"><strong>Analyse en cours...</strong><span>' + platform + '</span></div><p class="sc-empty">Le backend recupere les donnees du compte connecte puis les envoie a Gemini...</p>';
+      analyze({ handle: handle, objective: objective }).then(function (out) {
         if (out.ok) {
-          result.innerHTML = '<div class="sc-res-head"><strong>Compte rendu base sur les contenus fournis</strong><span>' + platform + '</span></div><div class="sc-res-body"></div>';
+          result.innerHTML = '<div class="sc-res-head"><strong>Compte rendu du compte connecte</strong><span>' + platform + '</span></div><div class="sc-res-body"></div>';
           result.querySelector(".sc-res-body").textContent = out.text;
-          go.textContent = "Regenerer le compte rendu";
+          go.textContent = "Relancer l'analyse";
         } else {
           result.innerHTML = '<div class="sc-res-head"><strong>Oups</strong></div><p class="sc-empty">' + out.text + '</p>';
           go.textContent = "Reessayer";
@@ -108,6 +119,21 @@
         go.disabled = false;
       });
     });
+
+    async function startConnect(handle) {
+      try {
+        if (typeof authenticatedFetch !== "function") return { ok: false, text: "Connexion indisponible." };
+        var r = await authenticatedFetch("/api/social/connect", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ provider: platform, handle: handle })
+        });
+        var d = await r.json().catch(function () { return null; });
+        if (r.ok && d && d.url) return { ok: true, url: d.url };
+        if (r.status === 503) return { ok: false, text: (d && d.error) || "La connexion n'est pas encore configuree." };
+        return { ok: false, text: (d && d.error) || "Connexion impossible." };
+      } catch (e) { return { ok: false, text: "Erreur reseau pendant la connexion." }; }
+    }
 
     async function analyze(data) {
       try {
@@ -119,16 +145,12 @@
             mode: "social",
             platform: platform,
             handle: data.handle,
-            visibility: data.visibility,
-            followers: data.followers,
-            bio: data.bio,
-            bioLink: data.bioLink,
-            samples: data.samples,
             objective: data.objective
           })
         });
         if (r.ok) { var d = await r.json().catch(function () { return null; }); if (d && d.answer) return { ok: true, text: d.answer }; }
         if (r.status === 429) return { ok: false, text: "Tu vas un peu vite, reessaie dans quelques minutes." };
+        if (r.status === 409) return { ok: false, text: "Connecte d'abord le compte " + platform + " avec le bouton a gauche." };
         if (r.status === 503) return { ok: false, text: "L'IA n'est pas encore configuree." };
         return { ok: false, text: "L'analyse a echoue, reessaie dans un instant." };
       } catch (e) { return { ok: false, text: "Erreur reseau, reessaie." }; }

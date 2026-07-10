@@ -5,6 +5,7 @@ import {
   supabaseRequest,
   userFromRequest,
 } from "./_shared.js";
+import { fetchConnectedSocialSnapshot } from "./social/_shared.js";
 
 const MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
 const RL_LIMIT = 30;
@@ -62,30 +63,37 @@ export default async function handler(req, res) {
     if (mode === "social") {
       const platform = String(body.platform || "Instagram").slice(0, 24).trim();
       const handle = String(body.handle || "").slice(0, 60).trim();
-      const visibility = String(body.visibility || "Non renseigne").slice(0, 40).trim();
-      const followers = String(body.followers || "").slice(0, 40).trim();
-      const bio = String(body.bio || "").slice(0, 1000).trim();
-      const bioLink = String(body.bioLink || "").slice(0, 500).trim();
       const objective = String(body.objective || "").slice(0, 500).trim();
-      const samples = String(body.samples || "").slice(0, 7000).trim();
       if (!handle) { sendJson(res, 400, { error: "Pseudo requis." }); return; }
-      if (!samples) { sendJson(res, 400, { error: "Contenus requis." }); return; }
+      const snapshot = await fetchConnectedSocialSnapshot(user.id, platform, req);
+      const accountHandle = snapshot.handle || handle;
+      const followers = snapshot.followers === null || snapshot.followers === undefined ? "non renseigne" : String(snapshot.followers);
+      const bio = snapshot.bio || "non renseignee";
+      const bioLink = snapshot.bioLink || "non renseigne";
+      const visibility = snapshot.visibility || "non renseigne";
+      const posts = (snapshot.posts || []).slice(0, 10);
+      const samples = posts.map((post, index) => {
+        return [
+          `Post ${index + 1}`,
+          `Lien: ${post.url || "non renseigne"}`,
+          `Legende: ${post.caption || "non renseignee"}`,
+          `Hashtags: ${(post.hashtags || []).join(" ") || "aucun hashtag detecte"}`,
+        ].join("\n");
+      }).join("\n\n").slice(0, 7000);
       system =
         "Tu es un coach reseaux sociaux pour createurs et infopreneurs qui vendent des produits digitaux avec Expertly. " +
-        "Tu analyses uniquement les scripts, legendes, descriptions ou liens accompagnes de texte que l'utilisateur fournit. " +
-        "TRES IMPORTANT: tu n'as PAS visite le compte et tu n'as PAS acces aux vraies statistiques du compte (abonnes, vues, engagement). N'invente JAMAIS de chiffres ni de donnees du compte. " +
-        "Les premieres infos doivent afficher toutes les informations fournies: statut public/prive, nombre d'abonnes, bio, lien en bio, posts analyses, legendes et hashtags. Si une info manque, indique 'non renseigne' au lieu de l'inventer. " +
-        "Si l'utilisateur donne seulement des liens sans texte exploitable, dis clairement que les liens seuls sont insuffisants et demande les scripts ou legendes. " +
-        "Base toute ton analyse sur le contenu fourni, la plateforme, le pseudo et l'objectif. Reponds en francais, ton direct et professionnel, en texte simple SANS markdown (pas d'asterisques, pas de dieze). Utilise des tirets et des titres courts. " +
+        "Tu analyses uniquement les donnees officielles recuperees via la connexion sociale du createur: statut, bio, lien en bio, nombre d'abonnes, posts, legendes et hashtags. " +
+        "TRES IMPORTANT: n'invente JAMAIS de chiffres ni de donnees du compte. Si une info manque, indique 'non renseigne'. " +
+        "Base toute ton analyse sur les donnees fournies ci-dessous, la plateforme, le pseudo et l'objectif. Reponds en francais, ton direct et professionnel, en texte simple SANS markdown (pas d'asterisques, pas de dieze). Utilise des tirets et des titres courts. " +
         "Structure ta reponse ainsi : 1) Infos du compte (plateforme, pseudo, public/prive, nombre d'abonnes, bio, lien en bio, objectif). 2) Posts et hashtags analyses (liste synthetique des posts fournis, legendes et hashtags recurrents). 3) Synthese du compte percu. 4) Ce qui ressort des contenus fournis. 5) Positionnement percu. 6) Forces. 7) Faiblesses / risques. 8) 5 recommandations concretes. 9) 5 idees de posts ou scripts adaptes. 10) Plan d'action 7 jours. " +
-        "Plateforme: " + platform + ". Pseudo: " + handle + ". Statut du compte: " + (visibility || "non renseigne") + ". Nombre d'abonnes fourni: " + (followers || "non renseigne") + ". Bio: " + (bio || "non renseignee") + ". Lien en bio: " + (bioLink || "non renseigne") + ". Objectif du createur: " + (objective || "developper mon audience et vendre mes produits") + ".";
+        "Plateforme: " + snapshot.provider + ". Pseudo: " + accountHandle + ". Statut du compte: " + visibility + ". Nombre d'abonnes: " + followers + ". Bio: " + bio + ". Lien en bio: " + bioLink + ". Objectif du createur: " + (objective || "developper mon audience et vendre mes produits") + ".";
       question =
-        "Genere un compte rendu pour " + handle + " sur " + platform + " a partir de ces contenus fournis par l'utilisateur. " +
-        "Statut public/prive: " + (visibility || "non renseigne") + ". " +
-        "Nombre d'abonnes fourni par l'utilisateur: " + (followers || "non renseigne") + ". " +
-        "Bio du compte: " + (bio || "non renseignee") + ". " +
-        "Lien en bio: " + (bioLink || "non renseigne") + ". " +
-        "Objectif: " + (objective || "developper mon audience et vendre mes produits") + ".\n\nPosts, legendes et hashtags fournis:\n" + samples;
+        "Genere un compte rendu pour " + accountHandle + " sur " + snapshot.provider + " a partir des donnees officielles recuperees par le backend. " +
+        "Statut public/prive: " + visibility + ". " +
+        "Nombre d'abonnes: " + followers + ". " +
+        "Bio du compte: " + bio + ". " +
+        "Lien en bio: " + bioLink + ". " +
+        "Objectif: " + (objective || "developper mon audience et vendre mes produits") + ".\n\nPosts, legendes et hashtags recuperes:\n" + (samples || "Aucun post disponible via l'API.");
     } else {
       question = String(body.question || "").slice(0, 800).trim();
       if (!question) { sendJson(res, 400, { error: "Question vide." }); return; }

@@ -12,6 +12,8 @@
     { "src": "api/events/visit.js", "use": "@vercel/node" },
     { "src": "api/orders/resend-access.js", "use": "@vercel/node" },
     { "src": "api/assistant.js", "use": "@vercel/node" },
+    { "src": "api/social/connect.js", "use": "@vercel/node" },
+    { "src": "api/social/callback.js", "use": "@vercel/node" },
     { "src": "*.html", "use": "@vercel/static" },
     { "src": "*.css", "use": "@vercel/static" },
     { "src": "*.js", "use": "@vercel/static" },
