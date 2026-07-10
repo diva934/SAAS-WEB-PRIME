@@ -1,14 +1,24 @@
 import { normalizeState, sendJson, slugify, supabaseRequest } from "./_shared.js";
 
 function publicPayload(state, page, product) {
-  const { fileName, ...publicProduct } = product;
+  const strip = (item) => { const { fileName, ...rest } = item; return rest; };
+  const products = (state.products || [])
+    .filter((item) => item.status === "published")
+    .map(strip);
   return {
     page,
-    product: publicProduct,
+    product: strip(product),
+    products,
     profile: {
       slug: state.profile.slug,
       creatorName: state.profile.creatorName,
       creatorRole: state.profile.creatorRole,
+      bio: state.profile.bio || "",
+      logo: state.profile.logo || "",
+      accent: state.profile.accent || "#6558f5",
+      instagram: state.profile.instagram || "",
+      youtube: state.profile.youtube || "",
+      tiktok: state.profile.tiktok || "",
     },
   };
 }
