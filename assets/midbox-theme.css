@@ -1,417 +1,69 @@
-/* Expertly dashboard skin based on the provided Midbox-style reference. */
-:root {
-  --sidebar-width: 88px !important;
-  --mb-ink: #11120f;
-  --mb-muted: #7a7c73;
-  --mb-line: rgba(24, 26, 20, 0.1);
-  --mb-soft: #f5f6ef;
-  --mb-card: rgba(255, 255, 255, 0.68);
-  --mb-green: #c7ff5a;
-  --mb-green-line: #67c800;
+/* ===== Expertly - Theme Midbox =====
+   Skin charge APRES styles.css : sidebar sombre a icones + accent vert-citron,
+   fond gris clair, cartes blanches arrondies, boutons sombres. */
+:root{ --sidebar-width:120px !important; }
+body, .app-shell{ background:#f3f4f6 !important; }
+.app-shell{ grid-template-columns:120px 1fr !important; }
+.content{ background:transparent !important; }
+
+/* Sidebar icones sombre flottante */
+aside.sidebar#sidebar{ width:88px !important; min-width:88px !important; background:#16171e !important; border:none !important; border-radius:26px !important; margin:16px 0 16px 16px !important; height:calc(100vh - 32px) !important; box-shadow:0 20px 44px rgba(16,17,26,.2) !important; overflow:hidden !important; }
+.sidebar .brand-row{ justify-content:center !important; padding:18px 0 10px !important; }
+.sidebar .brand-row *:not(img):not(svg){ display:none !important; }
+.sidebar .brand-row img, .sidebar .brand-row svg{ width:32px !important; height:auto !important; }
+.sidebar .workspace-switcher{ display:none !important; }
+.sidebar .sidebar-bottom{ display:none !important; }
+.main-nav{ display:flex !important; flex-direction:column !important; align-items:center !important; gap:4px !important; padding:6px 0 !important; }
+.main-nav > :not(.nav-item){ display:none !important; }
+.nav-item{ width:54px !important; height:54px !important; padding:0 !important; margin:2px 0 !important; display:flex !important; align-items:center !important; justify-content:center !important; border-radius:16px !important; color:#b9bdca !important; }
+.nav-item > span:not(.nav-icon){ display:none !important; }
+.nav-item .nav-icon{ font-size:21px !important; }
+.nav-item:hover{ background:rgba(255,255,255,.08) !important; color:#fff !important; }
+.nav-item.active{ background:#c6f24e !important; color:#15161c !important; box-shadow:0 8px 20px rgba(198,242,78,.35) !important; }
+.nav-item.active .nav-icon{ color:#15161c !important; }
+
+/* Top bar epuree */
+.topbar{ background:transparent !important; border:none !important; box-shadow:none !important; }
+
+/* Cartes blanches arrondies */
+.metric-card, .panel, .launch-card, .detail-panel-card, [class*="card"]:not(.nav-item):not(.account-button):not(.modal-card){ background:#fff !important; border:1px solid #edeff3 !important; border-radius:22px !important; box-shadow:0 12px 30px rgba(20,22,40,.05) !important; }
+.metric-card{ padding:22px !important; }
+.metric-card .metric-card-head span, .metric-card .icon{ background:#eef7d6 !important; color:#3d6b12 !important; border-radius:12px !important; }
+
+/* Boutons */
+.primary-button, .btn-primary{ background:#16171e !important; color:#fff !important; border:none !important; border-radius:14px !important; font-weight:700 !important; box-shadow:0 12px 26px rgba(16,17,26,.2) !important; }
+.account-button{ border-radius:16px !important; background:#fff !important; border:1px solid #edeff3 !important; }
+.icon-button{ border-radius:12px !important; background:#fff !important; border:1px solid #edeff3 !important; }
+.store-link{ border-radius:12px !important; background:#16171e !important; color:#fff !important; }
+.store-link span{ color:#c6f24e !important; }
+
+/* Graphique revenus -> vert */
+#revenueChart path[stroke]{ stroke:#6fb52a !important; }
+#revenueChart [stroke="#6558f5"]{ stroke:#6fb52a !important; }
+#revenueChart circle{ fill:#6fb52a !important; stroke:#6fb52a !important; }
+#revenueChart linearGradient stop{ stop-color:#8fd14f !important; }
+[class*="progress-bar"]{ background:#c6f24e !important; }
+
+@media (max-width:640px){
+  .app-shell{ grid-template-columns:1fr !important; }
+  aside.sidebar#sidebar{ margin:8px !important; }
 }
 
-body,
-.app-shell {
-  background:
-    radial-gradient(circle at 12% 0%, rgba(207, 255, 102, 0.16), transparent 30%),
-    radial-gradient(circle at 94% 4%, rgba(194, 225, 255, 0.18), transparent 26%),
-    #f7f8f1 !important;
-  color: var(--mb-ink) !important;
+/* Top bar epuree : masque "En direct" + le losange (notifications), avatar rond a droite. */
+.live-indicator{ display:none !important; }
+.topbar-actions .notification-button, #notificationButton{ display:none !important; }
+.account-button{
+  width:46px !important; height:46px !important; min-width:46px !important; padding:0 !important;
+  border-radius:50% !important; border:2px solid #c6f24e !important;
+  display:grid !important; place-items:center !important; overflow:hidden !important;
+  background:linear-gradient(145deg,#2b2d38,#16171e) !important; background-size:cover !important; background-position:center !important;
+  box-shadow:0 6px 16px rgba(16,17,26,.18) !important;
 }
+.account-button .account-copy, .account-button > b{ display:none !important; }
+.account-button #accountInitials{ display:block !important; color:#fff !important; font-weight:700 !important; font-size:15px !important; }
+.account-button.has-photo #accountInitials{ display:none !important; }
 
-.app-shell {
-  grid-template-columns: 88px 1fr !important;
-  min-height: 100vh !important;
-}
-
-.main-column {
-  min-width: 0 !important;
-}
-
-.content {
-  width: min(1288px, calc(100vw - 120px)) !important;
-  margin: 0 auto !important;
-  padding: 14px 0 28px !important;
-  background: transparent !important;
-}
-
-aside.sidebar#sidebar {
-  width: 58px !important;
-  min-width: 58px !important;
-  height: calc(100vh - 210px) !important;
-  min-height: 550px !important;
-  margin: 105px 0 16px 14px !important;
-  border: 0 !important;
-  border-radius: 21px !important;
-  background: #050604 !important;
-  box-shadow: 0 24px 42px rgba(11, 13, 10, 0.18) !important;
-  overflow: hidden !important;
-}
-
-.sidebar .brand-row {
-  justify-content: center !important;
-  padding: 0 !important;
-  height: 76px !important;
-}
-
-.sidebar .brand-row::before {
-  content: "";
-  width: 34px;
-  height: 34px;
-  border-radius: 13px;
-  background: var(--mb-green);
-  display: block;
-  position: absolute;
-  top: 21px;
-  left: 12px;
-}
-
-.sidebar .brand {
-  position: absolute !important;
-  top: 21px !important;
-  left: 12px !important;
-  z-index: 1 !important;
-  display: grid !important;
-  width: 34px !important;
-  height: 34px !important;
-  place-items: center !important;
-  overflow: hidden !important;
-}
-
-.sidebar .brand img,
-.sidebar .brand svg {
-  display: none !important;
-}
-
-.sidebar .brand::after {
-  content: "E";
-  display: grid;
-  width: 22px;
-  height: 22px;
-  place-items: center;
-  border-radius: 7px;
-  color: #050604;
-  font-family: "Manrope", "DM Sans", sans-serif;
-  font-size: 17px;
-  font-weight: 800;
-  line-height: 1;
-  letter-spacing: 0;
-}
-
-.sidebar .brand-row *:not(img):not(svg):not(a) {
-  display: none !important;
-}
-
-.sidebar .workspace-switcher,
-.sidebar .sidebar-bottom,
-.main-nav > :not(.nav-item),
-.nav-count,
-.soon {
-  display: none !important;
-}
-
-.main-nav {
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: center !important;
-  gap: 5px !important;
-  padding: 16px 0 0 !important;
-}
-
-.nav-item {
-  width: 38px !important;
-  height: 42px !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  display: grid !important;
-  place-items: center !important;
-  border-radius: 13px !important;
-  color: #dbded6 !important;
-  background: transparent !important;
-}
-
-.nav-item > span:not(.nav-icon) {
-  display: none !important;
-}
-
-.nav-item .nav-icon {
-  font-size: 19px !important;
-  line-height: 1 !important;
-}
-
-.nav-item:hover {
-  color: #fff !important;
-  background: rgba(255, 255, 255, 0.08) !important;
-}
-
-.nav-item.active {
-  color: #11120f !important;
-  background: var(--mb-green) !important;
-  box-shadow: 0 12px 22px rgba(199, 255, 90, 0.28) !important;
-}
-
-.topbar {
-  width: min(1288px, calc(100vw - 120px)) !important;
-  height: 88px !important;
-  margin: 0 auto !important;
-  padding: 0 !important;
-  border: 0 !important;
-  background: transparent !important;
-  box-shadow: none !important;
-}
-
-.topbar-left {
-  gap: 14px !important;
-}
-
-.topbar-left .breadcrumb {
-  display: none !important;
-}
-
-#viewTitle {
-  display: block !important;
-  color: var(--mb-ink) !important;
-  font-family: "DM Sans", sans-serif !important;
-  font-size: 29px !important;
-  font-weight: 500 !important;
-  letter-spacing: 0 !important;
-}
-
-.menu-button {
-  display: grid !important;
-  width: 48px !important;
-  height: 48px !important;
-  place-items: center !important;
-  border-radius: 18px !important;
-  color: #20221d !important;
-  background: rgba(238, 241, 232, 0.78) !important;
-  border: 1px solid rgba(22, 24, 18, 0.05) !important;
-}
-
-.topbar-actions {
-  gap: 8px !important;
-}
-
-.store-link {
-  display: none !important;
-}
-
-.icon-button,
-.account-button {
-  border: 1px solid rgba(22, 24, 18, 0.05) !important;
-  background: rgba(238, 241, 232, 0.78) !important;
-  color: #22241e !important;
-  box-shadow: none !important;
-}
-
-.notification-button {
-  display: grid !important;
-}
-
-.account-button {
-  width: 64px !important;
-  height: 48px !important;
-  min-width: 64px !important;
-  padding: 4px 10px 4px 4px !important;
-  border-radius: 22px !important;
-  gap: 5px !important;
-}
-
-.account-button #accountInitials {
-  width: 38px !important;
-  height: 38px !important;
-  display: grid !important;
-  place-items: center !important;
-  border-radius: 50% !important;
-  color: transparent !important;
-  background-color: #bdeeff !important;
-  background-image: url("data:image/svg+xml,%3Csvg width='76' height='76' viewBox='0 0 76 76' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='76' height='76' rx='38' fill='%23BDEEFF'/%3E%3Ccircle cx='38' cy='39' r='19' fill='%23F4BA82'/%3E%3Cpath d='M19 35c1-14 9-23 20-23 12 0 19 8 21 22-6-1-10-4-13-9-5 7-13 10-28 10z' fill='%2319242F'/%3E%3Cpath d='M23 61c3-10 9-15 15-15s13 5 16 15c-4 3-10 5-16 5s-11-2-15-5z' fill='%236B5EF7'/%3E%3Cpath d='M31 39c2 3 5 5 8 5s6-2 8-5' stroke='%237A3E22' stroke-width='2' stroke-linecap='round'/%3E%3Ccircle cx='31' cy='34' r='2' fill='%2323221D'/%3E%3Ccircle cx='45' cy='34' r='2' fill='%2323221D'/%3E%3Cpath d='M20 37c0 4 2 8 5 11-4 0-8-3-8-7 0-2 1-3 3-4zM56 37c0 4-2 8-5 11 4 0 8-3 8-7 0-2-1-3-3-4z' fill='%23F4BA82'/%3E%3Ccircle cx='53' cy='24' r='5' fill='%23FFFAE9'/%3E%3Cpath d='M51 23h4M53 21v4' stroke='%236B5EF7' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E") !important;
-  background-size: cover !important;
-  background-position: center !important;
-  font-size: 0 !important;
-  font-weight: 800 !important;
-}
-
-.account-button .account-copy {
-  display: none !important;
-}
-
-.account-button > b {
-  display: block !important;
-  color: #11120f !important;
-  font-size: 12px !important;
-}
-
-.metric-card,
-.panel,
-.launch-card,
-.detail-panel-card,
-[class*="card"]:not(.nav-item):not(.account-button):not(.modal-card) {
-  border: 1px solid var(--mb-line) !important;
-  border-radius: 32px !important;
-  background: var(--mb-card) !important;
-  box-shadow: none !important;
-  backdrop-filter: blur(20px) !important;
-}
-
-.primary-button,
-.btn-primary {
-  border: 0 !important;
-  border-radius: 14px !important;
-  background: #11120f !important;
-  color: #fff !important;
-  box-shadow: 0 12px 26px rgba(17, 18, 15, 0.16) !important;
-}
-
-#tunnelView .tunnel-board {
-  display: grid !important;
-  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
-  grid-auto-rows: 328px !important;
-  gap: 8px !important;
-  margin-bottom: 8px !important;
-}
-
-#tunnelView .tunnel-step,
-#tunnelView .tunnel-grid > .panel {
-  min-height: 328px !important;
-  border: 1px solid rgba(21, 22, 17, 0.1) !important;
-  border-radius: 34px !important;
-  background: rgba(255, 255, 255, 0.62) !important;
-  box-shadow: none !important;
-  backdrop-filter: blur(20px) !important;
-}
-
-#tunnelView .tunnel-step {
-  align-content: start !important;
-  gap: 16px !important;
-  padding: 20px !important;
-  color: var(--mb-ink) !important;
-}
-
-#tunnelView .tunnel-step span {
-  width: 40px !important;
-  height: 40px !important;
-  border: 1.2px solid #161711 !important;
-  border-radius: 50% !important;
-  color: #151611 !important;
-  background: transparent !important;
-  font-size: 14px !important;
-}
-
-#tunnelView .tunnel-step.done span {
-  border-color: transparent !important;
-  background: var(--mb-green) !important;
-  color: #11120f !important;
-}
-
-#tunnelView .tunnel-step strong {
-  margin-top: 4px !important;
-  font-size: 18px !important;
-  font-weight: 500 !important;
-  letter-spacing: 0 !important;
-  line-height: 1.14 !important;
-}
-
-#tunnelView .tunnel-step small {
-  color: var(--mb-muted) !important;
-  font-size: 13px !important;
-  line-height: 1.35 !important;
-}
-
-#tunnelView .tunnel-grid {
-  display: grid !important;
-  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-  grid-auto-rows: 372px !important;
-  gap: 8px !important;
-}
-
-#tunnelView .tunnel-grid > .panel {
-  display: flex !important;
-  min-height: 372px !important;
-  flex-direction: column !important;
-  padding: 20px !important;
-  overflow: hidden !important;
-}
-
-#tunnelView .panel-heading h2 {
-  font-size: 18px !important;
-  font-weight: 500 !important;
-  letter-spacing: 0 !important;
-}
-
-#tunnelView .offer-map,
-#tunnelView .insight-list {
-  flex: 1 !important;
-  align-content: start !important;
-  gap: 10px !important;
-  margin-top: 18px !important;
-}
-
-#tunnelView .offer-map-row,
-#tunnelView .insight-item {
-  border: 1px solid rgba(21, 22, 17, 0.1) !important;
-  border-radius: 18px !important;
-  background: rgba(247, 248, 241, 0.62) !important;
-}
-
-#tunnelView .insight-item {
-  padding: 15px !important;
-}
-
-body.midbox-overview .content {
-  padding-top: 0 !important;
-}
-
-body.midbox-overview .topbar {
-  margin-top: 0 !important;
-}
-
-body.midbox-overview .expertly-assistant {
-  display: none !important;
-}
-
-@media (max-width: 980px) {
-  .app-shell {
-    grid-template-columns: 1fr !important;
-  }
-
-  aside.sidebar#sidebar {
-    height: calc(100vh - 24px) !important;
-    margin: 12px !important;
-  }
-
-  .topbar,
-  .content {
-    width: min(100% - 28px, 1288px) !important;
-  }
-
-  #tunnelView .tunnel-board,
-  #tunnelView .tunnel-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-  }
-}
-
-@media (max-width: 640px) {
-  .topbar {
-    height: 76px !important;
-  }
-
-  #viewTitle {
-    font-size: 24px !important;
-  }
-
-  .notification-button {
-    display: none !important;
-  }
-
-  #tunnelView .tunnel-board,
-  #tunnelView .tunnel-grid {
-    grid-template-columns: 1fr !important;
-    grid-auto-rows: auto !important;
-  }
-
-  #tunnelView .tunnel-step,
-  #tunnelView .tunnel-grid > .panel {
-    min-height: 280px !important;
-  }
-}
+/* Fix sidebar : le logo (wordmark large 1282x299) creait un bloc vert colle a l'onglet actif.
+   On le retire du rail d'icones (le menu ecran reste accessible via le bouton du haut). */
+aside#sidebar .brand-row{ display:none !important; }
+.main-nav{ padding-top:16px !important; }
