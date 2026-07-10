@@ -68,7 +68,19 @@ function renderSocials(profile) {
 
 function renderPageStore() {
   const { page, products, profile } = state;
-  document.documentElement.style.setProperty("--accent", profile.accent || "#6558f5");
+  document.documentElement.style.setProperty("--accent", (page && page.accent) || profile.accent || "#6558f5");
+
+  // Fond personnalise de la page : image en priorite, sinon couleur ; sinon blanc.
+  const bgImage = (page && (page.backgroundImageUrl || "").trim()) || "";
+  const bgColor = (page && (page.backgroundColor || "").trim()) || "";
+  const validBgImg = /^https?:\/\//i.test(bgImage) || /^data:image\//i.test(bgImage);
+  if (validBgImg) {
+    document.body.style.background = `#f4f4f7 url("${bgImage}") center / cover no-repeat fixed`;
+    document.body.classList.add("has-custom-bg");
+  } else if (/^(#|rgb|hsl)/i.test(bgColor) && !/^#f{3,6}$/i.test(bgColor)) {
+    document.body.style.background = bgColor;
+    document.body.classList.add("has-custom-bg");
+  }
   const title = `${profile.creatorName || "Boutique"} · ${page?.name || "Boutique"}`;
   document.title = title;
   setOgMeta("og:title", title);
@@ -78,7 +90,7 @@ function renderPageStore() {
   setOgMeta("og:type", "website");
 
   const avatar = document.querySelector("#creatorAvatar");
-  const logo = (profile.logo || "").trim();
+  const logo = ((page && page.logoUrl) || profile.logo || "").trim();
   const validLogo = /^https?:\/\//i.test(logo) || /^data:image\//i.test(logo);
   if (validLogo) {
     avatar.classList.add("has-logo");
@@ -92,12 +104,14 @@ function renderPageStore() {
 
   document.querySelector("#creatorName").textContent = profile.creatorName || "Boutique";
   document.querySelector("#creatorRole").textContent = profile.creatorRole || "";
-  document.querySelector("#creatorBio").textContent = profile.bio || "";
+  document.querySelector("#creatorBio").textContent = (page && (page.subheadline || page.headline)) || profile.bio || "";
 
   renderSocials(profile);
 
+  // Produits : ceux selectionnes pour la page (page.productIds) sinon tous les publies.
+  const selected = Array.isArray(page && page.productIds) && page.productIds.length ? page.productIds : null;
   const featured = page?.productId;
-  const list = (products || []).slice().sort((a, b) => {
+  const list = (products || []).filter((p) => !selected || selected.indexOf(p.id) >= 0).slice().sort((a, b) => {
     const fa = a.id === featured ? 1 : 0;
     const fb = b.id === featured ? 1 : 0;
     return fb - fa || Number(b.featured) - Number(a.featured);
