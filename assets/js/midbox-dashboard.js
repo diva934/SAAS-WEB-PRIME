@@ -99,33 +99,6 @@
     return String(value || "EX").split(/\s+/).map(function (part) { return part[0]; }).join("").slice(0, 2).toUpperCase();
   }
 
-  function demoMetrics() {
-    var products = [
-      { title: "Formation IA Business", type: "Programme", price: 149, sales: 62, views: 510 },
-      { title: "Pack Templates Notion", type: "Template", price: 39, sales: 35, views: 224 },
-      { title: "Mini-cours TikTok Ads", type: "Video", price: 79, sales: 80, views: 749 },
-      { title: "Audit Tunnel Express", type: "Service", price: 127, sales: 56, views: 319 }
-    ];
-    var orders = products.flatMap(function (product) {
-      return Array.from({ length: product.sales }, function (_, index) {
-        return { id: product.title + "-" + index, status: "paid", amount: product.price, productId: product.title };
-      });
-    });
-    return {
-      orders: orders,
-      revenue: 21470,
-      wallet: 17820,
-      paypal: 3650,
-      visits: 19065,
-      purchases: 233,
-      series: [2100, 11200, 23200, 51043, 33400, 26600, 15500, 21100, 40200, 24200, 31600, 15800],
-      products: products,
-      contacts: Array.from({ length: 8258 }, function (_, index) { return { id: "demo-" + index }; }),
-      conversion: 32,
-      averageOrder: 92
-    };
-  }
-
   function metrics() {
     var s = safeState();
     var orders = paidOrders(s);
@@ -142,8 +115,6 @@
     var conversion = visits ? (purchases / visits) * 100 : 0;
     var wallet = Math.round(revenue * 0.83);
     var paypal = Math.max(0, revenue - wallet);
-    var hasRealData = revenue > 0 || visits > 0 || products.length > 0 || orders.length > 0 || series.some(function (value) { return Number(value) > 0; });
-    if (!hasRealData) return demoMetrics();
     return {
       s: s,
       orders: orders,
