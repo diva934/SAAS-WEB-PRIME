@@ -56,24 +56,24 @@ aside.sidebar#sidebar {
 
 .sidebar .brand-row::before {
   content: "";
-  width: 40px;
-  height: 40px;
-  border-radius: 15px;
+  width: 34px;
+  height: 34px;
+  border-radius: 13px;
   background: var(--mb-green);
   display: block;
   position: absolute;
-  top: 18px;
-  left: 9px;
+  top: 21px;
+  left: 12px;
 }
 
 .sidebar .brand {
   position: absolute !important;
-  top: 18px !important;
-  left: 9px !important;
+  top: 21px !important;
+  left: 12px !important;
   z-index: 1 !important;
   display: grid !important;
-  width: 40px !important;
-  height: 40px !important;
+  width: 34px !important;
+  height: 34px !important;
   place-items: center !important;
   overflow: hidden !important;
 }
@@ -85,11 +85,11 @@ aside.sidebar#sidebar {
 
 .sidebar .brand::after {
   content: "";
-  width: 8px;
-  height: 12px;
+  width: 6px;
+  height: 10px;
   background: #050604;
-  box-shadow: 10px 6px 0 #050604, 0 16px 0 #050604;
-  transform: skewY(28deg);
+  box-shadow: 8px 5px 0 #050604, 0 14px 0 #050604;
+  transform: skewY(28deg) scale(.86);
 }
 
 .sidebar .brand-row *:not(img):not(svg):not(a) {
