@@ -109,6 +109,17 @@ function renderStore() {
   setOgMeta("og:url", location.href);
   setOgMeta("og:type", "website");
 
+  // Fond personnalise de la boutique (image en priorite, sinon couleur), sinon blanc.
+  const bgImage = (profile.backgroundImageUrl || "").trim();
+  const bgColor = (profile.backgroundColor || "").trim();
+  if (/^https?:\/\//i.test(bgImage) || /^data:image\//i.test(bgImage)) {
+    document.body.style.background = `#f4f4f7 url("${bgImage}") center / cover no-repeat fixed`;
+    document.body.classList.add("has-custom-bg");
+  } else if (/^(#|rgb|hsl)/i.test(bgColor) && !/^#f{3,6}$/i.test(bgColor)) {
+    document.body.style.background = bgColor;
+    document.body.classList.add("has-custom-bg");
+  }
+
   const avatar = document.querySelector("#creatorAvatar");
   const logo = (profile.logo || "").trim();
   const validLogo = /^https?:\/\//i.test(logo) || /^data:image\//i.test(logo);
@@ -126,10 +137,21 @@ function renderStore() {
   document.querySelector("#creatorRole").textContent = profile.creatorRole || "";
   document.querySelector("#creatorBio").textContent = profile.bio || "";
 
+  // Couleur de texte personnalisee (nom / role / description).
+  const textColor = (profile.textColor || "").trim();
+  if (/^(#|rgb|hsl)/i.test(textColor)) {
+    ["#creatorName", "#creatorRole", "#creatorBio"].forEach((sel) => {
+      const el = document.querySelector(sel);
+      if (el) el.style.color = textColor;
+    });
+  }
+
   renderSocials(profile);
 
+  const selectedIds = Array.isArray(profile.storeProductIds) && profile.storeProductIds.length ? profile.storeProductIds : null;
   const products = state.products
     .filter((product) => product.status === "published")
+    .filter((product) => !selectedIds || selectedIds.indexOf(product.id) >= 0)
     .sort((a, b) => Number(b.featured) - Number(a.featured));
 
   document.querySelector("#publicOffers").innerHTML =

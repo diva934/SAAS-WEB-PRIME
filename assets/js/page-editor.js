@@ -1,6 +1,6 @@
-/* Editeur de page de vente (link-in-bio) : clic sur "Personnaliser" -> editeur plein ecran
-   avec apercu live au centre et panneau de reglages sur le cote :
-   couleur/image de fond, photo de profil, description, choix des produits affiches.
+/* Editeur "Personnaliser" (link-in-bio) pour les pages de vente ET la boutique principale.
+   Ouvre un editeur plein ecran : apercu live au centre + reglages sur le cote
+   (couleur/image de fond, photo de profil, description, choix des produits, couleur du texte).
    Autonome : lit/ecrit l'etat via /api/state (client Supabase independant), ne modifie pas app.js. */
 (function () {
   "use strict";
@@ -12,10 +12,7 @@
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" }[c]; }); }
   function eur(n) { return Number(n) ? new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(n) : "Gratuit"; }
 
-  function getConfig() {
-    if (cfg) return Promise.resolve(cfg);
-    return fetch("/api/config", { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (c) { cfg = c; return c; });
-  }
+  function getConfig() { if (cfg) return Promise.resolve(cfg); return fetch("/api/config", { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (c) { cfg = c; return c; }); }
   function getClient() {
     if (client) return Promise.resolve(client);
     return getConfig().then(function (c) {
@@ -70,7 +67,6 @@
       ".pe-save{border:0;background:#16171e;color:#fff;border-radius:12px;padding:11px 20px;font:inherit;font-weight:700;font-size:14px;cursor:pointer}" +
       ".pe-save:disabled{opacity:.6}" +
       ".pe-hint{font-size:11.5px;color:#9aa0ad;margin:6px 0 0}" +
-      /* apercu telephone link-in-bio */
       ".pe-phone{width:280px;border:0.5px solid #d7dae3;border-radius:26px;padding:8px;background:#fff;flex:none}" +
       ".pe-screen{border-radius:20px;overflow:hidden;min-height:440px;display:flex;flex-direction:column;align-items:center;padding:34px 18px 18px}" +
       ".pe-av{width:84px;height:84px;border-radius:50%;overflow:hidden;display:grid;place-items:center;background:#f1f3f7;border:1px solid #e5e8ef}" +
@@ -88,37 +84,35 @@
 
   var AV_PH = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.6" r="3.6"/><path d="M5.2 19.2c.9-3.4 3.5-5.2 6.8-5.2s5.9 1.8 6.8 5.2"/></svg>';
 
-  function renderPreview(host, draft, page, profile, products) {
+  function renderPreview(host, draft, name, products) {
     var bgImg = (draft.backgroundImageUrl || "").trim();
     var bgCol = (draft.backgroundColor || "").trim();
     var bg = "#fff";
     if (/^https?:\/\//i.test(bgImg) || /^data:image\//i.test(bgImg)) bg = '#f4f4f7 url("' + bgImg + '") center/cover no-repeat';
     else if (bgCol) bg = bgCol;
-    var logo = (draft.logoUrl || profile.logo || "").trim();
+    var logo = (draft.logoUrl || "").trim();
     var validLogo = /^https?:\/\//i.test(logo) || /^data:image\//i.test(logo);
-    var name = profile.creatorName || "Boutique";
-    var desc = (draft.subheadline || "").trim() || profile.bio || "";
+    var desc = (draft.description || "").trim();
     var sel = draft.productIds || [];
     var list = (products || []).filter(function (p) { return !sel.length || sel.indexOf(p.id) >= 0; });
-    var links = list.map(function (p) {
-      return '<div class="pe-link">' + esc(p.title) + '<span class="p">' + eur(p.price) + '</span></div>';
-    }).join("") || '<div class="pe-desc">Aucun produit sélectionné</div>';
+    var links = list.map(function (p) { return '<div class="pe-link">' + esc(p.title) + '<span class="p">' + eur(p.price) + '</span></div>'; }).join("") || '<div class="pe-desc">Aucun produit sélectionné</div>';
     var tc = (draft.textColor || "").trim();
     var tcStyle = /^(#|rgb|hsl)/i.test(tc) ? ' style="color:' + esc(tc) + '"' : '';
     host.innerHTML =
       '<div class="pe-screen" style="background:' + esc(bg) + '">' +
         '<div class="pe-av">' + (validLogo ? '<img src="' + esc(logo) + '" alt="" />' : AV_PH) + '</div>' +
-        '<p class="pe-name"' + tcStyle + '>' + esc(name) + '</p>' +
+        '<p class="pe-name"' + tcStyle + '>' + esc(name || "Boutique") + '</p>' +
         (desc ? '<p class="pe-desc"' + tcStyle + '>' + esc(desc) + '</p>' : '') +
         '<div class="pe-links">' + links + '</div>' +
       '</div>';
   }
 
-  function openEditor(pageId) {
+  // Ouvre l'editeur. kind = "page" (id d'une page) ou "store" (la boutique = profil).
+  function openEditor(kind, id) {
     injectCss();
     var overlay = document.createElement("div");
     overlay.className = "pe-overlay";
-    overlay.innerHTML = '<div class="pe-modal"><div class="pe-head"><h2>Personnaliser la page</h2><button class="pe-x" type="button" aria-label="Fermer">×</button></div><div class="pe-loading" style="padding:40px;text-align:center;color:#6b7280;font-family:DM Sans,sans-serif">Chargement…</div></div>';
+    overlay.innerHTML = '<div class="pe-modal"><div class="pe-head"><h2>Personnaliser</h2><button class="pe-x" type="button" aria-label="Fermer">×</button></div><div class="pe-loading" style="padding:40px;text-align:center;color:#6b7280;font-family:DM Sans,sans-serif">Chargement…</div></div>';
     document.body.appendChild(overlay);
     var modal = overlay.querySelector(".pe-modal");
     function close() { overlay.remove(); }
@@ -129,33 +123,58 @@
       .then(function (r) { return r.json(); })
       .then(function (st) {
         fullState = st;
-        var page = (st.pages || []).find(function (p) { return p.id === pageId; });
-        if (!page) throw new Error("Page introuvable.");
         var profile = st.profile || {};
         var products = (st.products || []).filter(function (p) { return p.status === "published"; });
-        var draft = {
-          backgroundColor: page.backgroundColor || "",
-          backgroundImageUrl: page.backgroundImageUrl || "",
-          logoUrl: page.logoUrl || "",
-          subheadline: page.subheadline || "",
-          textColor: page.textColor || "",
-          productIds: Array.isArray(page.productIds) ? page.productIds.slice() : []
-        };
-        buildEditor(modal, close, page, profile, products, draft);
+        var name = profile.creatorName || "Boutique";
+        var draft, title, onSave;
+        if (kind === "store") {
+          title = "Personnaliser ma boutique";
+          draft = {
+            backgroundColor: profile.backgroundColor || "",
+            backgroundImageUrl: profile.backgroundImageUrl || "",
+            logoUrl: profile.logo || "",
+            description: profile.bio || "",
+            textColor: profile.textColor || "",
+            productIds: Array.isArray(profile.storeProductIds) ? profile.storeProductIds.slice() : []
+          };
+          onSave = function (d) {
+            var p = fullState.profile;
+            p.backgroundColor = d.backgroundColor; p.backgroundImageUrl = d.backgroundImageUrl;
+            p.logo = d.logoUrl; p.bio = d.description; p.textColor = d.textColor; p.storeProductIds = d.productIds;
+          };
+        } else {
+          var page = (st.pages || []).find(function (p) { return p.id === id; });
+          if (!page) throw new Error("Page introuvable.");
+          title = "Personnaliser la page";
+          draft = {
+            backgroundColor: page.backgroundColor || "",
+            backgroundImageUrl: page.backgroundImageUrl || "",
+            logoUrl: page.logoUrl || "",
+            description: page.subheadline || "",
+            textColor: page.textColor || "",
+            productIds: Array.isArray(page.productIds) ? page.productIds.slice() : []
+          };
+          onSave = function (d) {
+            var t = (fullState.pages || []).find(function (p) { return p.id === id; });
+            if (!t) return;
+            t.backgroundColor = d.backgroundColor; t.backgroundImageUrl = d.backgroundImageUrl;
+            t.logoUrl = d.logoUrl; t.subheadline = d.description; t.textColor = d.textColor; t.productIds = d.productIds;
+          };
+        }
+        buildEditor(modal, close, { title: title, name: name, products: products, draft: draft, onSave: onSave });
       })
-      .catch(function (err) {
-        modal.querySelector(".pe-loading").textContent = err.message || "Erreur de chargement.";
-      });
+      .catch(function (err) { modal.querySelector(".pe-loading").textContent = err.message || "Erreur de chargement."; });
   }
 
-  function buildEditor(modal, close, page, profile, products, draft) {
+  function buildEditor(modal, close, ctx) {
+    var draft = ctx.draft, products = ctx.products;
     var prodRows = products.map(function (p) {
       var checked = !draft.productIds.length || draft.productIds.indexOf(p.id) >= 0;
       return '<label class="pe-prod"><input type="checkbox" data-prod="' + esc(p.id) + '"' + (checked ? " checked" : "") + ' /><b>' + esc(p.title) + '</b><small>' + eur(p.price) + '</small></label>';
     }).join("") || '<p class="pe-hint">Aucun produit publié. Crée et publie un produit d\'abord.</p>';
 
     modal.innerHTML =
-      '<div class="pe-head"><h2>Personnaliser la page</h2><button class="pe-x" type="button" aria-label="Fermer">×</button></div>' +
+      '<div class="pe-head"><h2>' + esc(ctx.title) + '</h2><button class="pe-x" type="button" aria-label="Fermer">×</button></div>' +
       '<div class="pe-body">' +
         '<div class="pe-controls">' +
           '<div class="pe-field"><label>Couleur de fond</label><div class="pe-row">' +
@@ -176,39 +195,33 @@
             '<button type="button" class="pe-btn" id="peAvClear">Retirer</button>' +
             '<input type="file" id="peAvFile" accept="image/png,image/jpeg,image/webp" hidden />' +
           '</div></div>' +
-          '<div class="pe-field"><label>Description</label><textarea class="pe-txt" id="peDesc" placeholder="Présente ta boutique en une phrase.">' + esc(draft.subheadline) + '</textarea></div>' +
-          '<div class="pe-field"><label>Produits affichés</label>' + prodRows + '<p class="pe-hint">Coche ceux à montrer sur cette page.</p></div>' +
+          '<div class="pe-field"><label>Description</label><textarea class="pe-txt" id="peDesc" placeholder="Présente ta boutique en une phrase.">' + esc(draft.description) + '</textarea></div>' +
+          '<div class="pe-field"><label>Produits affichés</label>' + prodRows + '<p class="pe-hint">Coche ceux à montrer.</p></div>' +
         '</div>' +
         '<div class="pe-preview-wrap"><div class="pe-phone"><div id="pePreview"></div></div></div>' +
       '</div>' +
       '<div class="pe-foot"><button type="button" class="pe-cancel">Annuler</button><button type="button" class="pe-save">Enregistrer</button></div>';
 
     var previewHost = modal.querySelector("#pePreview");
-    function refresh() { renderPreview(previewHost, draft, page, profile, products); }
+    function refresh() { renderPreview(previewHost, draft, ctx.name, products); }
     refresh();
 
     modal.querySelector(".pe-x").addEventListener("click", close);
     modal.querySelector(".pe-cancel").addEventListener("click", close);
-
     modal.querySelector("#peColor").addEventListener("input", function (e) { draft.backgroundColor = e.target.value; refresh(); });
     modal.querySelector("#peColorReset").addEventListener("click", function () { draft.backgroundColor = ""; modal.querySelector("#peColor").value = "#ffffff"; refresh(); });
     modal.querySelector("#peTextColor").addEventListener("input", function (e) { draft.textColor = e.target.value; refresh(); });
     modal.querySelector("#peTextReset").addEventListener("click", function () { draft.textColor = ""; modal.querySelector("#peTextColor").value = "#15161c"; refresh(); });
     modal.querySelector("#peBgPick").addEventListener("click", function () { modal.querySelector("#peBgFile").click(); });
     modal.querySelector("#peBgClear").addEventListener("click", function () { draft.backgroundImageUrl = ""; refresh(); });
-    modal.querySelector("#peBgFile").addEventListener("change", function (e) {
-      fileToDataUrl(e.target.files[0]).then(function (u) { if (u) { draft.backgroundImageUrl = u; refresh(); } }).catch(function (err) { alert(err.message); });
-    });
+    modal.querySelector("#peBgFile").addEventListener("change", function (e) { fileToDataUrl(e.target.files[0]).then(function (u) { if (u) { draft.backgroundImageUrl = u; refresh(); } }).catch(function (err) { alert(err.message); }); });
     modal.querySelector("#peAvPick").addEventListener("click", function () { modal.querySelector("#peAvFile").click(); });
     modal.querySelector("#peAvClear").addEventListener("click", function () { draft.logoUrl = ""; refresh(); });
-    modal.querySelector("#peAvFile").addEventListener("change", function (e) {
-      fileToDataUrl(e.target.files[0]).then(function (u) { if (u) { draft.logoUrl = u; refresh(); } }).catch(function (err) { alert(err.message); });
-    });
-    modal.querySelector("#peDesc").addEventListener("input", function (e) { draft.subheadline = e.target.value; refresh(); });
+    modal.querySelector("#peAvFile").addEventListener("change", function (e) { fileToDataUrl(e.target.files[0]).then(function (u) { if (u) { draft.logoUrl = u; refresh(); } }).catch(function (err) { alert(err.message); }); });
+    modal.querySelector("#peDesc").addEventListener("input", function (e) { draft.description = e.target.value; refresh(); });
     [].forEach.call(modal.querySelectorAll("[data-prod]"), function (cb) {
       cb.addEventListener("change", function () {
         var ids = [].filter.call(modal.querySelectorAll("[data-prod]"), function (x) { return x.checked; }).map(function (x) { return x.getAttribute("data-prod"); });
-        // Si tout est coche, on stocke vide (= tous) ; sinon la selection.
         draft.productIds = ids.length === products.length ? [] : ids;
         refresh();
       });
@@ -217,15 +230,7 @@
     var saveBtn = modal.querySelector(".pe-save");
     saveBtn.addEventListener("click", function () {
       saveBtn.disabled = true; saveBtn.textContent = "Enregistrement…";
-      var target = (fullState.pages || []).find(function (p) { return p.id === page.id; });
-      if (target) {
-        target.backgroundColor = draft.backgroundColor;
-        target.backgroundImageUrl = draft.backgroundImageUrl;
-        target.logoUrl = draft.logoUrl;
-        target.subheadline = draft.subheadline;
-        target.textColor = draft.textColor;
-        target.productIds = draft.productIds;
-      }
+      ctx.onSave(draft);
       authFetch("/api/state", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(fullState) })
         .then(function (r) { if (!r.ok) return r.json().then(function (j) { throw new Error(j.error || "Sauvegarde impossible."); }); })
         .then(function () { window.location.reload(); })
@@ -233,13 +238,32 @@
     });
   }
 
-  // Intercepte "Personnaliser" avant app.js (phase capture) pour ouvrir notre editeur.
+  // Injecte une carte "Ma boutique" en haut de la liste des pages de vente.
+  function injectStoreCard() {
+    var list = document.querySelector("#salesPageList");
+    if (!list || list.querySelector("[data-store-card]")) return;
+    var storeLink = document.querySelector(".store-link, a[href*='/b/']");
+    var href = storeLink ? storeLink.getAttribute("href") : "";
+    var card = document.createElement("article");
+    card.className = "sales-page-card";
+    card.setAttribute("data-store-card", "1");
+    card.innerHTML =
+      '<div class="sales-page-card-head"><div><span class="panel-label">Boutique principale</span><h3>Ma boutique</h3></div><span class="status-badge">En ligne</span></div>' +
+      '<div class="page-card-actions"><button type="button" data-edit-store>Personnaliser</button>' +
+      (href ? '<a href="' + esc(href) + '" target="_blank" rel="noopener">Aperçu ↗</a>' : '') + '</div>';
+    list.insertBefore(card, list.firstChild);
+  }
+
+  new MutationObserver(function () {
+    var v = document.querySelector("#pagesView");
+    if (v && v.offsetParent !== null) injectStoreCard();
+  }).observe(document.documentElement, { childList: true, subtree: true });
+
+  // Interception des clics "Personnaliser" (avant app.js, phase capture).
   document.addEventListener("click", function (e) {
-    var btn = e.target.closest && e.target.closest("[data-edit-page]");
-    if (!btn) return;
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.stopImmediatePropagation) e.stopImmediatePropagation();
-    openEditor(btn.getAttribute("data-edit-page"));
+    var store = e.target.closest && e.target.closest("[data-edit-store]");
+    if (store) { e.preventDefault(); e.stopPropagation(); if (e.stopImmediatePropagation) e.stopImmediatePropagation(); openEditor("store"); return; }
+    var page = e.target.closest && e.target.closest("[data-edit-page]");
+    if (page) { e.preventDefault(); e.stopPropagation(); if (e.stopImmediatePropagation) e.stopImmediatePropagation(); openEditor("page", page.getAttribute("data-edit-page")); }
   }, true);
 })();
