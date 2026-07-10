@@ -11,35 +11,20 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="/store.css" />
-    <style>.featured-banner[hidden]{display:none!important}</style>
   </head>
   <body data-surface="creator_store">
     <main class="store-shell">
       <header class="creator-header">
-        <div class="creator-avatar" id="creatorAvatar">EX</div>
+        <div class="creator-avatar is-empty" id="creatorAvatar"></div>
         <div class="creator-copy">
-          <h1 id="creatorName">Boutique Expertly</h1>
-          <p class="creator-role" id="creatorRole">Business coach</p>
+          <h1 id="creatorName">Boutique</h1>
+          <p class="creator-role" id="creatorRole"></p>
           <p class="creator-bio" id="creatorBio"></p>
           <div class="social-links" id="creatorSocials" hidden></div>
         </div>
       </header>
 
-      <section class="featured-banner" id="featuredBanner" hidden>
-        <span>Ressource gratuite</span>
-        <div>
-          <p id="featuredBannerTitle">La checklist d’une offre qui se vend</p>
-          <button id="leadButton">La recevoir gratuitement →</button>
-        </div>
-      </section>
-
-      <section class="catalogue">
-        <div class="catalogue-heading">
-          <div><span>Catalogue</span><h2>Choisis ton prochain niveau.</h2></div>
-          <small id="offerCount">0 offres</small>
-        </div>
-        <div class="offer-list" id="publicOffers"></div>
-      </section>
+      <section class="link-list" id="publicOffers"></section>
     </main>
 
     <footer><span class="mini-mark">E</span> Propulsé par <strong>Expertly</strong></footer>
@@ -55,17 +40,17 @@
       <div class="modal-card small">
         <button class="close-button" data-close-lead>×</button>
         <span class="modal-eyebrow">Ressource offerte</span>
-        <h2>Reçois la checklist maintenant.</h2>
-        <p>Entre tes informations pour obtenir le PDF dans ta boîte mail.</p>
+        <h2>Reçois la ressource maintenant.</h2>
+        <p>Entre tes informations pour obtenir l'accès dans ta boîte mail.</p>
         <form id="leadForm">
           <label>Prénom<input name="name" required placeholder="Alex" /></label>
           <label>Email<input name="email" type="email" required placeholder="claire@email.com" /></label>
-          <button type="submit">Recevoir la checklist</button>
+          <button type="submit">Recevoir l'accès</button>
         </form>
       </div>
     </div>
     <div class="store-toast" id="storeToast"></div>
-        <script src="/assets/js/analytics.js"></script>
+    <script src="/assets/js/analytics.js"></script>
     <script src="/assets/js/store.js"></script>
   </body>
 </html>
