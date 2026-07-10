@@ -241,6 +241,101 @@ aside.sidebar#sidebar {
   box-shadow: 0 12px 26px rgba(17, 18, 15, 0.16) !important;
 }
 
+#tunnelView .tunnel-board {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  grid-auto-rows: 328px !important;
+  gap: 8px !important;
+  margin-bottom: 8px !important;
+}
+
+#tunnelView .tunnel-step,
+#tunnelView .tunnel-grid > .panel {
+  min-height: 328px !important;
+  border: 1px solid rgba(21, 22, 17, 0.1) !important;
+  border-radius: 34px !important;
+  background: rgba(255, 255, 255, 0.62) !important;
+  box-shadow: none !important;
+  backdrop-filter: blur(20px) !important;
+}
+
+#tunnelView .tunnel-step {
+  align-content: start !important;
+  gap: 16px !important;
+  padding: 20px !important;
+  color: var(--mb-ink) !important;
+}
+
+#tunnelView .tunnel-step span {
+  width: 40px !important;
+  height: 40px !important;
+  border: 1.2px solid #161711 !important;
+  border-radius: 50% !important;
+  color: #151611 !important;
+  background: transparent !important;
+  font-size: 14px !important;
+}
+
+#tunnelView .tunnel-step.done span {
+  border-color: transparent !important;
+  background: var(--mb-green) !important;
+  color: #11120f !important;
+}
+
+#tunnelView .tunnel-step strong {
+  margin-top: 4px !important;
+  font-size: 18px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0 !important;
+  line-height: 1.14 !important;
+}
+
+#tunnelView .tunnel-step small {
+  color: var(--mb-muted) !important;
+  font-size: 13px !important;
+  line-height: 1.35 !important;
+}
+
+#tunnelView .tunnel-grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  grid-auto-rows: 372px !important;
+  gap: 8px !important;
+}
+
+#tunnelView .tunnel-grid > .panel {
+  display: flex !important;
+  min-height: 372px !important;
+  flex-direction: column !important;
+  padding: 20px !important;
+  overflow: hidden !important;
+}
+
+#tunnelView .panel-heading h2 {
+  font-size: 18px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0 !important;
+}
+
+#tunnelView .offer-map,
+#tunnelView .insight-list {
+  flex: 1 !important;
+  align-content: start !important;
+  gap: 10px !important;
+  margin-top: 18px !important;
+}
+
+#tunnelView .offer-map-row,
+#tunnelView .insight-item {
+  border: 1px solid rgba(21, 22, 17, 0.1) !important;
+  border-radius: 18px !important;
+  background: rgba(247, 248, 241, 0.62) !important;
+}
+
+#tunnelView .insight-item {
+  padding: 15px !important;
+}
+
 body.midbox-overview .content {
   padding-top: 0 !important;
 }
@@ -267,6 +362,11 @@ body.midbox-overview .expertly-assistant {
   .content {
     width: min(100% - 28px, 1288px) !important;
   }
+
+  #tunnelView .tunnel-board,
+  #tunnelView .tunnel-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
 }
 
 @media (max-width: 640px) {
@@ -280,5 +380,16 @@ body.midbox-overview .expertly-assistant {
 
   .notification-button {
     display: none !important;
+  }
+
+  #tunnelView .tunnel-board,
+  #tunnelView .tunnel-grid {
+    grid-template-columns: 1fr !important;
+    grid-auto-rows: auto !important;
+  }
+
+  #tunnelView .tunnel-step,
+  #tunnelView .tunnel-grid > .panel {
+    min-height: 280px !important;
   }
 }
