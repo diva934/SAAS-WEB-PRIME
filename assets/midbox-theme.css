@@ -98,3 +98,24 @@ aside#sidebar .brand-row{ display:none !important; }
 #pageForm fieldset.block-picker,
 #pageForm .page-editor-preview{ display:none !important; }
 #pageForm .page-editor-grid{ display:block !important; }
+
+/* Onglet Pages de vente : carte "page de vente" epuree, alignee sur les cartes du dashboard.
+   Le selecteur large [class*="card"] du theme transformait head/actions en boites bordees
+   (effet boite-dans-boite) ; on annule, on nettoie les sous-elements et on retire les blocs herites. */
+#pagesView .sales-page-card-head,
+#pagesView .page-card-actions{ background:transparent !important; border:0 !important; border-radius:0 !important; box-shadow:none !important; padding:0 !important; }
+#pagesView .sales-page-card{ padding:20px !important; display:flex !important; flex-direction:column !important; gap:14px !important; }
+#pagesView .sales-page-card-head{ display:flex !important; align-items:flex-start !important; justify-content:space-between !important; gap:12px !important; }
+#pagesView .sales-page-card .panel-label{ color:#8a8f9c !important; font-size:11px !important; letter-spacing:.04em !important; }
+#pagesView .sales-page-card h3{ font-family:"Manrope",sans-serif !important; font-size:18px !important; font-weight:800 !important; margin:2px 0 0 !important; }
+#pagesView .page-metrics{ display:grid !important; grid-template-columns:1fr 1fr !important; gap:10px !important; margin:0 !important; }
+#pagesView .page-metrics > div{ background:#f7f8fb !important; border:1px solid #eef0f4 !important; border-radius:12px !important; padding:10px 12px !important; }
+#pagesView .page-metrics > div:nth-child(3){ display:none !important; }
+#pagesView .page-metrics span{ color:#8a8f9c !important; font-size:11.5px !important; }
+#pagesView .page-metrics strong{ color:#15161c !important; font-weight:800 !important; }
+#pagesView .block-pills{ display:none !important; }
+#pagesView .page-public-link{ background:transparent !important; color:#9aa0ad !important; padding:2px 0 0 !important; font-size:12px !important; }
+#pagesView .page-card-actions{ display:flex !important; flex-wrap:wrap !important; gap:8px !important; margin-top:4px !important; }
+#pagesView .page-card-actions button{ background:#fff !important; border:1px solid #e6e8ee !important; border-radius:10px !important; padding:8px 12px !important; font-size:12.5px !important; font-weight:600 !important; color:#15161c !important; }
+#pagesView .page-card-actions button:hover{ background:#f5f6f9 !important; }
+#pagesView .status-badge{ background:#eaf7ee !important; color:#1a8a5f !important; border-radius:999px !important; padding:5px 10px !important; font-size:11.5px !important; font-weight:700 !important; flex:none !important; }
