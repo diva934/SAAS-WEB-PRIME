@@ -52,6 +52,7 @@
         '<div class="sc-card">' +
           '<div class="sc-plat"><button type="button" class="sc-plat-btn is-on" data-p="Instagram">Instagram</button><button type="button" class="sc-plat-btn" data-p="TikTok">TikTok</button></div>' +
           '<label class="sc-label">Ton pseudo (@)</label><input id="scHandle" class="sc-input" placeholder="@ton_compte" autocomplete="off"/>' +
+          '<label class="sc-label">Nombre d\'abonnes</label><input id="scFollowers" class="sc-input" placeholder="Ex: 12 400" inputmode="numeric" autocomplete="off"/>' +
           '<label class="sc-label">Scripts, legendes ou liens de posts (5 a 10)</label><textarea id="scSamples" class="sc-input sc-textarea sc-samples" placeholder="Colle ici 5 a 10 contenus du compte. Exemple :&#10;1. Script/Reel : ...&#10;2. Legende : ...&#10;3. Lien + texte du post : ..."></textarea>' +
           '<label class="sc-label">Ton objectif / theme (optionnel)</label><textarea id="scObj" class="sc-input sc-textarea" placeholder="Ex: vendre mon accompagnement, cible entrepreneurs debutants"></textarea>' +
           '<button id="scGo" class="sc-go" type="button">Generer le compte rendu reel</button>' +
@@ -82,13 +83,14 @@
     var result = view.querySelector(".sc-result");
     go.addEventListener("click", function () {
       var handle = view.querySelector("#scHandle").value.trim();
+      var followers = view.querySelector("#scFollowers").value.trim();
       var samples = view.querySelector("#scSamples").value.trim();
       var objective = view.querySelector("#scObj").value.trim();
       if (!handle) { view.querySelector("#scHandle").focus(); return; }
       if (!samples) { view.querySelector("#scSamples").focus(); return; }
       go.disabled = true; go.textContent = "Analyse en cours...";
       result.innerHTML = '<div class="sc-res-head"><strong>Analyse en cours...</strong><span>' + platform + '</span></div><p class="sc-empty">L\'IA lit les contenus fournis et prepare le compte rendu pour ' + handle + '...</p>';
-      analyze(handle, samples, objective).then(function (out) {
+      analyze(handle, followers, samples, objective).then(function (out) {
         if (out.ok) {
           result.innerHTML = '<div class="sc-res-head"><strong>Compte rendu base sur les contenus fournis</strong><span>' + platform + '</span></div><div class="sc-res-body"></div>';
           result.querySelector(".sc-res-body").textContent = out.text;
@@ -101,13 +103,13 @@
       });
     });
 
-    async function analyze(handle, samples, objective) {
+    async function analyze(handle, followers, samples, objective) {
       try {
         if (typeof authenticatedFetch !== "function") return { ok: false, text: "Assistant indisponible." };
         var r = await authenticatedFetch("/api/assistant", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ mode: "social", platform: platform, handle: handle, samples: samples, objective: objective })
+          body: JSON.stringify({ mode: "social", platform: platform, handle: handle, followers: followers, samples: samples, objective: objective })
         });
         if (r.ok) { var d = await r.json().catch(function () { return null; }); if (d && d.answer) return { ok: true, text: d.answer }; }
         if (r.status === 429) return { ok: false, text: "Tu vas un peu vite, reessaie dans quelques minutes." };

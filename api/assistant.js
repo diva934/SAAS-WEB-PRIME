@@ -62,6 +62,7 @@ export default async function handler(req, res) {
     if (mode === "social") {
       const platform = String(body.platform || "Instagram").slice(0, 24).trim();
       const handle = String(body.handle || "").slice(0, 60).trim();
+      const followers = String(body.followers || "").slice(0, 40).trim();
       const objective = String(body.objective || "").slice(0, 500).trim();
       const samples = String(body.samples || "").slice(0, 7000).trim();
       if (!handle) { sendJson(res, 400, { error: "Pseudo requis." }); return; }
@@ -70,12 +71,14 @@ export default async function handler(req, res) {
         "Tu es un coach reseaux sociaux pour createurs et infopreneurs qui vendent des produits digitaux avec Expertly. " +
         "Tu analyses uniquement les scripts, legendes, descriptions ou liens accompagnes de texte que l'utilisateur fournit. " +
         "TRES IMPORTANT: tu n'as PAS visite le compte et tu n'as PAS acces aux vraies statistiques du compte (abonnes, vues, engagement). N'invente JAMAIS de chiffres ni de donnees du compte. " +
+        "Le nombre d'abonnes doit etre affiche dans les premieres infos seulement s'il est fourni par l'utilisateur; sinon indique 'abonnes non renseignes'. " +
         "Si l'utilisateur donne seulement des liens sans texte exploitable, dis clairement que les liens seuls sont insuffisants et demande les scripts ou legendes. " +
         "Base toute ton analyse sur le contenu fourni, la plateforme, le pseudo et l'objectif. Reponds en francais, ton direct et professionnel, en texte simple SANS markdown (pas d'asterisques, pas de dieze). Utilise des tirets et des titres courts. " +
-        "Structure ta reponse ainsi : 1) Synthese du compte percu. 2) Ce qui ressort des contenus fournis. 3) Positionnement percu. 4) Forces. 5) Faiblesses / risques. 6) 5 recommandations concretes. 7) 5 idees de posts ou scripts adaptes. 8) Plan d'action 7 jours. " +
-        "Plateforme: " + platform + ". Pseudo: " + handle + ". Objectif du createur: " + (objective || "developper mon audience et vendre mes produits") + ".";
+        "Structure ta reponse ainsi : 1) Infos du compte (plateforme, pseudo, nombre d'abonnes, objectif). 2) Synthese du compte percu. 3) Ce qui ressort des contenus fournis. 4) Positionnement percu. 5) Forces. 6) Faiblesses / risques. 7) 5 recommandations concretes. 8) 5 idees de posts ou scripts adaptes. 9) Plan d'action 7 jours. " +
+        "Plateforme: " + platform + ". Pseudo: " + handle + ". Nombre d'abonnes fourni: " + (followers || "non renseigne") + ". Objectif du createur: " + (objective || "developper mon audience et vendre mes produits") + ".";
       question =
         "Genere un compte rendu pour " + handle + " sur " + platform + " a partir de ces contenus fournis par l'utilisateur. " +
+        "Nombre d'abonnes fourni par l'utilisateur: " + (followers || "non renseigne") + ". " +
         "Objectif: " + (objective || "developper mon audience et vendre mes produits") + ".\n\nContenus fournis:\n" + samples;
     } else {
       question = String(body.question || "").slice(0, 800).trim();
