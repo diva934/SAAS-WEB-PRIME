@@ -161,8 +161,9 @@ async function scrapeRapidApi(platform, handle) {
   const key = process.env.RAPIDAPI_KEY;
   if (!key) return null;
   const isTT = /tiktok/i.test(platform);
-  const host = isTT ? process.env.RAPIDAPI_TT_HOST : process.env.RAPIDAPI_IG_HOST;
-  const path = isTT ? process.env.RAPIDAPI_TT_PATH : process.env.RAPIDAPI_IG_PATH;
+  // Defaut IG = Instagram Looter (rapidapi) ; surchargeable par env. TikTok deja gere en gratuit.
+  const host = isTT ? process.env.RAPIDAPI_TT_HOST : (process.env.RAPIDAPI_IG_HOST || "instagram-looter2.p.rapidapi.com");
+  const path = isTT ? process.env.RAPIDAPI_TT_PATH : (process.env.RAPIDAPI_IG_PATH || "/profile?username=");
   if (!host || !path) return null;
   try {
     const url = "https://" + host + path + encodeURIComponent(handle);
