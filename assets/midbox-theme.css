@@ -126,3 +126,18 @@ aside#sidebar .brand-row{ display:none !important; }
 #pagesView .page-card-actions button{ background:#fff !important; border:1px solid #e6e8ee !important; border-radius:10px !important; padding:8px 12px !important; font-size:12.5px !important; font-weight:600 !important; color:#15161c !important; }
 #pagesView .page-card-actions button:hover{ background:#f5f6f9 !important; }
 #pagesView .status-badge{ background:#eaf7ee !important; color:#1a8a5f !important; border-radius:999px !important; padding:5px 10px !important; font-size:11.5px !important; font-weight:700 !important; flex:none !important; }
+
+/* Harmonisation : les cases de Finance / Analytics / Contacts / Commandes reprennent le
+   style des cartes du dashboard (.mb-card) : coins tres arrondis, fond translucide + flou,
+   sans ombre. On ne change QUE l'apparence des cases (contenu et mise en page inchanges). */
+#financeView .panel, #financeView .metric-card,
+#analyticsView .panel, #analyticsView .metric-card,
+#contactsView .panel, #contactsView .metric-card,
+#ordersView .panel, #ordersView .metric-card{
+  border-radius:34px !important;
+  border:1px solid rgba(21,22,17,.1) !important;
+  background:rgba(255,255,255,.62) !important;
+  -webkit-backdrop-filter:blur(20px) !important;
+  backdrop-filter:blur(20px) !important;
+  box-shadow:none !important;
+}
