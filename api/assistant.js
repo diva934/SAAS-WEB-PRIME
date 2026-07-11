@@ -32,6 +32,146 @@ function computeMetrics(state) {
   };
 }
 
+async function fetchWithTimeout(url, options, ms) {
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), ms || 6000);
+  try { return await fetch(url, { ...(options || {}), signal: ctrl.signal }); }
+  finally { clearTimeout(t); }
+}
+
+// Recherche recursive d'un nombre dont la cle matche `re` (gere aussi {count:N}).
+function deepNumber(obj, re, avoid) {
+  let out = null; const seen = new Set();
+  (function walk(o) {
+    if (out !== null || !o || typeof o !== "object" || seen.has(o)) return;
+    seen.add(o);
+    for (const k of Object.keys(o)) {
+      if (out !== null) return;
+      const v = o[k];
+      if (re.test(k) && !(avoid && avoid.test(k))) {
+        if (typeof v === "number" && v >= 0) { out = v; return; }
+        if (v && typeof v === "object" && typeof v.count === "number") { out = v.count; return; }
+      }
+      if (v && typeof v === "object") walk(v);
+    }
+  })(obj);
+  return out;
+}
+function deepString(obj, re) {
+  let out = null; const seen = new Set();
+  (function walk(o) {
+    if (out || !o || typeof o !== "object" || seen.has(o)) return;
+    seen.add(o);
+    for (const k of Object.keys(o)) {
+      if (out) return;
+      const v = o[k];
+      if (typeof v === "string" && v && re.test(k)) { out = v; return; }
+      if (v && typeof v === "object") walk(v);
+    }
+  })(obj);
+  return out;
+}
+
+// Tentative gratuite : endpoint public IG (souvent bloque cote serveur, mais gratuit).
+async function scrapeInstagram(handle) {
+  try {
+    const r = await fetchWithTimeout(
+      "https://www.instagram.com/api/v1/users/web_profile_info/?username=" + encodeURIComponent(handle),
+      { headers: { "x-ig-app-id": "936619743392459", "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15", "Accept": "*/*" } },
+      6000,
+    );
+    if (!r.ok) return null;
+    const d = await r.json().catch(() => null);
+    const u = d && d.data && d.data.user;
+    if (!u) return null;
+    return {
+      platform: "Instagram", handle, name: u.full_name || "", verified: !!u.is_verified, private: !!u.is_private,
+      followers: u.edge_followed_by ? u.edge_followed_by.count : null,
+      following: u.edge_follow ? u.edge_follow.count : null,
+      posts: u.edge_owner_to_timeline_media ? u.edge_owner_to_timeline_media.count : null,
+      bio: u.biography || "", source: "direct",
+    };
+  } catch { return null; }
+}
+
+// Tentative gratuite : JSON embarque dans la page publique TikTok.
+async function scrapeTiktok(handle) {
+  try {
+    const r = await fetchWithTimeout("https://www.tiktok.com/@" + encodeURIComponent(handle), {
+      headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36", "Accept": "text/html" },
+    }, 6000);
+    if (!r.ok) return null;
+    const html = await r.text();
+    const m = html.match(/<script id="__UNIVERSAL_DATA_FOR_REHYDRATION__"[^>]*>([\s\S]*?)<\/script>/);
+    if (!m) return null;
+    const data = JSON.parse(m[1]);
+    const detail = data && data.__DEFAULT_SCOPE__ && data.__DEFAULT_SCOPE__["webapp.user-detail"];
+    const info = detail && detail.userInfo;
+    if (!info) return null;
+    const st = info.stats || info.statsV2 || {};
+    return {
+      platform: "TikTok", handle, name: (info.user && info.user.nickname) || "", verified: !!(info.user && info.user.verified),
+      followers: Number(st.followerCount) || Number(st.followers) || null,
+      following: Number(st.followingCount) || null,
+      posts: Number(st.videoCount) || null,
+      likes: Number(st.heartCount || st.heart) || null,
+      bio: (info.user && info.user.signature) || "", source: "direct",
+    };
+  } catch { return null; }
+}
+
+// Repli fiable : RapidAPI (host/path configurables via env). Parsing defensif.
+async function scrapeRapidApi(platform, handle) {
+  const key = process.env.RAPIDAPI_KEY;
+  if (!key) return null;
+  const isTT = /tiktok/i.test(platform);
+  const host = isTT ? process.env.RAPIDAPI_TT_HOST : process.env.RAPIDAPI_IG_HOST;
+  const path = isTT ? process.env.RAPIDAPI_TT_PATH : process.env.RAPIDAPI_IG_PATH;
+  if (!host || !path) return null;
+  try {
+    const url = "https://" + host + path + encodeURIComponent(handle);
+    const r = await fetchWithTimeout(url, { headers: { "X-RapidAPI-Key": key, "X-RapidAPI-Host": host } }, 8000);
+    if (!r.ok) return null;
+    const d = await r.json().catch(() => null);
+    if (!d) return null;
+    const followers = deepNumber(d, /follower/i, /following/i);
+    if (followers == null) return null;
+    return {
+      platform: isTT ? "TikTok" : "Instagram", handle, followers,
+      following: deepNumber(d, /following|follows_count/i),
+      posts: deepNumber(d, /media_count|video_count|post/i),
+      likes: deepNumber(d, /heart|likes?_count|total_favorited/i),
+      name: deepString(d, /full_name|nick_?name|display_name/i) || handle,
+      bio: deepString(d, /biograph|signature/i) || "",
+      verified: false, source: "rapidapi",
+    };
+  } catch { return null; }
+}
+
+async function fetchSocialStats(platform, rawHandle) {
+  const handle = String(rawHandle || "").replace(/^@+/, "").trim();
+  if (!handle) return null;
+  const isTT = /tiktok/i.test(platform);
+  let stats = isTT ? await scrapeTiktok(handle) : await scrapeInstagram(handle);
+  if (!stats || stats.followers == null) {
+    const rapid = await scrapeRapidApi(platform, handle);
+    if (rapid) stats = rapid;
+  }
+  if (!stats || stats.followers == null) return null;
+  return stats;
+}
+
+function statsPromptLine(s) {
+  const parts = [];
+  if (s.followers != null) parts.push(s.followers + " abonnes");
+  if (s.following != null) parts.push(s.following + " abonnements");
+  if (s.posts != null) parts.push(s.posts + " publications");
+  if (s.likes != null) parts.push(s.likes + " likes cumules");
+  if (s.verified) parts.push("compte verifie");
+  return "STATISTIQUES REELLES du compte " + s.platform + " @" + s.handle + (s.name ? " (" + s.name + ")" : "") + " : "
+    + parts.join(", ") + (s.bio ? '. Bio: "' + String(s.bio).slice(0, 200).replace(/\s+/g, " ") + '"' : "") + ". ";
+}
+
 export default async function handler(req, res) {
   if (req.method !== "POST") { sendJson(res, 405, { error: "Method not allowed" }); return; }
   try {
@@ -58,18 +198,26 @@ export default async function handler(req, res) {
     let system = "";
     let question = "";
     let history = [];
+    let socialStats = null;
 
     if (mode === "social") {
       const platform = String(body.platform || "Instagram").slice(0, 24).trim();
       const handle = String(body.handle || "").slice(0, 60).trim();
       const objective = String(body.objective || "").slice(0, 500).trim();
       if (!handle) { sendJson(res, 400, { error: "Pseudo requis." }); return; }
+      try { socialStats = await fetchSocialStats(platform, handle); } catch { socialStats = null; }
+      const dataRule = socialStats
+        ? "Tu DISPOSES des vraies statistiques du compte ci-dessous : appuie ton audit et tes conseils dessus et cite les chiffres pertinents. " + statsPromptLine(socialStats)
+        : "TRES IMPORTANT: tu n'as PAS acces aux vraies statistiques du compte (abonnes, vues, engagement) : n'invente JAMAIS de chiffres ni de donnees du compte. ";
+      const noteRule = socialStats
+        ? "Commence IMPERATIVEMENT par une seule premiere ligne au format EXACT [[NOTE:xx]] ou xx (0 a 100) reflete la SANTE REELLE du compte d'apres les statistiques fournies (taille d'audience, ratio abonnes/publications, coherence avec l'objectif) : moins de 40 tres faible, 40 a 69 moyen, 70 et plus solide. Puis passe a la ligne, ne rementionne jamais cette note. "
+        : "Commence IMPERATIVEMENT par une seule premiere ligne au format EXACT [[NOTE:xx]] ou xx est un entier de 0 a 100 estimant le potentiel actuel du compte d'apres le positionnement et l'objectif fournis (moins de 50 si flou ou peu d'infos, 60 a 79 si correct, 80 et plus si tres clair et vendeur), puis passe a la ligne. Ne rementionne jamais cette note dans le texte. ";
       system =
         "Tu es un coach reseaux sociaux pour createurs et infopreneurs qui vendent des produits digitaux avec Expertly. " +
-        "TRES IMPORTANT: tu n'as PAS acces aux vraies statistiques du compte (abonnes, vues, engagement) : n'invente JAMAIS de chiffres ni de donnees du compte. " +
-        "Donne un audit strategique et un plan de contenu concret, oriente vente, base uniquement sur la plateforme, le pseudo et l'objectif fournis. " +
+        dataRule +
+        "Donne un audit strategique et un plan de contenu concret, oriente vente. " +
         "Reponds en francais, ton direct et motivant, en texte simple SANS markdown (pas d'asterisques, pas de dieze). Utilise des tirets et des titres courts. " +
-        "Commence IMPERATIVEMENT ta reponse par une seule premiere ligne au format EXACT [[NOTE:xx]] ou xx est un entier de 0 a 100 estimant le potentiel actuel du compte d'apres le positionnement et l'objectif fournis (moins de 50 si flou ou peu d'infos, 60 a 79 si correct, 80 et plus si tres clair et vendeur), puis passe a la ligne. Ne rementionne jamais cette note dans le texte. " +
+        noteRule +
         "Structure ta reponse ainsi : 1) Positionnement conseille (1-2 phrases). 2) 5 idees de contenus concretes adaptees a la plateforme. 3) 3 accroches (hooks) pretes a copier. 4) Rythme de publication conseille. 5) Comment transformer l'audience en ventes (lien en bio vers la boutique Expertly, offre d'appel). " +
         "Plateforme: " + platform + ". Pseudo: " + handle + ". Objectif du createur: " + (objective || "developper mon audience et vendre mes produits") + ".";
       question = "Fais mon audit et mon plan de contenu pour " + handle + " sur " + platform + ".";
@@ -113,7 +261,7 @@ export default async function handler(req, res) {
     const parts = data && data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts;
     const text = Array.isArray(parts) ? parts.map((p) => p.text || "").join("").trim() : "";
     if (!text) { sendJson(res, 502, { error: "assistant_empty" }); return; }
-    sendJson(res, 200, { answer: text });
+    sendJson(res, 200, mode === "social" ? { answer: text, stats: socialStats } : { answer: text });
   } catch (error) {
     sendJson(res, error && error.status ? error.status : 500, { error: (error && error.message) || "Erreur interne." });
   }
