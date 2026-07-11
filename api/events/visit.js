@@ -22,13 +22,19 @@ export default async function handler(req, res) {
     }
     const row = rows[0];
     const state = normalizeState(row.state);
-    state.analytics.visits = (state.analytics.visits || 0) + 1;
-    // Historique mensuel des visites (pour le graphique Acquisition : orange = visites/mois).
+    const prevTotal = state.analytics.visits || 0;
+    state.analytics.visits = prevTotal + 1;
+    // Historique mensuel des visites (graphique Acquisition : orange = visites/mois).
     const monthKey = new Date().toISOString().slice(0, 7);
     if (!state.analytics.visitsByMonth || typeof state.analytics.visitsByMonth !== "object") {
       state.analytics.visitsByMonth = {};
     }
-    state.analytics.visitsByMonth[monthKey] = (state.analytics.visitsByMonth[monthKey] || 0) + 1;
+    const vbm = state.analytics.visitsByMonth;
+    // Rattrape les visites historiques non datees (avant le suivi mensuel) sur le mois courant,
+    // pour que la somme des mois corresponde toujours au total des visites.
+    const summed = Object.keys(vbm).reduce((acc, k) => acc + (Number(vbm[k]) || 0), 0);
+    if (summed < prevTotal) vbm[monthKey] = (vbm[monthKey] || 0) + (prevTotal - summed);
+    vbm[monthKey] = (vbm[monthKey] || 0) + 1;
     state.products
       .filter((product) => product.status === "published")
       .forEach((product) => {
