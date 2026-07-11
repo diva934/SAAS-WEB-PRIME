@@ -33,12 +33,21 @@ export default async function handler(req, res) {
           }),
         });
       } catch (e) {
-        const msg = String((e && e.message) || "");
-        if (/already|registered|exist|duplicate|been/i.test(msg)) {
+        const detail = (e && e.supabase) || {};
+        const code = String(detail.error_code || detail.code || "");
+        const msg = String((e && e.message) || detail.msg || "");
+        const status = e && e.status;
+        // Email deja utilise : GoTrue renvoie 422 / error_code "email_exists".
+        if (
+          status === 409 || status === 422 ||
+          /email_exists|already|registered|duplicate|been|existe/i.test(code + " " + msg)
+        ) {
           sendJson(res, 409, { error: "email_exists" });
           return;
         }
-        throw e;
+        // Autre motif : on le remonte lisiblement (email refuse, mot de passe faible, etc.).
+        sendJson(res, 400, { error: msg ? msg.slice(0, 160) : "Creation du compte impossible." });
+        return;
       }
       sendJson(res, 200, { ok: true });
       return;

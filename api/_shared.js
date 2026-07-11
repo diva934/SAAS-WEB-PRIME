@@ -106,7 +106,12 @@ export async function supabaseRequest(path, options = {}) {
   });
   const text = await response.text();
   const data = text ? JSON.parse(text) : null;
-  if (!response.ok) throw new Error(data?.message || data?.error_description || `Supabase HTTP ${response.status}`);
+  if (!response.ok) {
+    const err = new Error(data?.message || data?.msg || data?.error_description || data?.error || `Supabase HTTP ${response.status}`);
+    err.status = response.status;
+    err.supabase = data;
+    throw err;
+  }
   return data;
 }
 
