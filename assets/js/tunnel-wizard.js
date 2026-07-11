@@ -61,6 +61,45 @@
   function dismissIntro() { try { localStorage.setItem(SEEN_KEY, "1"); } catch (e) {} }
   function goView(view) { var n = document.querySelector('.nav-item[data-view="' + view + '"]'); if (n) { n.click(); return true; } return false; }
 
+  // ---- Stripe Connect : appel direct du meme backend que la carte Reglages ----
+  var _sbCfg = null, _sb = null;
+  var stripeStatus = null;        // { connected, chargesEnabled, detailsSubmitted, payoutsEnabled }
+  var stripeStatusFetched = false; // ne recupere le statut qu'une fois
+  function loadCfg() {
+    if (_sbCfg) return Promise.resolve(_sbCfg);
+    return fetch("/api/config", { cache: "no-store" })
+      .then(function (r) { return r.json(); })
+      .then(function (c) { _sbCfg = c || {}; return _sbCfg; })
+      .catch(function () { _sbCfg = {}; return _sbCfg; });
+  }
+  function sbToken() {
+    return loadCfg().then(function (c) {
+      if (!window.supabase || !c.supabaseUrl || !c.supabaseAnonKey) return "";
+      if (!_sb) _sb = window.supabase.createClient(c.supabaseUrl, c.supabaseAnonKey);
+      return _sb.auth.getSession().then(function (r) {
+        return (r && r.data && r.data.session && r.data.session.access_token) || "";
+      });
+    });
+  }
+  function stripeApiAction(action) {
+    return sbToken().then(function (t) {
+      if (!t) throw new Error("Session requise. Reconnecte-toi.");
+      return fetch("/api/state", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: "Bearer " + t },
+        body: JSON.stringify({ action: action })
+      }).then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); });
+    });
+  }
+  // Recupere le statut Stripe une seule fois puis re-rend le wizard (le done() de l'etape en depend).
+  function fetchStripeStatus() {
+    if (stripeStatusFetched) return;
+    stripeStatusFetched = true;
+    stripeApiAction("connect-status")
+      .then(function (res) { if (res.ok) { stripeStatus = res.j; mount(); } })
+      .catch(function () {});
+  }
+
   // ---- Lecture des vrais signaux depuis le DOM rempli par app.js ----
   function readStatus() {
     var s = { identity: false, product: false, page: false, stripe: false, email: false, checkoutTested: false };
@@ -86,6 +125,8 @@
         if (/lead magnet/.test(t) && done) s.product = true;
       });
     }
+    // Signal Stripe reel (chargesEnabled) prioritaire des qu'on connait le statut Connect.
+    if (stripeStatus) s.stripe = !!stripeStatus.chargesEnabled;
     return s;
   }
 
@@ -134,6 +175,12 @@
           } else {
             actions = '<button type="button" class="primary-button tw-cta" data-view-target="pages">Publier une page</button>';
           }
+        } else if (st.special === "stripe") {
+          // Bouton de connexion DIRECTE (Stripe Connect) : lance l'onboarding sans passer par Reglages.
+          var sLabel = (stripeStatus && stripeStatus.connected && !stripeStatus.chargesEnabled)
+            ? "Terminer la configuration Stripe" : "Connecter mon compte Stripe";
+          actions = '<button type="button" class="primary-button tw-cta" data-tw-action="stripe-connect">' + sLabel + '</button>'
+            + '<button type="button" class="tw-ghost" data-view-target="settings">Ouvrir les Reglages</button>';
         } else {
           actions = '<button type="button" class="primary-button tw-cta" data-view-target="' + (st.target || "overview") + '">' + st.cta + '</button>';
         }
@@ -141,7 +188,8 @@
 
       var note = "";
       if (isCurrent && st.special === "stripe") {
-        note = '<p class="tw-note">Connexion directe de ton compte Stripe (Stripe Connect) a venir : pour l\'instant, la connexion se fait dans Reglages.</p>';
+        note = '<p class="tw-note">En cliquant, tu es redirige vers Stripe pour connecter (ou creer) ton compte et saisir ton identite + IBAN. L\'argent de tes ventes arrive ensuite directement sur ton compte.</p>'
+          + '<p class="tw-err" data-tw-stripe-err hidden></p>';
       }
 
       return '' +
@@ -179,8 +227,9 @@
     // On ne prend le controle que lorsque la vue Tunnel est reellement affichee.
     if (!view || view.offsetParent === null) return;
 
+    fetchStripeStatus(); // recupere le statut Stripe reel une seule fois (met a jour l'etape Connecter Stripe)
     var status = readStatus();
-    var sig = JSON.stringify(status) + "|" + (storeUrl() || "") + "|" + introDismissed();
+    var sig = JSON.stringify(status) + "|" + (storeUrl() || "") + "|" + introDismissed() + "|s" + (stripeStatus ? (stripeStatus.chargesEnabled ? 2 : (stripeStatus.connected ? 1 : 0)) : "?");
     var host = view.querySelector("#tunnelWizard");
     // Rien n'a change depuis le dernier rendu : on ne refait rien (evite le flicker du live-refresh 1s).
     if (host && host.getAttribute("data-sig") === sig) return;
@@ -206,6 +255,24 @@
   document.addEventListener("click", function (e) {
     var skip = e.target.closest && e.target.closest('[data-tw-action="skip"]');
     if (skip) { dismissIntro(); goView("overview"); mount(); return; }
+    var sc = e.target.closest && e.target.closest('[data-tw-action="stripe-connect"]');
+    if (sc) {
+      e.preventDefault();
+      var prev = sc.textContent;
+      sc.disabled = true; sc.textContent = "Redirection vers Stripe…";
+      var errEl = document.querySelector('[data-tw-stripe-err]');
+      if (errEl) { errEl.hidden = true; errEl.textContent = ""; }
+      stripeApiAction("connect-onboard")
+        .then(function (res) {
+          if (!res.ok || !res.j || !res.j.url) throw new Error(res.j && res.j.error ? res.j.error : "Connexion Stripe impossible pour le moment.");
+          window.location.href = res.j.url;
+        })
+        .catch(function (err) {
+          sc.disabled = false; sc.textContent = prev;
+          if (errEl) { errEl.textContent = (err && err.message) || "Erreur. Reessaie."; errEl.hidden = false; }
+        });
+      return;
+    }
     var t = e.target.closest && e.target.closest('[data-tw-action="copy"]');
     if (!t) return;
     var url = t.getAttribute("data-url");
@@ -294,6 +361,7 @@
       '.tw-ghost{border:1px solid #e2e4ec;background:#fff;color:#15161c;font:inherit;font-size:13px;font-weight:700;border-radius:12px;padding:9px 14px;cursor:pointer}' +
       '.tw-ghost:hover{background:#f5f6f9}' +
       '.tw-note{margin:10px 0 0;font-size:12px;line-height:1.45;color:#8a8f9c;background:#f7f8fb;border:1px solid #edeff3;border-radius:12px;padding:9px 11px}' +
+      '.tw-err{margin:8px 0 0;font-size:12.5px;line-height:1.45;color:#c0334e;background:#fdecef;border:1px solid #f6d4da;border-radius:12px;padding:9px 11px}' +
       '@media(max-width:640px){.tw-title{font-size:22px}.tw-step{padding:16px}}';
     var style = document.createElement("style");
     style.id = "tunnelWizardCss";
