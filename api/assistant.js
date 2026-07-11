@@ -7,6 +7,7 @@ import {
 } from "./_shared.js";
 
 const MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
+// Redeploy trigger : activation RapidAPI Instagram (RAPIDAPI_KEY).
 const RL_LIMIT = 30;
 const RL_WINDOW_MS = 3600000;
 
