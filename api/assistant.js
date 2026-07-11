@@ -5,7 +5,6 @@ import {
   supabaseRequest,
   userFromRequest,
 } from "./_shared.js";
-import { fetchConnectedSocialSnapshot } from "./social/_shared.js";
 
 const MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
 const RL_LIMIT = 30;
@@ -65,35 +64,15 @@ export default async function handler(req, res) {
       const handle = String(body.handle || "").slice(0, 60).trim();
       const objective = String(body.objective || "").slice(0, 500).trim();
       if (!handle) { sendJson(res, 400, { error: "Pseudo requis." }); return; }
-      const snapshot = await fetchConnectedSocialSnapshot(user.id, platform, req);
-      const accountHandle = snapshot.handle || handle;
-      const followers = snapshot.followers === null || snapshot.followers === undefined ? "non renseigne" : String(snapshot.followers);
-      const bio = snapshot.bio || "non renseignee";
-      const bioLink = snapshot.bioLink || "non renseigne";
-      const visibility = snapshot.visibility || "non renseigne";
-      const posts = (snapshot.posts || []).slice(0, 10);
-      const samples = posts.map((post, index) => {
-        return [
-          `Post ${index + 1}`,
-          `Lien: ${post.url || "non renseigne"}`,
-          `Legende: ${post.caption || "non renseignee"}`,
-          `Hashtags: ${(post.hashtags || []).join(" ") || "aucun hashtag detecte"}`,
-        ].join("\n");
-      }).join("\n\n").slice(0, 7000);
       system =
         "Tu es un coach reseaux sociaux pour createurs et infopreneurs qui vendent des produits digitaux avec Expertly. " +
-        "Tu analyses uniquement les donnees officielles recuperees via la connexion sociale du createur: statut, bio, lien en bio, nombre d'abonnes, posts, legendes et hashtags. " +
-        "TRES IMPORTANT: n'invente JAMAIS de chiffres ni de donnees du compte. Si une info manque, indique 'non renseigne'. " +
-        "Base toute ton analyse sur les donnees fournies ci-dessous, la plateforme, le pseudo et l'objectif. Reponds en francais, ton direct et professionnel, en texte simple SANS markdown (pas d'asterisques, pas de dieze). Utilise des tirets et des titres courts. " +
-        "Structure ta reponse ainsi : 1) Infos du compte (plateforme, pseudo, public/prive, nombre d'abonnes, bio, lien en bio, objectif). 2) Posts et hashtags analyses (liste synthetique des posts fournis, legendes et hashtags recurrents). 3) Synthese du compte percu. 4) Ce qui ressort des contenus fournis. 5) Positionnement percu. 6) Forces. 7) Faiblesses / risques. 8) 5 recommandations concretes. 9) 5 idees de posts ou scripts adaptes. 10) Plan d'action 7 jours. " +
-        "Plateforme: " + snapshot.provider + ". Pseudo: " + accountHandle + ". Statut du compte: " + visibility + ". Nombre d'abonnes: " + followers + ". Bio: " + bio + ". Lien en bio: " + bioLink + ". Objectif du createur: " + (objective || "developper mon audience et vendre mes produits") + ".";
-      question =
-        "Genere un compte rendu pour " + accountHandle + " sur " + snapshot.provider + " a partir des donnees officielles recuperees par le backend. " +
-        "Statut public/prive: " + visibility + ". " +
-        "Nombre d'abonnes: " + followers + ". " +
-        "Bio du compte: " + bio + ". " +
-        "Lien en bio: " + bioLink + ". " +
-        "Objectif: " + (objective || "developper mon audience et vendre mes produits") + ".\n\nPosts, legendes et hashtags recuperes:\n" + (samples || "Aucun post disponible via l'API.");
+        "TRES IMPORTANT: tu n'as PAS acces aux vraies statistiques du compte (abonnes, vues, engagement) : n'invente JAMAIS de chiffres ni de donnees du compte. " +
+        "Donne un audit strategique et un plan de contenu concret, oriente vente, base uniquement sur la plateforme, le pseudo et l'objectif fournis. " +
+        "Reponds en francais, ton direct et motivant, en texte simple SANS markdown (pas d'asterisques, pas de dieze). Utilise des tirets et des titres courts. " +
+        "Commence IMPERATIVEMENT ta reponse par une seule premiere ligne au format EXACT [[NOTE:xx]] ou xx est un entier de 0 a 100 estimant le potentiel actuel du compte d'apres le positionnement et l'objectif fournis (moins de 50 si flou ou peu d'infos, 60 a 79 si correct, 80 et plus si tres clair et vendeur), puis passe a la ligne. Ne rementionne jamais cette note dans le texte. " +
+        "Structure ta reponse ainsi : 1) Positionnement conseille (1-2 phrases). 2) 5 idees de contenus concretes adaptees a la plateforme. 3) 3 accroches (hooks) pretes a copier. 4) Rythme de publication conseille. 5) Comment transformer l'audience en ventes (lien en bio vers la boutique Expertly, offre d'appel). " +
+        "Plateforme: " + platform + ". Pseudo: " + handle + ". Objectif du createur: " + (objective || "developper mon audience et vendre mes produits") + ".";
+      question = "Fais mon audit et mon plan de contenu pour " + handle + " sur " + platform + ".";
     } else {
       question = String(body.question || "").slice(0, 800).trim();
       if (!question) { sendJson(res, 400, { error: "Question vide." }); return; }
@@ -118,7 +97,7 @@ export default async function handler(req, res) {
     const payload = {
       systemInstruction: { parts: [{ text: system }] },
       contents,
-      generationConfig: { temperature: 0.6, maxOutputTokens: mode === "social" ? 1200 : 600, thinkingConfig: { thinkingBudget: 0 } },
+      generationConfig: { temperature: 0.6, maxOutputTokens: mode === "social" ? 900 : 600, thinkingConfig: { thinkingBudget: 0 } },
     };
 
     const url = "https://generativelanguage.googleapis.com/v1beta/models/" + encodeURIComponent(MODEL) + ":generateContent?key=" + encodeURIComponent(apiKey);
