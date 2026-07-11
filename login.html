@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Connexion · Expertly</title>
+    <meta name="robots" content="noindex" />
+    <link rel="icon" href="./assets/expertly-logo.webp" type="image/webp" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+      :root { --ink:#15161c; --muted:#6b7280; --line:#e6e8ee; --lime:#c6f24e; --dark:#16171e; --red:#c0334e; }
+      * { box-sizing: border-box; }
+      html, body { height: 100%; }
+      body {
+        margin: 0; font-family: "Inter", system-ui, sans-serif; color: var(--ink);
+        background: radial-gradient(1200px 600px at 15% -10%, #eef7d6 0%, transparent 55%),
+                    radial-gradient(1000px 700px at 110% 20%, #eaf0ff 0%, transparent 50%),
+                    #f3f4f6;
+        display: grid; place-items: center; padding: 24px;
+      }
+      .lg-card {
+        width: min(430px, 100%); background: #fff; border: 1px solid var(--line);
+        border-radius: 28px; padding: 34px 32px;
+        box-shadow: 0 30px 60px rgba(20,22,40,.10);
+      }
+      .lg-logo { height: 30px; display: block; margin-bottom: 26px; }
+      .lg-eyebrow { margin: 0; font-size: 12px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: #8a8f9c; }
+      .lg-title { margin: 6px 0 6px; font-family: "Manrope", sans-serif; font-size: 27px; font-weight: 800; line-height: 1.1; }
+      .lg-sub { margin: 0 0 22px; color: var(--muted); font-size: 14px; line-height: 1.5; }
+      form { display: grid; gap: 14px; }
+      label { display: grid; gap: 7px; font-size: 12.5px; font-weight: 700; color: #4a4f5c; }
+      input {
+        width: 100%; border: 1px solid var(--line); border-radius: 12px; padding: 13px 14px;
+        font: inherit; font-size: 14px; color: var(--ink); background: #fff; outline: none;
+      }
+      input:focus { border-color: var(--lime); box-shadow: 0 0 0 3px rgba(198,242,78,.35); }
+      .lg-row { display: flex; justify-content: flex-end; margin-top: -4px; }
+      .lg-link { border: 0; background: none; padding: 0; font: inherit; font-size: 12.5px; font-weight: 600; color: #5b6070; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
+      .lg-link:hover { color: var(--ink); }
+      .lg-btn {
+        margin-top: 4px; border: 0; border-radius: 14px; padding: 14px 18px; background: var(--dark);
+        color: #fff; font: inherit; font-weight: 800; font-size: 15px; cursor: pointer;
+        box-shadow: 0 12px 26px rgba(16,17,26,.18);
+      }
+      .lg-btn:disabled { opacity: .6; cursor: wait; }
+      .lg-feedback { min-height: 18px; font-size: 12.5px; font-weight: 700; margin: 2px 0 0; }
+      .lg-feedback.err { color: var(--red); }
+      .lg-feedback.ok { color: #1a8a53; }
+      .lg-foot { margin: 20px 0 0; font-size: 13px; color: var(--muted); text-align: center; }
+      .lg-foot a { color: var(--dark); font-weight: 700; text-decoration: none; }
+      .lg-foot a:hover { text-decoration: underline; }
+      .lg-back { display: block; margin: 16px auto 0; text-align: center; font-size: 12.5px; color: #9aa0ad; text-decoration: none; }
+      .lg-back:hover { color: var(--muted); }
+    </style>
+  </head>
+  <body>
+    <main class="lg-card" aria-busy="true">
+      <img class="lg-logo" src="./assets/expertly-logo.png" alt="Expertly" onerror="this.style.display='none'" />
+      <p class="lg-eyebrow">Espace client</p>
+      <h1 class="lg-title">Connexion à ton espace</h1>
+      <p class="lg-sub">Connecte-toi pour accéder à ton CRM Expertly.</p>
+      <form id="lgForm" autocomplete="on">
+        <label>Email
+          <input name="email" type="email" autocomplete="email" required placeholder="toi@email.com" />
+        </label>
+        <label>Mot de passe
+          <input name="password" type="password" autocomplete="current-password" minlength="6" required placeholder="Ton mot de passe" />
+        </label>
+        <div class="lg-row"><button type="button" class="lg-link" id="lgForgot">Mot de passe oublié ?</button></div>
+        <button type="submit" class="lg-btn" id="lgSubmit">Se connecter</button>
+        <p class="lg-feedback" id="lgFeedback" role="status"></p>
+      </form>
+      <p class="lg-foot">Pas encore de compte ? <a id="lgSignup" href="https://saas-web-prime.vercel.app">Créer un compte</a></p>
+      <a class="lg-back" id="lgBack" href="https://saas-web-prime.vercel.app">← Retour au site Expertly</a>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+      (function () {
+        "use strict";
+        var card = document.querySelector(".lg-card");
+        var form = document.getElementById("lgForm");
+        var submit = document.getElementById("lgSubmit");
+        var feedback = document.getElementById("lgFeedback");
+        var forgot = document.getElementById("lgForgot");
+        var emailInput = form.email;
+        var sb = null;
+        var marketingBase = "https://saas-web-prime.vercel.app";
+
+        function setFeedback(msg, type) {
+          feedback.textContent = msg || "";
+          feedback.className = "lg-feedback" + (type ? " " + type : "");
+        }
+        function translate(msg) {
+          var m = String(msg || "").toLowerCase();
+          if (m.indexOf("invalid login") >= 0 || m.indexOf("invalid credentials") >= 0) return "Email ou mot de passe incorrect.";
+          if (m.indexOf("email not confirmed") >= 0) return "Ton email n'est pas encore confirmé. Vérifie ta boîte mail.";
+          if (m.indexOf("rate limit") >= 0 || m.indexOf("too many") >= 0) return "Trop de tentatives. Réessaie dans quelques minutes.";
+          return msg || "Connexion impossible. Réessaie.";
+        }
+
+        var cfgPromise = fetch("/api/config", { cache: "no-store" })
+          .then(function (r) { return r.json(); })
+          .catch(function () { return {}; });
+
+        function client() {
+          return cfgPromise.then(function (c) {
+            if (c && c.marketingUrl) {
+              marketingBase = String(c.marketingUrl).replace(/\/$/, "");
+              document.getElementById("lgSignup").href = marketingBase + "/?signup=1";
+              document.getElementById("lgBack").href = marketingBase;
+            }
+            if (!sb && window.supabase && c && c.supabaseUrl && c.supabaseAnonKey) {
+              sb = window.supabase.createClient(c.supabaseUrl, c.supabaseAnonKey);
+            }
+            return sb;
+          });
+        }
+
+        // Deja connecte ? On file directement au CRM (pas besoin de reafficher le formulaire).
+        client().then(function (s) {
+          if (!s) { card.setAttribute("aria-busy", "false"); return; }
+          s.auth.getSession().then(function (r) {
+            if (r && r.data && r.data.session && r.data.session.user) {
+              location.replace("/app");
+            } else {
+              card.setAttribute("aria-busy", "false");
+            }
+          }).catch(function () { card.setAttribute("aria-busy", "false"); });
+        });
+
+        form.addEventListener("submit", function (e) {
+          e.preventDefault();
+          var email = (emailInput.value || "").trim();
+          var password = form.password.value || "";
+          if (!email || !password) return;
+          submit.disabled = true;
+          var prev = submit.textContent;
+          submit.textContent = "Connexion…";
+          setFeedback("", null);
+          client().then(function (s) {
+            if (!s) throw new Error("Service indisponible. Réessaie dans un instant.");
+            return s.auth.signInWithPassword({ email: email, password: password });
+          }).then(function (res) {
+            if (res && res.error) throw res.error;
+            setFeedback("Connexion réussie, ouverture de ton espace…", "ok");
+            location.replace("/app");
+          }).catch(function (err) {
+            submit.disabled = false;
+            submit.textContent = prev;
+            setFeedback(translate(err && err.message), "err");
+          });
+        });
+
+        forgot.addEventListener("click", function () {
+          var email = (emailInput.value || "").trim();
+          if (!email) { setFeedback("Entre d'abord ton email ci-dessus, puis reclique.", "err"); emailInput.focus(); return; }
+          forgot.disabled = true;
+          client().then(function (s) {
+            if (!s) throw new Error("Service indisponible.");
+            return s.auth.resetPasswordForEmail(email, { redirectTo: location.origin + "/connexion" });
+          }).then(function (res) {
+            if (res && res.error) throw res.error;
+            setFeedback("Email de réinitialisation envoyé à " + email + ".", "ok");
+          }).catch(function (err) {
+            setFeedback(translate(err && err.message), "err");
+          }).then(function () { forgot.disabled = false; });
+        });
+      })();
+    </script>
+  </body>
+</html>
