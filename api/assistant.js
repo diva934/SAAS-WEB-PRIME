@@ -72,14 +72,47 @@ function deepString(obj, re) {
   return out;
 }
 
-// Tentative gratuite : endpoint public IG (souvent bloque cote serveur, mais gratuit).
+// Convertit "1,234", "10.5K", "162M", "2.6B" -> nombre.
+function parseCount(str) {
+  if (str == null) return null;
+  const m = String(str).replace(/ /g, " ").trim().match(/([\d.,]+)\s*([KMB])?/i);
+  if (!m) return null;
+  let n = parseFloat(m[1].replace(/,/g, ""));
+  if (!isFinite(n)) return null;
+  const suf = (m[2] || "").toUpperCase();
+  if (suf === "K") n *= 1e3; else if (suf === "M") n *= 1e6; else if (suf === "B") n *= 1e9;
+  return Math.round(n);
+}
+
+// Tentative gratuite Instagram : plusieurs strategies (IG bloque souvent les IP serveurs).
 async function scrapeInstagram(handle) {
+  const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36";
+  // Strategie 1 : balise og:description de la page publique -> "X Followers, Y Following, Z Posts".
+  try {
+    const r = await fetchWithTimeout("https://www.instagram.com/" + encodeURIComponent(handle) + "/",
+      { headers: { "User-Agent": UA, "Accept": "text/html,application/xhtml+xml", "Accept-Language": "fr-FR,fr;q=0.9,en;q=0.8" } }, 6500);
+    if (r.ok) {
+      const html = await r.text();
+      const desc = (html.match(/<meta[^>]+property=["']og:description["'][^>]+content=["']([^"']+)["']/i) || [])[1]
+        || (html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:description["']/i) || [])[1];
+      if (desc) {
+        const mm = desc.match(/([\d.,]+\s*[KMB]?)\s+Followers,\s+([\d.,]+\s*[KMB]?)\s+Following,\s+([\d.,]+\s*[KMB]?)\s+Posts/i);
+        if (mm) {
+          const title = (html.match(/<meta[^>]+property=["']og:title["'][^>]+content=["']([^"']+)["']/i) || [])[1] || "";
+          return {
+            platform: "Instagram", handle, name: title.replace(/\s*\(@.*/i, "").trim(),
+            followers: parseCount(mm[1]), following: parseCount(mm[2]), posts: parseCount(mm[3]),
+            bio: "", verified: false, source: "og",
+          };
+        }
+      }
+    }
+  } catch { /* passe a la strategie suivante */ }
+  // Strategie 2 : endpoint JSON web_profile_info.
   try {
     const r = await fetchWithTimeout(
       "https://www.instagram.com/api/v1/users/web_profile_info/?username=" + encodeURIComponent(handle),
-      { headers: { "x-ig-app-id": "936619743392459", "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15", "Accept": "*/*" } },
-      6000,
-    );
+      { headers: { "x-ig-app-id": "936619743392459", "User-Agent": UA, "Accept": "*/*" } }, 6500);
     if (!r.ok) return null;
     const d = await r.json().catch(() => null);
     const u = d && d.data && d.data.user;
@@ -89,7 +122,7 @@ async function scrapeInstagram(handle) {
       followers: u.edge_followed_by ? u.edge_followed_by.count : null,
       following: u.edge_follow ? u.edge_follow.count : null,
       posts: u.edge_owner_to_timeline_media ? u.edge_owner_to_timeline_media.count : null,
-      bio: u.biography || "", source: "direct",
+      bio: u.biography || "", source: "web_profile_info",
     };
   } catch { return null; }
 }
