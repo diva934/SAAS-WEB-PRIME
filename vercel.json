@@ -23,6 +23,8 @@
     { "src": "/app", "dest": "/app.html" },
     { "src": "/connexion", "dest": "/login.html" },
     { "src": "/login", "dest": "/login.html" },
+    { "src": "/inscription", "dest": "/inscription.html" },
+    { "src": "/signup", "dest": "/inscription.html" },
     { "src": "/b/([^/]+)", "dest": "/store.html" },
     { "src": "/go/([^/]+)", "dest": "/open.html" },
     { "src": "/p/(.*)", "dest": "/sales.html" },

@@ -72,7 +72,7 @@
         <button type="submit" class="lg-btn" id="lgSubmit">Se connecter</button>
         <p class="lg-feedback" id="lgFeedback" role="status"></p>
       </form>
-      <p class="lg-foot">Pas encore de compte ? <a id="lgSignup" href="https://saas-web-prime.vercel.app">Créer un compte</a></p>
+      <p class="lg-foot">Pas encore de compte ? <a id="lgSignup" href="/inscription">Créer un compte</a></p>
       <a class="lg-back" id="lgBack" href="https://saas-web-prime.vercel.app">← Retour au site Expertly</a>
     </main>
 
@@ -109,7 +109,6 @@
           return cfgPromise.then(function (c) {
             if (c && c.marketingUrl) {
               marketingBase = String(c.marketingUrl).replace(/\/$/, "");
-              document.getElementById("lgSignup").href = marketingBase + "/?signup=1";
               document.getElementById("lgBack").href = marketingBase;
             }
             if (!sb && window.supabase && c && c.supabaseUrl && c.supabaseAnonKey) {

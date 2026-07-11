@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Créer mon compte · Expertly</title>
+    <meta name="description" content="Crée ton compte Expertly et lance ton essai gratuit de 14 jours : boutique, CRM et tunnels de vente pour infopreneurs." />
+    <link rel="icon" href="./assets/expertly-logo.webp" type="image/webp" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+      :root { --ink:#15161c; --muted:#6b7280; --line:#e6e8ee; --lime:#c6f24e; --dark:#16171e; --red:#c0334e; --purple:#6558f5; }
+      * { box-sizing: border-box; }
+      html, body { height: 100%; }
+      body {
+        margin: 0; font-family: "Inter", system-ui, sans-serif; color: var(--ink);
+        background: radial-gradient(1200px 600px at 12% -10%, #eef7d6 0%, transparent 55%),
+                    radial-gradient(1000px 700px at 112% 15%, #eae7ff 0%, transparent 50%),
+                    #f3f4f6;
+        display: grid; place-items: center; padding: 24px;
+      }
+      .in-wrap { width: min(940px, 100%); display: grid; grid-template-columns: 1.05fr 1fr; gap: 22px; align-items: stretch; }
+      .in-pitch { padding: 8px 6px; align-self: center; }
+      .in-logo { height: 30px; margin-bottom: 22px; }
+      .in-h1 { font-family: "Manrope", sans-serif; font-size: 33px; font-weight: 800; line-height: 1.12; margin: 0 0 14px; }
+      .in-h1 span { color: var(--purple); }
+      .in-lead { font-size: 15px; color: var(--muted); line-height: 1.55; margin: 0 0 20px; }
+      .in-benefits { list-style: none; padding: 0; margin: 0 0 20px; display: grid; gap: 11px; }
+      .in-benefits li { display: flex; gap: 10px; align-items: flex-start; font-size: 14.5px; font-weight: 500; }
+      .in-check { flex: none; width: 22px; height: 22px; border-radius: 50%; background: #e7f7d6; color: #4f7d12; display: grid; place-items: center; font-size: 13px; font-weight: 800; margin-top: 1px; }
+      .in-trial { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; color: #4f7d12; background: #eef7d6; border-radius: 999px; padding: 7px 13px; }
+
+      .in-card { background: #fff; border: 1px solid var(--line); border-radius: 24px; padding: 30px 28px; box-shadow: 0 30px 60px rgba(20,22,40,.10); align-self: center; }
+      .in-card h2 { font-family: "Manrope", sans-serif; font-size: 21px; font-weight: 800; margin: 0 0 4px; }
+      .in-card .in-sub { font-size: 13px; color: var(--muted); margin: 0 0 18px; }
+      form { display: grid; gap: 13px; }
+      label { display: grid; gap: 6px; font-size: 12.5px; font-weight: 700; color: #4a4f5c; }
+      input { width: 100%; border: 1px solid var(--line); border-radius: 12px; padding: 12px 13px; font: inherit; font-size: 14px; color: var(--ink); background: #fff; outline: none; }
+      input:focus { border-color: var(--lime); box-shadow: 0 0 0 3px rgba(198,242,78,.35); }
+      .in-btn { margin-top: 4px; border: 0; border-radius: 13px; padding: 14px 18px; background: var(--dark); color: #fff; font: inherit; font-weight: 800; font-size: 15px; cursor: pointer; box-shadow: 0 12px 26px rgba(16,17,26,.18); }
+      .in-btn:disabled { opacity: .6; cursor: wait; }
+      .in-fine { font-size: 11.5px; color: #9aa0ad; text-align: center; margin-top: 10px; line-height: 1.45; }
+      .in-feedback { min-height: 16px; font-size: 12.5px; font-weight: 700; margin: 2px 0 0; }
+      .in-feedback.err { color: var(--red); }
+      .in-feedback.ok { color: #1a8a53; }
+      .in-foot { margin: 16px 0 0; font-size: 13px; color: var(--muted); text-align: center; }
+      .in-foot a { color: var(--dark); font-weight: 700; text-decoration: none; }
+      .in-foot a:hover { text-decoration: underline; }
+      @media (max-width: 780px) {
+        .in-wrap { grid-template-columns: 1fr; gap: 8px; }
+        .in-pitch { text-align: center; padding: 0 4px; }
+        .in-benefits { text-align: left; max-width: 360px; margin-left: auto; margin-right: auto; }
+        .in-h1 { font-size: 27px; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="in-wrap">
+      <section class="in-pitch">
+        <img class="in-logo" src="./assets/expertly-logo.png" alt="Expertly" onerror="this.style.display='none'" />
+        <h1 class="in-h1">Ta boutique, ton CRM et tes tunnels de vente <span>en un seul espace</span>.</h1>
+        <p class="in-lead">Expertly réunit tout ce qu'il te faut pour vendre tes offres digitales : page de vente, paiements, livraison automatique et suivi client.</p>
+        <ul class="in-benefits">
+          <li><span class="in-check">✓</span><span>Boutique &amp; pages de vente prêtes en quelques minutes</span></li>
+          <li><span class="in-check">✓</span><span>Encaisse tes ventes directement sur ton compte Stripe</span></li>
+          <li><span class="in-check">✓</span><span>Livraison &amp; emails automatiques après chaque achat</span></li>
+          <li><span class="in-check">✓</span><span>Coach IA réseaux sociaux pour attirer plus de clients</span></li>
+        </ul>
+        <span class="in-trial">🎁 14 jours d'essai gratuit · à partir de 19 €/mois ensuite</span>
+      </section>
+
+      <section class="in-card" aria-busy="true">
+        <h2>Crée ton compte gratuit</h2>
+        <p class="in-sub">Aucun paiement maintenant. Tu actives ton essai juste après.</p>
+        <form id="inForm" autocomplete="on">
+          <label>Prénom
+            <input name="firstName" type="text" autocomplete="given-name" required placeholder="Alex" />
+          </label>
+          <label>Email
+            <input name="email" type="email" autocomplete="email" required placeholder="toi@email.com" />
+          </label>
+          <label>Mot de passe
+            <input name="password" type="password" autocomplete="new-password" minlength="6" required placeholder="6 caractères minimum" />
+          </label>
+          <button type="submit" class="in-btn" id="inSubmit">Créer mon compte</button>
+          <p class="in-feedback" id="inFeedback" role="status"></p>
+        </form>
+        <p class="in-fine">En créant ton compte, tu pourras lancer ton essai gratuit de 14 jours (carte demandée à ce moment-là, 0 € pendant l'essai, annulable à tout moment).</p>
+        <p class="in-foot">Déjà un compte ? <a href="/connexion">Se connecter</a></p>
+      </section>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+      (function () {
+        "use strict";
+        var card = document.querySelector(".in-card");
+        var form = document.getElementById("inForm");
+        var submit = document.getElementById("inSubmit");
+        var feedback = document.getElementById("inFeedback");
+        var sb = null;
+
+        function setFeedback(msg, type, html) {
+          if (html) { feedback.innerHTML = msg || ""; } else { feedback.textContent = msg || ""; }
+          feedback.className = "in-feedback" + (type ? " " + type : "");
+        }
+
+        var cfgPromise = fetch("/api/config", { cache: "no-store" })
+          .then(function (r) { return r.json(); })
+          .catch(function () { return {}; });
+
+        function client() {
+          return cfgPromise.then(function (c) {
+            if (!sb && window.supabase && c && c.supabaseUrl && c.supabaseAnonKey) {
+              sb = window.supabase.createClient(c.supabaseUrl, c.supabaseAnonKey);
+            }
+            return sb;
+          });
+        }
+
+        // Deja connecte ? direction le CRM.
+        client().then(function (s) {
+          if (!s) { card.setAttribute("aria-busy", "false"); return; }
+          s.auth.getSession().then(function (r) {
+            if (r && r.data && r.data.session && r.data.session.user) {
+              location.replace("/app");
+            } else {
+              card.setAttribute("aria-busy", "false");
+            }
+          }).catch(function () { card.setAttribute("aria-busy", "false"); });
+        });
+
+        form.addEventListener("submit", function (e) {
+          e.preventDefault();
+          var d = new FormData(form);
+          var firstName = String(d.get("firstName") || "").trim();
+          var email = String(d.get("email") || "").trim();
+          var password = String(d.get("password") || "");
+          if (!email || password.length < 6) return;
+          submit.disabled = true;
+          var prev = submit.textContent;
+          submit.textContent = "Création du compte…";
+          setFeedback("", null);
+          // 1) creer le compte (serveur, confirme). 2) se connecter. 3) entrer dans le CRM.
+          fetch("/api/config", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action: "signup", email: email, password: password, firstName: firstName })
+          }).then(function (r) {
+            return r.json().then(function (j) { return { ok: r.ok, status: r.status, j: j }; });
+          }).then(function (res) {
+            if (res.status === 409 || (res.j && res.j.error === "email_exists")) {
+              throw { code: "exists" };
+            }
+            if (!res.ok || !res.j || !res.j.ok) {
+              throw new Error((res.j && res.j.error) || "Création impossible. Réessaie.");
+            }
+            return client().then(function (s) {
+              if (!s) throw new Error("Service indisponible.");
+              return s.auth.signInWithPassword({ email: email, password: password });
+            });
+          }).then(function (signin) {
+            if (signin && signin.error) throw signin.error;
+            setFeedback("Compte créé, ouverture de ton espace…", "ok");
+            location.replace("/app");
+          }).catch(function (err) {
+            submit.disabled = false;
+            submit.textContent = prev;
+            if (err && err.code === "exists") {
+              setFeedback('Cet email a déjà un compte. <a href="/connexion" style="color:#6558f5;font-weight:700">Se connecter</a>', "err", true);
+            } else {
+              setFeedback((err && err.message) || "Erreur. Réessaie.", "err");
+            }
+          });
+        });
+      })();
+    </script>
+  </body>
+</html>
