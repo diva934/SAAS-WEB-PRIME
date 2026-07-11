@@ -33,6 +33,12 @@
     ".sc-res-robot .sc-score{font-size:12.5px;color:#5b6070;margin-top:2px;}",
     ".sc-res-robot.good .sc-score{color:#5a8f12;}",
     ".sc-res-robot.bad .sc-score{color:#c0334e;}",
+    ".sc-stats{margin:0 0 14px;padding:12px 14px;border-radius:14px;background:#0f1115;color:#fff;}",
+    ".sc-stats-h{font-size:12px;font-weight:700;color:#c6f24e;}",
+    ".sc-stats-row{display:flex;gap:18px;margin-top:8px;flex-wrap:wrap;}",
+    ".sc-stats-row div{display:flex;flex-direction:column;}",
+    ".sc-stats-row b{font-size:17px;font-weight:800;line-height:1.1;}",
+    ".sc-stats-row span{font-size:11px;color:#9aa0ad;}",
     "@media(max-width:900px){.sc-wrap{grid-template-columns:1fr;}}"
   ].join("");
   var st = document.createElement("style"); st.id = "sc-css"; st.textContent = CSS; document.head.appendChild(st);
@@ -103,9 +109,19 @@
           var cls = good === null ? "" : (good ? "good" : "bad");
           var verdict = good === null ? "Ton audit est prêt" : (good ? "Bon potentiel !" : "Compte à renforcer");
           var scoreLine = note == null ? "Voici ton plan d'action" : ("Note du compte : " + note + "/100");
+          var s = out.stats, statsHtml = "";
+          if (s && s.followers != null) {
+            var fmt = function (n) { n = Number(n) || 0; return n >= 1000 ? (n / 1000).toFixed(n >= 10000 ? 0 : 1).replace(".0", "") + "k" : String(n); };
+            var chips = ['<div><b>' + fmt(s.followers) + '</b><span>abonnés</span></div>'];
+            if (s.posts != null) chips.push('<div><b>' + fmt(s.posts) + '</b><span>' + (/tiktok/i.test(s.platform) ? "vidéos" : "posts") + '</span></div>');
+            if (s.likes != null) chips.push('<div><b>' + fmt(s.likes) + '</b><span>likes</span></div>');
+            if (s.following != null) chips.push('<div><b>' + fmt(s.following) + '</b><span>abonnements</span></div>');
+            statsHtml = '<div class="sc-stats"><span class="sc-stats-h">' + (s.name ? s.name : "@" + s.handle) + (s.verified ? " ✓" : "") + ' · stats réelles</span><div class="sc-stats-row">' + chips.join("") + '</div></div>';
+          }
           result.innerHTML =
             '<div class="sc-res-robot ' + cls + '"><img src="' + robotSrc + '" alt="" />' +
               '<div><div class="sc-verdict">' + verdict + '</div><div class="sc-score">' + scoreLine + '</div></div></div>' +
+            statsHtml +
             '<div class="sc-res-head"><strong>Audit & plan de contenu</strong><span>' + platform + '</span></div>' +
             '<div class="sc-res-body"></div>';
           result.querySelector(".sc-res-body").textContent = raw;
@@ -126,7 +142,7 @@
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ mode: "social", platform: platform, handle: handle, objective: objective })
         });
-        if (r.ok) { var d = await r.json().catch(function () { return null; }); if (d && d.answer) return { ok: true, text: d.answer }; }
+        if (r.ok) { var d = await r.json().catch(function () { return null; }); if (d && d.answer) return { ok: true, text: d.answer, stats: d.stats || null }; }
         if (r.status === 429) return { ok: false, text: "Tu vas un peu vite, reessaie dans quelques minutes." };
         if (r.status === 503) return { ok: false, text: "L'IA n'est pas encore configuree." };
         return { ok: false, text: "L'analyse a echoue, reessaie dans un instant." };
