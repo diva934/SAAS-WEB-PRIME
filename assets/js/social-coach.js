@@ -111,7 +111,13 @@
           var scoreLine = note == null ? "Voici ton plan d'action" : ("Note du compte : " + note + "/100");
           var s = out.stats, statsHtml = "";
           if (s && s.followers != null) {
-            var fmt = function (n) { n = Number(n) || 0; return n >= 1000 ? (n / 1000).toFixed(n >= 10000 ? 0 : 1).replace(".0", "") + "k" : String(n); };
+            var fmt = function (n) {
+              n = Number(n) || 0;
+              if (n >= 1e9) return (n / 1e9).toFixed(1).replace(".0", "") + "B";
+              if (n >= 1e6) return (n / 1e6).toFixed(1).replace(".0", "") + "M";
+              if (n >= 1e3) return (n / 1e3).toFixed(n >= 1e4 ? 0 : 1).replace(".0", "") + "k";
+              return String(n);
+            };
             var chips = ['<div><b>' + fmt(s.followers) + '</b><span>abonnés</span></div>'];
             if (s.posts != null) chips.push('<div><b>' + fmt(s.posts) + '</b><span>' + (/tiktok/i.test(s.platform) ? "vidéos" : "posts") + '</span></div>');
             if (s.likes != null) chips.push('<div><b>' + fmt(s.likes) + '</b><span>likes</span></div>');
