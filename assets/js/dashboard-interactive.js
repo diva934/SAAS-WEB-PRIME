@@ -1,9 +1,10 @@
 /* Expertly - Dashboard interactif (autonome, ne modifie pas midbox-dashboard.js ni app.js).
-   Le dashboard "Earning Reports" (graphique en barres .mb-svg 760x260) est reconstruit
-   chaque seconde par midbox-dashboard.js. On utilise donc la DELEGATION d'evenements sur
-   document (survol/clic) pour survivre aux re-render : rien n'est injecte dans le SVG.
-   - Survol d'une barre -> infobulle (mois + revenu) qui suit la souris.
-   - Clic sur le graphique -> vue agrandie plein ecran + selecteur de periode (12/6/3 mois). */
+   Le dashboard est reconstruit chaque seconde par midbox-dashboard.js -> on utilise la
+   DELEGATION d'evenements sur document (survol/clic) pour survivre aux re-render.
+   - Graphique "Earning Reports" (barres, viewBox 760x260) : survol -> infobulle mois + revenu ;
+     clic -> vue agrandie plein ecran + selecteur de periode (12/6/3 mois).
+   - Graphiques "Balance" (260x140) et "Acquisition" (300x178) : courbes -> survol -> point + infobulle.
+   Aucune injection dans les SVG : infobulle/point sont des elements HTML en position:fixed. */
 (function () {
   "use strict";
   if (window.__dashInteractiveLoaded) return;
@@ -11,7 +12,8 @@
 
   var MONTHS = ["Jan", "Fev", "Mar", "Avr", "Mai", "Juin", "Juil", "Aout", "Sep", "Oct", "Nov", "Dec"];
   var EUR = new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0 });
-  var CHART_VB = "0 0 760 260"; // signature du graphique de revenus
+  var BARS_VB = "0 0 760 260";
+  var AREA_VBS = ["0 0 260 140", "0 0 300 178"];
   var values = null;
 
   function css() {
@@ -19,11 +21,13 @@
     var s = document.createElement("style");
     s.id = "dic-css";
     s.textContent = [
-      "svg.mb-svg[viewBox='" + CHART_VB + "']{cursor:pointer;}",
+      "svg.mb-svg[viewBox='" + BARS_VB + "']{cursor:pointer;}",
       ".dic-tip{position:fixed;z-index:1400;background:#11120f;color:#fff;border-radius:10px;padding:7px 11px;font-size:12.5px;font-weight:700;white-space:nowrap;transform:translate(-50%,-118%);pointer-events:none;box-shadow:0 10px 24px rgba(16,17,26,.3);opacity:0;transition:opacity .1s;font-family:'DM Sans',system-ui,sans-serif;}",
       ".dic-tip.on{opacity:1;}",
       ".dic-tip b{color:#c7ff5a;}",
       ".dic-tip small{display:block;color:#b9bdca;font-weight:600;font-size:10.5px;margin-bottom:1px;}",
+      ".dic-dot{position:fixed;z-index:1399;width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid #62c600;transform:translate(-50%,-50%);pointer-events:none;opacity:0;transition:opacity .1s;box-shadow:0 3px 8px rgba(20,22,40,.25);}",
+      ".dic-dot.on{opacity:1;}",
       ".dic-modal{position:fixed;inset:0;z-index:2000;display:none;align-items:center;justify-content:center;background:rgba(16,17,26,.55);backdrop-filter:blur(4px);}",
       ".dic-modal.open{display:flex;}",
       ".dic-card{width:min(960px,95vw);background:#fff;border-radius:26px;box-shadow:0 30px 80px rgba(16,17,26,.35);padding:22px 26px 26px;font-family:'DM Sans',system-ui,sans-serif;}",
@@ -39,15 +43,16 @@
     document.head.appendChild(s);
   }
 
-  var tip = null;
+  var tip = null, dot = null;
   function getTip() { if (!tip) { tip = document.createElement("div"); tip.className = "dic-tip"; document.body.appendChild(tip); } return tip; }
+  function getDot() { if (!dot) { dot = document.createElement("div"); dot.className = "dic-dot"; document.body.appendChild(dot); } return dot; }
   function showTip(cx, topY, label, val) {
     var t = getTip();
     t.innerHTML = "<small>" + label + "</small><b>" + EUR.format(val) + "</b>";
-    t.style.left = cx + "px"; t.style.top = topY + "px";
-    t.classList.add("on");
+    t.style.left = cx + "px"; t.style.top = topY + "px"; t.classList.add("on");
   }
-  function hideTip() { if (tip) tip.classList.remove("on"); }
+  function showDot(x, y) { var d = getDot(); d.style.left = x + "px"; d.style.top = y + "px"; d.classList.add("on"); }
+  function hideHover() { if (tip) tip.classList.remove("on"); if (dot) dot.classList.remove("on"); }
 
   async function loadValues() {
     try {
@@ -63,28 +68,58 @@
   function barRectsOf(svg) {
     return Array.prototype.filter.call(svg.querySelectorAll("rect"), function (r) { return r.getAttribute("width") === "24"; });
   }
+  function nearestByX(rects, mx) {
+    var best = 0, bestd = Infinity;
+    rects.forEach(function (r, i) { var d = Math.abs(r.left + r.width / 2 - mx); if (d < bestd) { bestd = d; best = i; } });
+    return best;
+  }
 
-  // ----- Survol (delegation) -----
+  function handleBars(svg, e) {
+    var bars = barRectsOf(svg);
+    if (!bars.length) { hideHover(); return; }
+    var rects = bars.map(function (b) { return b.getBoundingClientRect(); });
+    var i = nearestByX(rects, e.clientX);
+    var vals = values || [];
+    var r = rects[i];
+    if (dot) dot.classList.remove("on");
+    showTip(r.left + r.width / 2, r.top, MONTHS[i] || ("M" + (i + 1)), Number(vals[i] || 0));
+  }
+
+  // Courbes (area) : on lit les points de la ligne verte (#62c600) et on projette a l'ecran.
+  function handleArea(svg, e) {
+    var path = svg.querySelector('path[stroke="#62c600"]') || svg.querySelector('path[fill="none"]');
+    if (!path) { hideHover(); return; }
+    var nums = (path.getAttribute("d") || "").match(/-?\d+(?:\.\d+)?/g);
+    if (!nums || nums.length < 4) { hideHover(); return; }
+    var ctm = svg.getScreenCTM(); if (!ctm) { hideHover(); return; }
+    var pts = [];
+    for (var k = 0; k + 1 < nums.length; k += 2) {
+      var p = svg.createSVGPoint(); p.x = parseFloat(nums[k]); p.y = parseFloat(nums[k + 1]);
+      pts.push(p.matrixTransform(ctm));
+    }
+    var best = 0, bestd = Infinity;
+    pts.forEach(function (p, i) { var d = Math.abs(p.x - e.clientX); if (d < bestd) { bestd = d; best = i; } });
+    var vals = values || [];
+    var vi = pts.length > 1 ? Math.round(best / (pts.length - 1) * (vals.length - 1)) : 0;
+    showDot(pts[best].x, pts[best].y);
+    showTip(pts[best].x, pts[best].y, MONTHS[vi] || ("M" + (vi + 1)), Number(vals[vi] || 0));
+  }
+
   document.addEventListener("mousemove", function (e) {
     var svg = e.target.closest ? e.target.closest("svg.mb-svg") : null;
-    if (!svg || svg.getAttribute("viewBox") !== CHART_VB) { hideTip(); return; }
-    var bars = barRectsOf(svg);
-    if (!bars.length) { hideTip(); return; }
-    var rects = bars.map(function (b) { return b.getBoundingClientRect(); });
-    var mx = e.clientX, best = 0, bestd = Infinity;
-    rects.forEach(function (r, i) { var d = Math.abs(r.left + r.width / 2 - mx); if (d < bestd) { bestd = d; best = i; } });
-    var vals = values || [];
-    var r = rects[best];
-    showTip(r.left + r.width / 2, r.top, MONTHS[best] || ("M" + (best + 1)), Number(vals[best] || 0));
+    if (!svg) { hideHover(); return; }
+    var vb = svg.getAttribute("viewBox");
+    if (vb === BARS_VB) handleBars(svg, e);
+    else if (AREA_VBS.indexOf(vb) >= 0) handleArea(svg, e);
+    else hideHover();
   }, true);
   document.addEventListener("mouseleave", function (e) {
-    if (e.target && e.target.closest && e.target.closest("svg.mb-svg")) hideTip();
+    if (e.target && e.target.closest && e.target.closest("svg.mb-svg")) hideHover();
   }, true);
 
-  // ----- Clic -> vue agrandie -----
   document.addEventListener("click", function (e) {
     var svg = e.target.closest ? e.target.closest("svg.mb-svg") : null;
-    if (svg && svg.getAttribute("viewBox") === CHART_VB) { e.preventDefault(); openModal(); }
+    if (svg && svg.getAttribute("viewBox") === BARS_VB) { e.preventDefault(); openModal(); }
   }, true);
 
   var modal = null, range = 12;
@@ -106,7 +141,7 @@
     return modal;
   }
   function openModal() { buildModal(); range = 12; modal.querySelector("#dicRange").value = "12"; modal.classList.add("open"); drawBig(); }
-  function closeModal() { if (modal) modal.classList.remove("open"); hideTip(); }
+  function closeModal() { if (modal) modal.classList.remove("open"); hideHover(); }
 
   function drawBig() {
     var all = values || [];
@@ -127,19 +162,18 @@
     }).join("");
     var big = modal.querySelector("#dicBig");
     big.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Revenus par mois">' + grid + bars + '</svg>';
-    var total = vals.reduce(function (s, v) { return s + Number(v || 0); }, 0);
-    modal.querySelector("#dicTotal").textContent = "Total : " + EUR.format(total);
+    modal.querySelector("#dicTotal").textContent = "Total : " + EUR.format(vals.reduce(function (s, v) { return s + Number(v || 0); }, 0));
 
     var svg = big.querySelector("svg");
     var brects = Array.prototype.slice.call(svg.querySelectorAll(".dic-brect"));
     svg.addEventListener("mousemove", function (e) {
-      var mx = e.clientX, best = 0, bestd = Infinity, rr = brects.map(function (b) { return b.getBoundingClientRect(); });
-      rr.forEach(function (r, i) { var d = Math.abs(r.left + r.width / 2 - mx); if (d < bestd) { bestd = d; best = i; } });
+      var rr = brects.map(function (b) { return b.getBoundingClientRect(); });
+      var best = nearestByX(rr, e.clientX);
       brects.forEach(function (b, i) { b.style.opacity = i === best ? "1" : ".5"; });
       var r = rr[best];
       showTip(r.left + r.width / 2, r.top, labels[best] || "", Number(vals[best] || 0));
     });
-    svg.addEventListener("mouseleave", function () { hideTip(); brects.forEach(function (b) { b.style.opacity = "1"; }); });
+    svg.addEventListener("mouseleave", function () { hideHover(); brects.forEach(function (b) { b.style.opacity = "1"; }); });
   }
 
   function boot() {
