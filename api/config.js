@@ -20,5 +20,7 @@ export default function handler(req, res) {
     supabaseUrl: process.env.SUPABASE_URL || "",
     supabaseAnonKey: process.env.SUPABASE_ANON_KEY || "",
     marketingUrl: process.env.MARKETING_URL || "https://saas-web-prime.vercel.app",
+    // Heure serveur (source de verite pour les fenetres temporelles des dashboards).
+    now: new Date().toISOString(),
   });
 }
