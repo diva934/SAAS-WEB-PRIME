@@ -7,7 +7,7 @@ import {
 } from "./_shared.js";
 
 const MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
-// Redeploy trigger : activation RapidAPI Instagram (RAPIDAPI_KEY).
+// Redeploy trigger : RapidAPI Instagram - parseur robuste (edge_followed_by + aplati) + debug.
 const RL_LIMIT = 30;
 const RL_WINDOW_MS = 3600000;
 
@@ -53,6 +53,20 @@ function deepNumber(obj, re, avoid) {
         if (typeof v === "number" && v >= 0) { out = v; return; }
         if (v && typeof v === "object" && typeof v.count === "number") { out = v.count; return; }
       }
+      if (v && typeof v === "object") walk(v);
+    }
+  })(obj);
+  return out;
+}
+function deepBool(obj, re) {
+  let out = false; const seen = new Set();
+  (function walk(o) {
+    if (out || !o || typeof o !== "object" || seen.has(o)) return;
+    seen.add(o);
+    for (const k of Object.keys(o)) {
+      if (out) return;
+      const v = o[k];
+      if (typeof v === "boolean" && v && re.test(k)) { out = true; return; }
       if (v && typeof v === "object") walk(v);
     }
   })(obj);
@@ -157,42 +171,68 @@ async function scrapeTiktok(handle) {
   } catch { return null; }
 }
 
+// Premier nombre trouve parmi une liste de regex (dans l'ordre de priorite).
+function firstNum(d, regexes, avoid) {
+  for (const re of regexes) { const n = deepNumber(d, re, avoid); if (n != null) return n; }
+  return null;
+}
+
 // Repli fiable : RapidAPI (host/path configurables via env). Parsing defensif.
-async function scrapeRapidApi(platform, handle) {
+// `dbg` (optionnel) : tableau ou l'on pousse des infos de diagnostic (sans jamais la cle).
+async function scrapeRapidApi(platform, handle, dbg) {
   const key = process.env.RAPIDAPI_KEY;
+  if (dbg) dbg.push("keyPresent=" + (!!key));
   if (!key) return null;
   const isTT = /tiktok/i.test(platform);
   // Defaut IG = Instagram Looter (rapidapi) ; surchargeable par env. TikTok deja gere en gratuit.
   const host = isTT ? process.env.RAPIDAPI_TT_HOST : (process.env.RAPIDAPI_IG_HOST || "instagram-looter2.p.rapidapi.com");
   const path = isTT ? process.env.RAPIDAPI_TT_PATH : (process.env.RAPIDAPI_IG_PATH || "/profile?username=");
+  if (dbg) dbg.push("host=" + host, "path=" + path);
   if (!host || !path) return null;
   try {
     const url = "https://" + host + path + encodeURIComponent(handle);
     const r = await fetchWithTimeout(url, { headers: { "X-RapidAPI-Key": key, "X-RapidAPI-Host": host } }, 8000);
-    if (!r.ok) return null;
+    if (dbg) dbg.push("httpStatus=" + r.status);
+    if (!r.ok) {
+      if (dbg) { const tx = await r.text().catch(() => ""); dbg.push("errBody=" + String(tx).slice(0, 240)); }
+      return null;
+    }
     const d = await r.json().catch(() => null);
-    if (!d) return null;
-    const followers = deepNumber(d, /follower/i, /following/i);
+    if (!d) { if (dbg) dbg.push("jsonParse=failed"); return null; }
+    if (dbg) dbg.push("topKeys=" + Object.keys(d).slice(0, 40).join(","));
+    // Certains hosts enveloppent la reponse ({data:{...}} / {result:{...}} / {user:{...}}).
+    // deepNumber/deepString sont recursifs, donc on parse directement `d`.
+    // Instagram (GraphQL brut ou aplati) + TikTok.
+    const followers = isTT
+      ? firstNum(d, [/^followerCount$/i, /follower_count/i, /follower/i], /following/i)
+      : firstNum(d, [/^edge_followed_by$/i, /follower_count/i, /follower/i, /followed_by/i], /following/i);
+    if (dbg) dbg.push("followers=" + followers);
     if (followers == null) return null;
+    const following = isTT
+      ? firstNum(d, [/^followingCount$/i, /following_count/i, /following/i])
+      : firstNum(d, [/^edge_follow$/i, /following_count/i, /following/i, /follows_count/i]);
+    const posts = isTT
+      ? firstNum(d, [/^videoCount$/i, /video_count/i, /media_count/i])
+      : firstNum(d, [/timeline_media/i, /media_count/i, /posts?_count/i, /^post/i]);
+    const likes = firstNum(d, [/^heartCount$/i, /heart/i, /total_favorited/i, /likes?_count/i]);
     return {
       platform: isTT ? "TikTok" : "Instagram", handle, followers,
-      following: deepNumber(d, /following|follows_count/i),
-      posts: deepNumber(d, /media_count|video_count|post/i),
-      likes: deepNumber(d, /heart|likes?_count|total_favorited/i),
+      following, posts, likes,
       name: deepString(d, /full_name|nick_?name|display_name/i) || handle,
       bio: deepString(d, /biograph|signature/i) || "",
-      verified: false, source: "rapidapi",
+      verified: deepBool(d, /^is_verified$/i), source: "rapidapi",
     };
-  } catch { return null; }
+  } catch (e) { if (dbg) dbg.push("exception=" + String(e && e.message).slice(0, 160)); return null; }
 }
 
-async function fetchSocialStats(platform, rawHandle) {
+async function fetchSocialStats(platform, rawHandle, dbg) {
   const handle = String(rawHandle || "").replace(/^@+/, "").trim();
   if (!handle) return null;
   const isTT = /tiktok/i.test(platform);
   let stats = isTT ? await scrapeTiktok(handle) : await scrapeInstagram(handle);
+  if (dbg) dbg.push("freeScrape=" + (stats && stats.followers != null ? "ok" : "null"));
   if (!stats || stats.followers == null) {
-    const rapid = await scrapeRapidApi(platform, handle);
+    const rapid = await scrapeRapidApi(platform, handle, dbg);
     if (rapid) stats = rapid;
   }
   if (!stats || stats.followers == null) return null;
@@ -243,6 +283,12 @@ export default async function handler(req, res) {
       const handle = String(body.handle || "").slice(0, 60).trim();
       const objective = String(body.objective || "").slice(0, 500).trim();
       if (!handle) { sendJson(res, 400, { error: "Pseudo requis." }); return; }
+      if (body.debug === true) {
+        const dbg = [];
+        let s = null; try { s = await fetchSocialStats(platform, handle, dbg); } catch (e) { dbg.push("fatal=" + String(e && e.message)); }
+        sendJson(res, 200, { _debug: dbg, stats: s });
+        return;
+      }
       try { socialStats = await fetchSocialStats(platform, handle); } catch { socialStats = null; }
       const dataRule = socialStats
         ? "Tu DISPOSES des vraies statistiques du compte ci-dessous : appuie ton audit et tes conseils dessus et cite les chiffres pertinents. " + statsPromptLine(socialStats)
