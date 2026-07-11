@@ -554,6 +554,101 @@ function showCreatorAccessGate({ title, message }) {
   });
 }
 
+function injectTrialPaywallCss() {
+  if (document.getElementById("tpCss")) return;
+  const css =
+    "#trialPaywall .tp-card{width:min(500px,100%)}" +
+    "#trialPaywall .tp-plans{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin:8px 0 18px}" +
+    "#trialPaywall .tp-plan{display:flex;flex-direction:column;gap:4px;align-items:flex-start;text-align:left;border:1.5px solid var(--line);border-radius:14px;padding:12px 12px;background:#fff;cursor:pointer;font:inherit;transition:border-color .15s,box-shadow .15s}" +
+    "#trialPaywall .tp-plan:hover{border-color:#c9c4ff}" +
+    "#trialPaywall .tp-plan.is-on{border-color:var(--purple,#6558f5);box-shadow:0 8px 22px rgba(101,88,245,.18)}" +
+    "#trialPaywall .tp-plan-tag{font-size:10px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:#8a8f9c}" +
+    "#trialPaywall .tp-plan-name{font-size:14px;font-weight:800;color:var(--ink,#15161c)}" +
+    "#trialPaywall .tp-plan-price{font-size:17px;font-weight:800;color:var(--ink,#15161c)}" +
+    "#trialPaywall .tp-plan-price small{font-size:11px;font-weight:600;color:#8a8f9c}" +
+    "#trialPaywall .tp-go{width:100%;border:0;border-radius:12px;padding:14px 18px;background:var(--purple,#6558f5);color:#fff;font:inherit;font-weight:800;cursor:pointer}" +
+    "#trialPaywall .tp-go:disabled{opacity:.65;cursor:wait}" +
+    "#trialPaywall .tp-note{display:block;min-height:16px;color:var(--red,#c0334e);font-weight:700;font-size:12.5px;margin-top:8px}" +
+    "#trialPaywall .tp-fine{display:block;font-size:11.5px;color:#8a8f9c;margin-top:10px;text-align:center}" +
+    "#trialPaywall .tp-logout{display:block;margin:16px auto 0;border:0;background:none;color:#8a8f9c;font:inherit;font-size:12.5px;font-weight:600;cursor:pointer;text-decoration:underline}" +
+    "@media(max-width:480px){#trialPaywall .tp-plans{grid-template-columns:1fr}}";
+  const s = document.createElement("style");
+  s.id = "tpCss";
+  s.textContent = css;
+  document.head.appendChild(s);
+}
+
+function showTrialPaywall() {
+  document.body.classList.remove("auth-pending");
+  document.body.classList.add("auth-locked");
+  injectTrialPaywallCss();
+  let gate = document.querySelector("#trialPaywall");
+  if (!gate) {
+    gate = document.createElement("section");
+    gate.id = "trialPaywall";
+    gate.className = "auth-gate";
+    document.body.append(gate);
+  }
+  const PLANS = [
+    { id: "launch", name: "Lancement", price: "19 €", tag: "Pour démarrer" },
+    { id: "scale", name: "Croissance", price: "49 €", tag: "Le + choisi" },
+    { id: "studio", name: "Studio", price: "149 €", tag: "Pour scaler" },
+  ];
+  let selected = "scale";
+  const cardsHtml = () =>
+    PLANS.map(
+      (p) =>
+        `<button type="button" class="tp-plan${p.id === selected ? " is-on" : ""}" data-plan="${p.id}">` +
+        `<span class="tp-plan-tag">${escapeHtml(p.tag)}</span>` +
+        `<span class="tp-plan-name">${escapeHtml(p.name)}</span>` +
+        `<span class="tp-plan-price">${escapeHtml(p.price)}<small>/mois</small></span></button>`
+    ).join("");
+  gate.innerHTML = `
+    <div class="auth-gate-card tp-card">
+      <img src="./assets/expertly-logo.png" alt="Expertly" />
+      <p class="eyebrow">Bienvenue sur Expertly</p>
+      <h1>Active ton essai gratuit</h1>
+      <p>14 jours pour tester tout Expertly. Choisis ta formule : ta carte n'est débitée qu'à la fin de l'essai, et tu peux annuler avant.</p>
+      <div class="tp-plans">${cardsHtml()}</div>
+      <button type="button" class="tp-go" id="tpGo">Démarrer mon essai gratuit</button>
+      <small class="tp-note" id="tpFeedback"></small>
+      <span class="tp-fine">Carte demandée · 0 € pendant 14 jours · annulable à tout moment.</span>
+      <button type="button" class="tp-logout" id="tpLogout">Se déconnecter</button>
+    </div>`;
+  gate.querySelectorAll(".tp-plan").forEach((b) => {
+    b.addEventListener("click", () => {
+      selected = b.getAttribute("data-plan");
+      gate.querySelectorAll(".tp-plan").forEach((x) => x.classList.remove("is-on"));
+      b.classList.add("is-on");
+    });
+  });
+  const go = gate.querySelector("#tpGo");
+  const feedback = gate.querySelector("#tpFeedback");
+  go.addEventListener("click", async () => {
+    go.disabled = true;
+    go.textContent = "Redirection vers le paiement…";
+    feedback.textContent = "";
+    try {
+      const response = await authenticatedFetch("/api/subscription-status", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "start-trial", plan: selected }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || !data.url) throw new Error(data.error || "Impossible de démarrer l'essai.");
+      window.location.href = data.url;
+    } catch (error) {
+      feedback.textContent = error.message || "Erreur. Réessaie.";
+      go.disabled = false;
+      go.textContent = "Démarrer mon essai gratuit";
+    }
+  });
+  gate.querySelector("#tpLogout").addEventListener("click", async () => {
+    try { await supabaseClient?.auth?.signOut(); } catch (e) {}
+    window.location.replace("/connexion");
+  });
+}
+
 async function ensureCreatorAccess() {
   if (DEMO_MODE) {
     document.querySelector("#creatorAccessGate")?.remove();
@@ -582,10 +677,9 @@ async function ensureCreatorAccess() {
   const subscriptionResponse = await authenticatedFetch("/api/subscription-status", { cache: "no-store" });
   const subscription = await subscriptionResponse.json().catch(() => ({}));
   if (!subscriptionResponse.ok || !subscription.active) {
-    showCreatorAccessGate({
-      title: "Abonnement requis",
-      message: "Ce compte n'a pas d'abonnement actif. Termine le paiement sur le site Expertly, puis reconnecte-toi ici.",
-    });
+    // Compte connecte mais sans abonnement actif : on propose d'activer l'essai gratuit
+    // (paiement directement dans le CRM, modele "Shopify").
+    showTrialPaywall();
     return false;
   }
   document.querySelector("#creatorAccessGate")?.remove();
