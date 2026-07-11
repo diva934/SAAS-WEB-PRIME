@@ -567,6 +567,12 @@ async function ensureCreatorAccess() {
   const { data } = await supabaseClient.auth.getSession();
   activeSupabaseSession = data.session;
   if (!activeSupabaseSession?.user) {
+    // Pas de session : on envoie vers la page de connexion dediee (/connexion),
+    // qui sert d'entree au CRM. (Le mode demo est deja gere plus haut.)
+    if (location.pathname !== "/connexion") {
+      location.replace("/connexion");
+      return false;
+    }
     showCreatorAccessGate({
       title: "Connecte-toi pour ouvrir le CRM",
       message: "Utilise le compte cree avant le paiement. Une fois l'abonnement actif, le CRM s'ouvrira automatiquement.",
@@ -2756,6 +2762,83 @@ async function hydrateServerState() {
   }
 }
 
+let liveRefreshTimer = null;
+let liveRefreshInFlight = false;
+let lastLiveSignature = "";
+// Intervalle du rafraichissement live du dashboard (lecture Supabase via /api/state,
+// alimente par le webhook Stripe). 1s = quasi temps reel cote UI.
+const LIVE_REFRESH_INTERVAL_MS = 1000;
+
+function ensureLiveIndicator() {
+  let indicator = document.querySelector("#liveIndicator");
+  if (!indicator) {
+    const actions = document.querySelector(".topbar-actions");
+    if (!actions) return null;
+    indicator = document.createElement("span");
+    indicator.id = "liveIndicator";
+    indicator.className = "live-indicator";
+    indicator.title = "Le dashboard se met a jour automatiquement";
+    indicator.innerHTML = '<i class="live-dot"></i><span class="live-text">Connexion...</span>';
+    actions.prepend(indicator);
+  }
+  return indicator;
+}
+
+function setLiveIndicator(ok) {
+  const indicator = ensureLiveIndicator();
+  if (!indicator) return;
+  indicator.classList.toggle("is-live", ok);
+  indicator.classList.toggle("is-stale", !ok);
+  const text = indicator.querySelector(".live-text");
+  if (!text) return;
+  if (ok) {
+    const now = new Date();
+    const hh = String(now.getHours()).padStart(2, "0");
+    const mm = String(now.getMinutes()).padStart(2, "0");
+    const ss = String(now.getSeconds()).padStart(2, "0");
+    text.textContent = `En direct - ${hh}:${mm}:${ss}`;
+  } else {
+    text.textContent = "Hors ligne";
+  }
+}
+
+async function refreshLiveDashboard() {
+  if (DEMO_MODE || document.hidden || !location.protocol.startsWith("http")) return;
+  if (liveRefreshInFlight) return; // evite l'empilement des requetes a 1s
+  liveRefreshInFlight = true;
+  try {
+    const response = await authenticatedFetch("/api/state", { cache: "no-store" });
+    if (!response.ok) {
+      setLiveIndicator(false);
+      return;
+    }
+    const text = await response.text();
+    setLiveIndicator(true);
+    // Ne re-render que si les donnees ont reellement change (pas de flicker inutile).
+    if (text === lastLiveSignature) return;
+    lastLiveSignature = text;
+    state = normalizeState(JSON.parse(text));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    const pc = document.querySelector("#productCount");
+    if (pc) pc.textContent = String(state.products.length);
+    renderView(activeView);
+  } catch {
+    // Une coupure reseau ne doit jamais bloquer le CRM; le prochain cycle reessaiera.
+    setLiveIndicator(false);
+  } finally {
+    liveRefreshInFlight = false;
+  }
+}
+
+function startLiveRefresh() {
+  if (DEMO_MODE || liveRefreshTimer) return;
+  ensureLiveIndicator();
+  liveRefreshTimer = window.setInterval(refreshLiveDashboard, LIVE_REFRESH_INTERVAL_MS);
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) refreshLiveDashboard();
+  });
+}
+
 async function startApp() {
   await loadPublicConfig();
   if (!(await ensureCreatorAccess())) return;
@@ -2792,6 +2875,7 @@ async function startApp() {
   } else {
     await ensureStoreCode();
   }
+  startLiveRefresh();
 }
 
 startApp();
