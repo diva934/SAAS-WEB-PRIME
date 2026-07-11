@@ -7,7 +7,7 @@ import {
 } from "./_shared.js";
 
 const MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
-// Redeploy trigger : RapidAPI Instagram - parseur robuste (edge_followed_by + aplati) + debug.
+// RapidAPI Instagram actif : parseur robuste (edge_followed_by + aplati). Verifie live sur @nasa.
 const RL_LIMIT = 30;
 const RL_WINDOW_MS = 3600000;
 
@@ -283,12 +283,6 @@ export default async function handler(req, res) {
       const handle = String(body.handle || "").slice(0, 60).trim();
       const objective = String(body.objective || "").slice(0, 500).trim();
       if (!handle) { sendJson(res, 400, { error: "Pseudo requis." }); return; }
-      if (body.debug === true) {
-        const dbg = [];
-        let s = null; try { s = await fetchSocialStats(platform, handle, dbg); } catch (e) { dbg.push("fatal=" + String(e && e.message)); }
-        sendJson(res, 200, { _debug: dbg, stats: s });
-        return;
-      }
       try { socialStats = await fetchSocialStats(platform, handle); } catch { socialStats = null; }
       const dataRule = socialStats
         ? "Tu DISPOSES des vraies statistiques du compte ci-dessous : appuie ton audit et tes conseils dessus et cite les chiffres pertinents. " + statsPromptLine(socialStats)
