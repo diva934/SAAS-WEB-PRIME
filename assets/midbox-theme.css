@@ -54,13 +54,20 @@ aside.sidebar#sidebar{ width:88px !important; min-width:88px !important; backgro
 .topbar-actions .notification-button, #notificationButton{ display:none !important; }
 .account-button{
   width:46px !important; height:46px !important; min-width:46px !important; padding:0 !important;
-  border-radius:50% !important; border:2px solid #c6f24e !important;
+  border-radius:50% !important; border:2px solid #ffffff !important;
   display:grid !important; place-items:center !important; overflow:hidden !important;
-  background:linear-gradient(145deg,#2b2d38,#16171e) !important; background-size:cover !important; background-position:center !important;
+  background:#bdeeff !important; background-size:cover !important; background-position:center !important;
   box-shadow:0 6px 16px rgba(16,17,26,.18) !important;
 }
 .account-button .account-copy, .account-button > b{ display:none !important; }
-.account-button #accountInitials{ display:block !important; color:#fff !important; font-weight:700 !important; font-size:15px !important; }
+/* Belle photo de profil (avatar illustre repris de la version d'origine). */
+.account-button #accountInitials{
+  width:100% !important; height:100% !important; display:block !important;
+  color:transparent !important; font-size:0 !important; border-radius:50% !important;
+  background-color:#bdeeff !important;
+  background-image:url("data:image/svg+xml,%3Csvg width='76' height='76' viewBox='0 0 76 76' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='76' height='76' rx='38' fill='%23BDEEFF'/%3E%3Ccircle cx='38' cy='39' r='19' fill='%23F4BA82'/%3E%3Cpath d='M19 35c1-14 9-23 20-23 12 0 19 8 21 22-6-1-10-4-13-9-5 7-13 10-28 10z' fill='%2319242F'/%3E%3Cpath d='M23 61c3-10 9-15 15-15s13 5 16 15c-4 3-10 5-16 5s-11-2-15-5z' fill='%236B5EF7'/%3E%3Cpath d='M31 39c2 3 5 5 8 5s6-2 8-5' stroke='%237A3E22' stroke-width='2' stroke-linecap='round'/%3E%3Ccircle cx='31' cy='34' r='2' fill='%2323221D'/%3E%3Ccircle cx='45' cy='34' r='2' fill='%2323221D'/%3E%3Cpath d='M20 37c0 4 2 8 5 11-4 0-8-3-8-7 0-2 1-3 3-4zM56 37c0 4-2 8-5 11 4 0 8-3 8-7 0-2-1-3-3-4z' fill='%23F4BA82'/%3E%3Ccircle cx='53' cy='24' r='5' fill='%23FFFAE9'/%3E%3Cpath d='M51 23h4M53 21v4' stroke='%236B5EF7' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E") !important;
+  background-size:cover !important; background-position:center !important;
+}
 .account-button.has-photo #accountInitials{ display:none !important; }
 
 /* Fix sidebar : le logo (wordmark large 1282x299) creait un bloc vert colle a l'onglet actif.
