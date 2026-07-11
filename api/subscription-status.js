@@ -1,9 +1,55 @@
 import {
+  appOrigin,
   requireActiveSubscription,
   sendJson,
   supabaseRequest,
   userFromRequest,
 } from "./_shared.js";
+
+// Formules disponibles (montants en centimes, mensuel EUR).
+const PLANS = {
+  launch: { name: "Lancement", amount: 1900, description: "Boutique, CRM et tunnels pour demarrer." },
+  scale: { name: "Croissance", amount: 4900, description: "Produits illimites, emails automatises et IA." },
+  studio: { name: "Studio", amount: 14900, description: "Tout Croissance + domaine et priorite support." },
+};
+
+// Cree une session Stripe Checkout (abonnement + essai) pour l'utilisateur connecte.
+async function createTrialCheckout({ user, planId, origin }) {
+  const plan = PLANS[planId];
+  if (!plan) { const e = new Error("Formule inconnue."); e.status = 400; throw e; }
+  const form = new URLSearchParams({
+    mode: "subscription",
+    success_url: `${origin}/app?trial=started`,
+    cancel_url: `${origin}/app?trial=cancelled`,
+    locale: "fr",
+    customer_email: user.email || "",
+    client_reference_id: user.id,
+    billing_address_collection: "required",
+    allow_promotion_codes: "true",
+    "line_items[0][quantity]": "1",
+    "line_items[0][price_data][currency]": "eur",
+    "line_items[0][price_data][unit_amount]": String(plan.amount),
+    "line_items[0][price_data][recurring][interval]": "month",
+    "line_items[0][price_data][product_data][name]": `Expertly ${plan.name}`,
+    "line_items[0][price_data][product_data][description]": plan.description,
+    "metadata[user_id]": user.id,
+    "metadata[expertly_plan]": planId,
+    "subscription_data[metadata][user_id]": user.id,
+    "subscription_data[metadata][expertly_plan]": planId,
+    "subscription_data[trial_period_days]": "14",
+  });
+  const response = await fetch("https://api.stripe.com/v1/checkout/sessions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${process.env.STRIPE_SECRET_KEY}`,
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: form,
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) { const e = new Error(data?.error?.message || "Erreur Stripe."); e.status = 502; throw e; }
+  return data.url;
+}
 
 // Upsert (insert si absent) de l'état d'abonnement — robuste même si aucune
 // ligne n'existe encore pour ce créateur.
@@ -63,13 +109,36 @@ async function findActiveStripeByEmail(email) {
 }
 
 export default async function handler(req, res) {
-  if (req.method !== "GET") {
+  if (req.method !== "GET" && req.method !== "POST") {
     sendJson(res, 405, { error: "Method not allowed" });
     return;
   }
 
   try {
     const user = await userFromRequest(req);
+
+    // POST : demarrage d'un essai payant (checkout Stripe) directement depuis le CRM.
+    if (req.method === "POST") {
+      const body = req.body && typeof req.body === "object" ? req.body : {};
+      if ((body.action || "") !== "start-trial") {
+        sendJson(res, 400, { error: "Action inconnue." });
+        return;
+      }
+      if (!process.env.STRIPE_SECRET_KEY) {
+        sendJson(res, 503, { error: "Paiement non configure." });
+        return;
+      }
+      // Deja abonne : inutile de relancer un essai, on le signale.
+      try {
+        await requireActiveSubscription(user.id);
+        sendJson(res, 409, { error: "Ton abonnement est deja actif." });
+        return;
+      } catch { /* pas encore actif : on peut demarrer l'essai */ }
+      const url = await createTrialCheckout({ user, planId: body.plan || "scale", origin: appOrigin(req) });
+      sendJson(res, 200, { url });
+      return;
+    }
+
     const metadata = user.app_metadata || {};
 
     // 1. Déjà actif en base : réponse immédiate.
