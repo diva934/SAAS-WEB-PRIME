@@ -35,6 +35,12 @@ export default async function handler(req, res) {
     const summed = Object.keys(vbm).reduce((acc, k) => acc + (Number(vbm[k]) || 0), 0);
     if (summed < prevTotal) vbm[monthKey] = (vbm[monthKey] || 0) + (prevTotal - summed);
     vbm[monthKey] = (vbm[monthKey] || 0) + 1;
+    // Journal horodate des visites (pour les fenetres courtes : 10 min / 1h / 24h / 7j / 30j).
+    if (!Array.isArray(state.analytics.visitLog)) state.analytics.visitLog = [];
+    state.analytics.visitLog.push(new Date().toISOString());
+    if (state.analytics.visitLog.length > 1000) {
+      state.analytics.visitLog = state.analytics.visitLog.slice(-1000);
+    }
     state.products
       .filter((product) => product.status === "published")
       .forEach((product) => {
