@@ -108,13 +108,16 @@ async function scrapeTiktok(handle) {
     const detail = data && data.__DEFAULT_SCOPE__ && data.__DEFAULT_SCOPE__["webapp.user-detail"];
     const info = detail && detail.userInfo;
     if (!info) return null;
-    const st = info.stats || info.statsV2 || {};
+    const sv = info.statsV2 || {};
+    const st = info.stats || {};
+    // statsV2 = chaines (pas de depassement d'entier 32-bit sur les gros comptes) ; repli sur stats.
+    const pick = function (k) { const a = sv[k], b = st[k]; const v = (a != null && a !== "") ? Number(a) : Number(b); return Number.isFinite(v) ? v : null; };
     return {
       platform: "TikTok", handle, name: (info.user && info.user.nickname) || "", verified: !!(info.user && info.user.verified),
-      followers: Number(st.followerCount) || Number(st.followers) || null,
-      following: Number(st.followingCount) || null,
-      posts: Number(st.videoCount) || null,
-      likes: Number(st.heartCount || st.heart) || null,
+      followers: pick("followerCount"),
+      following: pick("followingCount"),
+      posts: pick("videoCount"),
+      likes: pick("heartCount"),
       bio: (info.user && info.user.signature) || "", source: "direct",
     };
   } catch { return null; }
