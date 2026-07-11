@@ -100,9 +100,8 @@
     var best = 0, bestd = Infinity;
     pts.forEach(function (p, i) { var d = Math.abs(p.x - e.clientX); if (d < bestd) { bestd = d; best = i; } });
     var vals = values || [];
-    var vi = pts.length > 1 ? Math.round(best / (pts.length - 1) * (vals.length - 1)) : 0;
     showDot(pts[best].x, pts[best].y);
-    showTip(pts[best].x, pts[best].y, MONTHS[vi] || ("M" + (vi + 1)), Number(vals[vi] || 0));
+    showTip(pts[best].x, pts[best].y, MONTHS[best] || ("M" + (best + 1)), Number(vals[best] || 0));
   }
 
   document.addEventListener("mousemove", function (e) {
