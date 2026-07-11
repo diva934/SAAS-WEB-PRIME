@@ -152,20 +152,29 @@
     var cards = STEPS.map(function (st, i) {
       var isDone = doneFlags[i];
       var isCurrent = !allDone && i === currentIndex;
-      var state = isDone ? "is-done" : (isCurrent ? "is-current" : "is-locked");
+      // L'etape Stripe est deverrouillee : connectable a tout moment, meme hors sequence.
+      var stripeOpen = st.special === "stripe" && !isDone && !isCurrent;
+      var state = isDone ? "is-done" : (isCurrent ? "is-current" : (stripeOpen ? "is-open" : "is-locked"));
 
       var badge;
       if (isDone) badge = '<span class="tw-badge tw-badge-done">' + CHECK_SVG + '</span>';
-      else if (isCurrent) badge = '<span class="tw-badge tw-badge-current">' + (i + 1) + '</span>';
+      else if (isCurrent || stripeOpen) badge = '<span class="tw-badge tw-badge-current">' + (i + 1) + '</span>';
       else badge = '<span class="tw-badge tw-badge-lock">' + LOCK_SVG + '</span>';
 
       var meta = isDone ? '<span class="tw-tag tw-tag-done">Termine</span>'
         : (isCurrent ? '<span class="tw-tag tw-tag-now">A faire maintenant</span>'
-          : '<span class="tw-tag tw-tag-soon">Etape ' + (i + 1) + '</span>');
+          : (stripeOpen ? '<span class="tw-tag tw-tag-now">Disponible maintenant</span>'
+            : '<span class="tw-tag tw-tag-soon">Etape ' + (i + 1) + '</span>'));
 
       var actions = "";
       if (isDone) {
         if (st.target) actions = '<button type="button" class="tw-ghost" data-view-target="' + st.target + '">Revoir</button>';
+      } else if (st.special === "stripe") {
+        // Bouton de connexion DIRECTE (Stripe Connect), disponible meme hors sequence.
+        var sLabel = (stripeStatus && stripeStatus.connected && !stripeStatus.chargesEnabled)
+          ? "Terminer la configuration Stripe" : "Connecter mon compte Stripe";
+        actions = '<button type="button" class="primary-button tw-cta" data-tw-action="stripe-connect">' + sLabel + '</button>'
+          + '<button type="button" class="tw-ghost" data-view-target="settings">Ouvrir les Reglages</button>';
       } else if (isCurrent) {
         if (st.special === "publish") {
           var url = storeUrl();
@@ -175,19 +184,13 @@
           } else {
             actions = '<button type="button" class="primary-button tw-cta" data-view-target="pages">Publier une page</button>';
           }
-        } else if (st.special === "stripe") {
-          // Bouton de connexion DIRECTE (Stripe Connect) : lance l'onboarding sans passer par Reglages.
-          var sLabel = (stripeStatus && stripeStatus.connected && !stripeStatus.chargesEnabled)
-            ? "Terminer la configuration Stripe" : "Connecter mon compte Stripe";
-          actions = '<button type="button" class="primary-button tw-cta" data-tw-action="stripe-connect">' + sLabel + '</button>'
-            + '<button type="button" class="tw-ghost" data-view-target="settings">Ouvrir les Reglages</button>';
         } else {
           actions = '<button type="button" class="primary-button tw-cta" data-view-target="' + (st.target || "overview") + '">' + st.cta + '</button>';
         }
       }
 
       var note = "";
-      if (isCurrent && st.special === "stripe") {
+      if (!isDone && st.special === "stripe") {
         note = '<p class="tw-note">En cliquant, tu es redirige vers Stripe pour connecter (ou creer) ton compte et saisir ton identite + IBAN. L\'argent de tes ventes arrive ensuite directement sur ton compte.</p>'
           + '<p class="tw-err" data-tw-stripe-err hidden></p>';
       }
@@ -341,6 +344,8 @@
       '.tw-step{display:flex;gap:16px;align-items:flex-start;background:#fff;border:1px solid #edeff3;border-radius:22px;padding:18px 20px;box-shadow:0 12px 30px rgba(20,22,40,.05);opacity:0;transform:translateY(8px);animation:twIn .45s ease forwards}' +
       '@keyframes twIn{to{opacity:1;transform:translateY(0)}}' +
       '.tw-step.is-current{border-color:#c6f24e;box-shadow:0 16px 36px rgba(198,242,78,.30)}' +
+      '.tw-step.is-open{border-color:#c9c4ff;box-shadow:0 14px 32px rgba(99,91,255,.12)}' +
+      '.tw-step.is-open .tw-badge-current{background:#635bff;color:#fff}' +
       '.tw-step.is-locked{opacity:.6}' +
       '.tw-step.is-locked .tw-step-desc{color:#9aa0ad}' +
       '.tw-badge{flex:none;width:42px;height:42px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:16px}' +
