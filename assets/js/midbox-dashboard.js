@@ -90,6 +90,24 @@
     var conversion = visits ? (purchases / visits) * 100 : 0;
     var wallet = Math.round(revenue * 0.83);
     var paypal = Math.max(0, revenue - wallet);
+    // Series mensuelles REELLES (12 derniers mois) : visites (analytics.visitsByMonth,
+    // alimente par /api/events/visit) et achats (commandes payees, par mois de createdAt).
+    var now = new Date();
+    var buckets = [];
+    for (var bi = 11; bi >= 0; bi--) {
+      var bd = new Date(now.getFullYear(), now.getMonth() - bi, 1);
+      buckets.push({ key: bd.getFullYear() + "-" + ("0" + (bd.getMonth() + 1)).slice(-2), idx: bd.getMonth() });
+    }
+    var vbm = (analytics.visitsByMonth && typeof analytics.visitsByMonth === "object") ? analytics.visitsByMonth : {};
+    var visitsSeries = buckets.map(function (b) { return Number(vbm[b.key] || 0); });
+    var purchasesSeries = buckets.map(function () { return 0; });
+    orders.forEach(function (o) {
+      var dt = o.createdAt ? new Date(o.createdAt) : (o.date ? new Date(o.date) : null);
+      if (!dt || isNaN(dt.getTime())) return;
+      var key = dt.getFullYear() + "-" + ("0" + (dt.getMonth() + 1)).slice(-2);
+      for (var i = 0; i < buckets.length; i++) { if (buckets[i].key === key) { purchasesSeries[i] += 1; break; } }
+    });
+    var monthsLabels = buckets.map(function (b) { return MONTHS[b.idx]; });
     return {
       s: s,
       orders: orders,
@@ -99,6 +117,9 @@
       visits: visits,
       purchases: purchases,
       series: series,
+      visitsSeries: visitsSeries,
+      purchasesSeries: purchasesSeries,
+      monthsLabels: monthsLabels,
       products: products,
       contacts: contacts,
       conversion: conversion,
@@ -169,7 +190,7 @@
       + '<text class="mb-y" x="51" y="222">0</text>' + grid + bars + '</svg></div>';
   }
 
-  function smoothArea(values, color, id, width, height) {
+  function smoothArea(values, color, id, width, height, unit, labels) {
     var max = Math.max.apply(null, values.concat([1]));
     var n = values.length;
     var step = n > 1 ? width / (n - 1) : width;
@@ -181,13 +202,14 @@
     var guides = pts.map(function (point) {
       return '<line x1="' + point[0].toFixed(1) + '" y1="0" x2="' + point[0].toFixed(1) + '" y2="' + height + '" stroke="rgba(21,22,17,.08)" stroke-dasharray="2 3"/>';
     }).join("");
+    var meta = ' data-unit="' + (unit || "€") + '" data-series="' + encodeURIComponent(JSON.stringify(values)) + '" data-labels="' + encodeURIComponent(JSON.stringify(labels || [])) + '"';
     return '<svg class="mb-svg" viewBox="0 0 ' + width + " " + height + '"><defs><linearGradient id="' + id + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="' + color + '" stop-opacity=".35"/><stop offset="78%" stop-color="' + color + '" stop-opacity="0"/></linearGradient></defs>'
-      + guides + '<path d="' + area + '" fill="url(#' + id + ')"/><path d="' + line + '" fill="none" stroke="' + color + '" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      + guides + '<path d="' + area + '" fill="url(#' + id + ')"/><path' + meta + ' d="' + line + '" fill="none" stroke="' + color + '" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   }
 
   function balanceCard(d) {
     var body = '<div class="mb-wallet"><div>' + icon("wallet") + '<strong>' + formatInt(d.wallet) + '</strong><span>Wallet</span></div><div>' + icon("dollar") + '<strong>' + formatInt(d.paypal) + '</strong><span>PayPal</span></div></div>'
-      + '<div style="height:158px;margin-top:7px">' + smoothArea(d.series, "#62c600", "mbBalanceFill", 260, 140) + '</div>'
+      + '<div style="height:158px;margin-top:7px">' + smoothArea(d.series, "#62c600", "mbBalanceFill", 260, 140, "€", d.monthsLabels) + '</div>'
       + '<div class="mb-mini-labels"><span>N</span><span class="mb-day">D</span><span>J</span><span>F</span><span>M</span><span>A</span></div>';
     return shell("Balance", "", "dollar", body, '<button class="mb-menu" aria-label="Options">...</button>', "mb-balance");
   }
@@ -218,16 +240,14 @@
   }
 
   function acquisitionCard(d) {
-    var bounce = Math.max(0, 100 - d.conversion * 10);
-    var sessions = Math.max(d.visits, d.contacts.length + d.orders.length);
-    var acqSeries = d.series.map(function (value, index) {
-      return Math.round((value || 0) * (0.72 + (index % 4) * 0.07) + d.visits / 18);
-    });
-    var body = '<div class="mb-acq-metrics"><div>' + icon("bars") + '<strong>' + pct(bounce) + '%</strong><span>Bounce Rate</span></div><div>' + icon("page") + '<strong>' + formatInt(sessions) + '</strong><span>Page Session</span></div></div>'
-      + '<div style="height:214px;margin-top:2px;position:relative">' + smoothArea(acqSeries, "#ff9f20", "mbAcqOrange", 300, 178)
-      + '<div style="position:absolute;inset:0">' + smoothArea(d.series, "#62c600", "mbAcqGreen", 300, 178) + '</div></div>'
-      + '<div class="mb-mini-labels" style="left:38px;right:34px">' + DAYS.map(function (day) { return '<span>' + day + '</span>'; }).join("") + '</div>';
-    return shell("Acquisition", "", "grid", body, '<button class="mb-menu" aria-label="Options">...</button>', "mb-acq");
+    // Orange = visites (par mois), Vert = achats (par mois). Donnees reelles.
+    var body = '<div class="mb-acq-metrics">'
+      + '<div>' + icon("page") + '<strong>' + formatInt(d.visits) + '</strong><span><i style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#ff9f20;margin-right:5px"></i>Visites</span></div>'
+      + '<div>' + icon("cart") + '<strong>' + formatInt(d.purchases) + '</strong><span><i style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#62c600;margin-right:5px"></i>Achats</span></div></div>'
+      + '<div style="height:214px;margin-top:2px;position:relative">' + smoothArea(d.visitsSeries, "#ff9f20", "mbAcqOrange", 300, 178, "visites", d.monthsLabels)
+      + '<div style="position:absolute;inset:0">' + smoothArea(d.purchasesSeries, "#62c600", "mbAcqGreen", 300, 178, "achats", d.monthsLabels) + '</div></div>'
+      + '<div class="mb-mini-labels" style="left:38px;right:34px">' + [0, 2, 4, 6, 8, 10].map(function (i) { return '<span>' + (d.monthsLabels[i] || "") + '</span>'; }).join("") + '</div>';
+    return shell("Acquisition", "Visites vs Achats", "grid", body, '<button class="mb-menu" aria-label="Options">...</button>', "mb-acq");
   }
 
   function bestSellersCard(d) {

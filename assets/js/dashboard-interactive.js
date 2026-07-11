@@ -85,9 +85,12 @@
     showTip(r.left + r.width / 2, r.top, MONTHS[i] || ("M" + (i + 1)), Number(vals[i] || 0));
   }
 
-  // Courbes (area) : on lit les points de la ligne verte (#62c600) et on projette a l'ecran.
+  function decodeAttr(v) { try { return JSON.parse(decodeURIComponent(v || "")); } catch (e) { return []; } }
+  function fmtVal(v, unit) { return unit === "€" ? EUR.format(v) : (Math.round(v) + " " + unit); }
+  // Courbes (area) : on lit la serie exposee (data-series/data-unit) et on affiche la vraie
+  // valeur. Sur une carte a 2 courbes (Acquisition : visites + achats) on montre les deux.
   function handleArea(svg, e) {
-    var path = svg.querySelector('path[stroke="#62c600"]') || svg.querySelector('path[fill="none"]');
+    var path = svg.querySelector("path[data-series]") || svg.querySelector('path[fill="none"]');
     if (!path) { hideHover(); return; }
     var nums = (path.getAttribute("d") || "").match(/-?\d+(?:\.\d+)?/g);
     if (!nums || nums.length < 4) { hideHover(); return; }
@@ -99,9 +102,18 @@
     }
     var best = 0, bestd = Infinity;
     pts.forEach(function (p, i) { var d = Math.abs(p.x - e.clientX); if (d < bestd) { bestd = d; best = i; } });
-    var vals = values || [];
+    var card = svg.closest ? (svg.closest(".mb-card") || svg.parentNode) : svg.parentNode;
+    var lps = card ? Array.prototype.slice.call(card.querySelectorAll("path[data-series]")) : [path];
+    var labels = decodeAttr(path.getAttribute("data-labels"));
+    var label = labels[best] || MONTHS[best] || ("M" + (best + 1));
+    var parts = lps.map(function (lp) {
+      var series = decodeAttr(lp.getAttribute("data-series"));
+      return series.length ? fmtVal(Number(series[best] || 0), lp.getAttribute("data-unit") || "€") : null;
+    }).filter(Boolean);
     showDot(pts[best].x, pts[best].y);
-    showTip(pts[best].x, pts[best].y, MONTHS[best] || ("M" + (best + 1)), Number(vals[best] || 0));
+    var t = getTip();
+    t.innerHTML = "<small>" + label + "</small><b>" + parts.join(" · ") + "</b>";
+    t.style.left = pts[best].x + "px"; t.style.top = pts[best].y + "px"; t.classList.add("on");
   }
 
   document.addEventListener("mousemove", function (e) {
