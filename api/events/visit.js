@@ -23,6 +23,12 @@ export default async function handler(req, res) {
     const row = rows[0];
     const state = normalizeState(row.state);
     state.analytics.visits = (state.analytics.visits || 0) + 1;
+    // Historique mensuel des visites (pour le graphique Acquisition : orange = visites/mois).
+    const monthKey = new Date().toISOString().slice(0, 7);
+    if (!state.analytics.visitsByMonth || typeof state.analytics.visitsByMonth !== "object") {
+      state.analytics.visitsByMonth = {};
+    }
+    state.analytics.visitsByMonth[monthKey] = (state.analytics.visitsByMonth[monthKey] || 0) + 1;
     state.products
       .filter((product) => product.status === "published")
       .forEach((product) => {
