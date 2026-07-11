@@ -558,11 +558,13 @@ function injectTrialPaywallCss() {
   if (document.getElementById("tpCss")) return;
   const css =
     "#trialPaywall{align-items:start;overflow-y:auto;padding:34px 20px}" +
+    "body.auth-locked .expertly-assistant{display:none!important}" +
     "#trialPaywall .tp-shell{width:min(1000px,100%);margin:auto}" +
     "#trialPaywall .tp-head{text-align:center;margin-bottom:24px}" +
-    "#trialPaywall .tp-head img{height:30px;margin-bottom:16px}" +
-    "#trialPaywall .tp-head h1{font-family:'Manrope',sans-serif;font-size:28px;font-weight:800;margin:0 0 8px;color:var(--ink,#15161c)}" +
-    "#trialPaywall .tp-head p{margin:0 auto;max-width:600px;color:var(--muted,#6b7280);font-size:14px;line-height:1.55}" +
+    "#trialPaywall .tp-head img{height:28px;margin-bottom:14px;display:block;margin-left:auto;margin-right:auto}" +
+    "#trialPaywall .tp-freebadge{display:inline-flex;align-items:center;gap:7px;background:#eef7d6;color:#3f6d0e;font-size:14px;font-weight:800;padding:9px 18px;border-radius:999px;margin-bottom:14px;box-shadow:0 6px 18px rgba(122,180,40,.22)}" +
+    "#trialPaywall .tp-head h1{font-family:'Manrope',sans-serif;font-size:29px;font-weight:800;margin:0 0 6px;color:var(--ink,#15161c)}" +
+    "#trialPaywall .tp-head-sub{margin:0;color:var(--muted,#6b7280);font-size:13.5px}" +
     "#trialPaywall .tp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;align-items:stretch}" +
     "#trialPaywall .tp-plan{position:relative;display:flex;flex-direction:column;gap:7px;text-align:left;background:#fff;border:2px solid var(--line,#e6e8ee);border-radius:20px;padding:22px 18px;cursor:pointer;font:inherit;transition:border-color .15s,box-shadow .15s,transform .15s}" +
     "#trialPaywall .tp-plan:hover{border-color:#c9c4ff;transform:translateY(-2px)}" +
@@ -637,8 +639,8 @@ function showTrialPaywall() {
     '<div class="tp-shell">' +
       '<div class="tp-head">' +
         '<img src="./assets/expertly-logo.png" alt="Expertly" onerror="this.style.display=\'none\'" />' +
-        "<h1>Active ton essai gratuit de 14 jours</h1>" +
-        "<p>Choisis ta formule pour ouvrir ton espace. 0 € aujourd'hui — le prélèvement ne démarre qu'après les 14 jours, et tu peux annuler avant.</p>" +
+        '<div><span class="tp-freebadge">🎁 14 jours d\'essai gratuit · 0 € aujourd\'hui</span></div>' +
+        "<h1>Choisis ta formule</h1>" +
       "</div>" +
       '<div class="tp-grid">' + PLANS.map(cardHtml).join("") + "</div>" +
       '<div class="tp-cta">' +
