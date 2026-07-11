@@ -40,6 +40,82 @@
   var MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   var DAYS = ["M", "T", "T", "W", "F", "S"];
 
+  // ---- Periode globale (menu ...) + temps serveur ----
+  var PERIOD_KEY = "12mo";
+  var timeOffset = 0; // ms : (heure serveur) - (heure locale)
+  function serverNow() { return new Date(Date.now() + timeOffset); }
+  function pad2(x) { return ("0" + x).slice(-2); }
+  function hhmm(d) { return pad2(d.getHours()) + ":" + pad2(d.getMinutes()); }
+  function hhLab(d) { return pad2(d.getHours()) + "h"; }
+  function dayMon(d) { return pad2(d.getDate()) + "/" + pad2(d.getMonth() + 1); }
+  var PERIODS = [
+    { k: "10min", label: "10 dernieres minutes", kind: "time", n: 10, step: 60000, lab: hhmm },
+    { k: "1h", label: "Derniere heure", kind: "time", n: 12, step: 300000, lab: hhmm },
+    { k: "24h", label: "Dernieres 24 h", kind: "time", n: 12, step: 7200000, lab: hhLab },
+    { k: "7d", label: "7 derniers jours", kind: "time", n: 7, step: 86400000, lab: dayMon },
+    { k: "30d", label: "30 derniers jours", kind: "time", n: 10, step: 259200000, lab: dayMon },
+    { k: "12mo", label: "12 derniers mois", kind: "month", n: 12 }
+  ];
+  function periodOf(k) { for (var i = 0; i < PERIODS.length; i++) { if (PERIODS[i].k === k) return PERIODS[i]; } return PERIODS[5]; }
+  function orderTime(o) { var t = o && o.createdAt ? new Date(o.createdAt) : (o && o.date ? new Date(o.date) : null); return (t && !isNaN(t.getTime())) ? t : null; }
+  // Recalcule revenus / visites / achats sur la fenetre choisie, a partir des donnees
+  // horodatees (commandes = createdAt ; visites = visitLog ; + visitsByMonth pour 12 mois).
+  function buildWindow(orders, visitLog, visitsByMonth) {
+    var P = periodOf(PERIOD_KEY), now = serverNow();
+    var labels = [], rev = [], vis = [], pur = [];
+    if (P.kind === "month") {
+      for (var i = P.n - 1; i >= 0; i--) {
+        var d1 = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        var d2 = new Date(now.getFullYear(), now.getMonth() - i + 1, 1);
+        var key = d1.getFullYear() + "-" + pad2(d1.getMonth() + 1);
+        labels.push(MONTHS[d1.getMonth()]);
+        var r = 0, p = 0;
+        orders.forEach(function (o) { var t = orderTime(o); if (t && t >= d1 && t < d2) { r += Number(o.amount) || 0; p += 1; } });
+        rev.push(r); pur.push(p);
+        vis.push(Number((visitsByMonth || {})[key] || 0));
+      }
+    } else {
+      var end = now.getTime();
+      for (var j = 0; j < P.n; j++) {
+        var bEnd = end - (P.n - 1 - j) * P.step, bStart = bEnd - P.step;
+        labels.push(P.lab(new Date(bEnd)));
+        var r2 = 0, p2 = 0, v2 = 0;
+        orders.forEach(function (o) { var t = orderTime(o); if (t) { var tm = t.getTime(); if (tm >= bStart && tm < bEnd) { r2 += Number(o.amount) || 0; p2 += 1; } } });
+        (visitLog || []).forEach(function (ts) { var tm = new Date(ts).getTime(); if (!isNaN(tm) && tm >= bStart && tm < bEnd) v2 += 1; });
+        rev.push(r2); pur.push(p2); vis.push(v2);
+      }
+    }
+    return { labels: labels, revenueSeries: rev, visitsSeries: vis, purchasesSeries: pur };
+  }
+  // Style + comportement du menu deroulant de periode (delegation : survit aux re-render).
+  (function () {
+    var s = document.createElement("style"); s.id = "mb-period-css";
+    s.textContent = ".mb-pmenu{position:fixed;z-index:1600;background:#fff;border:1px solid #e6e8e0;border-radius:14px;box-shadow:0 16px 40px rgba(16,17,26,.22);padding:6px;min-width:206px;display:none;font-family:'DM Sans',system-ui,sans-serif;}.mb-pmenu.open{display:block;}.mb-pmenu button{display:block;width:100%;text-align:left;border:0;background:none;padding:9px 12px;border-radius:9px;font:inherit;font-size:13px;color:#20221d;cursor:pointer;}.mb-pmenu button:hover{background:#f2f4ee;}.mb-pmenu button.on{background:#eef7d6;font-weight:700;}";
+    (document.head || document.documentElement).appendChild(s);
+  })();
+  var pmenu = null;
+  function openPeriodMenu(btn) {
+    if (!pmenu) { pmenu = document.createElement("div"); pmenu.className = "mb-pmenu"; document.body.appendChild(pmenu); }
+    pmenu.innerHTML = PERIODS.map(function (p) { return '<button data-pk="' + p.k + '" class="' + (p.k === PERIOD_KEY ? "on" : "") + '">' + p.label + "</button>"; }).join("");
+    var r = btn.getBoundingClientRect();
+    pmenu.style.left = Math.max(8, Math.min(r.left, window.innerWidth - 216)) + "px";
+    pmenu.style.top = (r.bottom + 6) + "px";
+    pmenu.classList.add("open");
+  }
+  document.addEventListener("click", function (e) {
+    var opt = e.target.closest ? e.target.closest("[data-pk]") : null;
+    if (opt) { PERIOD_KEY = opt.getAttribute("data-pk"); if (pmenu) pmenu.classList.remove("open"); try { renderMidboxOverview(); } catch (x) {} return; }
+    var trig = e.target.closest ? e.target.closest(".mb-menu, .mb-pill") : null;
+    if (trig && document.body.classList.contains("midbox-overview")) { e.preventDefault(); e.stopPropagation(); openPeriodMenu(trig); return; }
+    if (pmenu) pmenu.classList.remove("open");
+  }, true);
+  // Synchronise l'heure sur le serveur (source de verite pour les fenetres).
+  try {
+    fetch("/api/config", { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (c) {
+      if (c && c.now) { var sv = new Date(c.now).getTime(); if (!isNaN(sv)) timeOffset = sv - Date.now(); }
+    }).catch(function () {});
+  } catch (e) {}
+
   function safeState() {
     return typeof state !== "undefined" && state ? state : {};
   }
@@ -108,7 +184,18 @@
       for (var i = 0; i < buckets.length; i++) { if (buckets[i].key === key) { purchasesSeries[i] += 1; break; } }
     });
     var monthsLabels = buckets.map(function (b) { return MONTHS[b.idx]; });
+    // Series recalculees sur la periode choisie (menu ...).
+    var win = buildWindow(orders, (analytics.visitLog || []), vbm);
+    var sumArr = function (arr) { return arr.reduce(function (x, y) { return x + (Number(y) || 0); }, 0); };
     return {
+      winLabels: win.labels,
+      winRevenue: win.revenueSeries,
+      winVisits: win.visitsSeries,
+      winPurchases: win.purchasesSeries,
+      winRevTotal: sumArr(win.revenueSeries),
+      winVisTotal: sumArr(win.visitsSeries),
+      winPurTotal: sumArr(win.purchasesSeries),
+      periodLabel: periodOf(PERIOD_KEY).label,
       s: s,
       orders: orders,
       revenue: revenue,
@@ -149,7 +236,8 @@
       + body + '</article>';
   }
 
-  function earningChart(values) {
+  function earningChart(values, labels) {
+    labels = labels || [];
     var nums = values.map(Number);
     var realMax = Math.max.apply(null, nums.concat([0]));
     // Axe dynamique : arrondi "propre" au-dessus du max reel (ex: 15k -> 20k) pour que
@@ -183,9 +271,9 @@
       var fill = active ? "url(#mbActiveHatch)" : "url(#mbHatch)";
       var tip = active ? '<g class="mb-total-tip"><rect x="' + (x - 15).toFixed(1) + '" y="' + (y - 30).toFixed(1) + '" width="62" height="28" rx="8" fill="#c7ff5a"/><text x="' + (x + 16).toFixed(1) + '" y="' + (y - 11).toFixed(1) + '" text-anchor="middle" fill="#11120f">' + formatInt(value) + '</text></g>' : "";
       return '<rect x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="24" height="' + h.toFixed(1) + '" rx="10" fill="' + fill + '"/>' + tip
-        + '<text x="' + (x + 12).toFixed(1) + '" y="246" text-anchor="middle" fill="#999b91" font-size="14">' + MONTHS[index] + '</text>';
+        + '<text x="' + (x + 12).toFixed(1) + '" y="246" text-anchor="middle" fill="#999b91" font-size="14">' + (labels[index] || "") + '</text>';
     }).join("");
-    return '<div style="height:244px;margin-top:10px"><svg class="mb-svg" viewBox="0 0 760 260">'
+    return '<div style="height:244px;margin-top:10px"><svg class="mb-svg" viewBox="0 0 760 260" data-series="' + encodeURIComponent(JSON.stringify(nums)) + '" data-labels="' + encodeURIComponent(JSON.stringify(labels)) + '">'
       + '<defs><pattern id="mbHatch" width="8" height="8" patternTransform="rotate(45)" patternUnits="userSpaceOnUse"><rect width="8" height="8" fill="#e9ebe3"/><line x1="0" y1="0" x2="0" y2="8" stroke="#bfc3b7" stroke-width="4"/></pattern><pattern id="mbActiveHatch" width="8" height="8" patternTransform="rotate(45)" patternUnits="userSpaceOnUse"><rect width="8" height="8" fill="#f7f8f1"/><line x1="0" y1="0" x2="0" y2="8" stroke="#70736b" stroke-width="4"/></pattern></defs>'
       + '<text class="mb-y" x="51" y="222">0</text>' + grid + bars + '</svg></div>';
   }
@@ -236,17 +324,20 @@
     var donutValue = Math.max(6, Math.min(96, d.conversion * 9 || d.orders.length * 8));
     var c = 2 * Math.PI * 50;
     var body = '<div class="mb-order-body"><div><div class="mb-donut"><svg viewBox="0 0 126 126"><circle cx="63" cy="63" r="50" fill="none" stroke="#e7efe1" stroke-width="15"/><circle cx="63" cy="63" r="50" fill="none" stroke="#c7ff5a" stroke-width="15" stroke-linecap="round" stroke-dasharray="' + (c * donutValue / 100).toFixed(1) + " " + c.toFixed(1) + '" transform="rotate(-90 63 63)"/><circle cx="63" cy="63" r="36" fill="rgba(255,255,255,.75)"/></svg><div class="mb-donut-center">' + Math.round(donutValue) + '%<small>Weekly</small></div></div></div><div class="mb-cat-list">' + list + '</div></div>';
-    return shell("Order Statistics", formatInt(d.orders.length) + " Total Sales", "cart", body, '<button class="mb-menu" aria-label="Options">...</button>', "mb-orders");
+    return shell("Order Statistics", formatInt(d.winPurTotal) + " ventes sur la periode", "cart", body, '<button class="mb-menu" aria-label="Options">...</button>', "mb-orders");
   }
 
   function acquisitionCard(d) {
     // Orange = visites (par mois), Vert = achats (par mois). Donnees reelles.
+    var L = d.winLabels || [];
+    var stepL = Math.max(1, Math.ceil(L.length / 6));
+    var mini = L.filter(function (_, i) { return i % stepL === 0; });
     var body = '<div class="mb-acq-metrics">'
-      + '<div>' + icon("page") + '<strong>' + formatInt(d.visits) + '</strong><span><i style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#ff9f20;margin-right:5px"></i>Visites</span></div>'
-      + '<div>' + icon("cart") + '<strong>' + formatInt(d.purchases) + '</strong><span><i style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#62c600;margin-right:5px"></i>Achats</span></div></div>'
-      + '<div style="height:214px;margin-top:2px;position:relative">' + smoothArea(d.visitsSeries, "#ff9f20", "mbAcqOrange", 300, 178, "visites", d.monthsLabels)
-      + '<div style="position:absolute;inset:0">' + smoothArea(d.purchasesSeries, "#62c600", "mbAcqGreen", 300, 178, "achats", d.monthsLabels) + '</div></div>'
-      + '<div class="mb-mini-labels" style="left:38px;right:34px">' + [0, 2, 4, 6, 8, 10].map(function (i) { return '<span>' + (d.monthsLabels[i] || "") + '</span>'; }).join("") + '</div>';
+      + '<div>' + icon("page") + '<strong>' + formatInt(d.winVisTotal) + '</strong><span><i style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#ff9f20;margin-right:5px"></i>Visites</span></div>'
+      + '<div>' + icon("cart") + '<strong>' + formatInt(d.winPurTotal) + '</strong><span><i style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#62c600;margin-right:5px"></i>Achats</span></div></div>'
+      + '<div style="height:214px;margin-top:2px;position:relative">' + smoothArea(d.winVisits, "#ff9f20", "mbAcqOrange", 300, 178, "visites", d.winLabels)
+      + '<div style="position:absolute;inset:0">' + smoothArea(d.winPurchases, "#62c600", "mbAcqGreen", 300, 178, "achats", d.winLabels) + '</div></div>'
+      + '<div class="mb-mini-labels" style="left:38px;right:34px">' + mini.map(function (l) { return '<span>' + l + '</span>'; }).join("") + '</div>';
     return shell("Acquisition", "Visites vs Achats", "grid", body, '<button class="mb-menu" aria-label="Options">...</button>', "mb-acq");
   }
 
@@ -275,7 +366,7 @@
     if (title) title.textContent = "Dashboard";
     document.body.classList.add("midbox-overview");
     overview.innerHTML = '<div class="mb-page"><div class="mb-crumb"><b>Home</b><span>/</span><b>Dashboard</b></div><div class="mb-grid">'
-      + shell("Earning Reports", "Yearly Earnings Overview", "trend", earningChart(d.series), '<button class="mb-pill">Last Year⌄</button><button class="mb-menu" aria-label="Options">...</button>', "mb-earn")
+      + shell("Earning Reports", "Revenus sur la periode", "trend", earningChart(d.winRevenue, d.winLabels), '<button class="mb-pill">' + d.periodLabel + ' ⌄</button><button class="mb-menu" aria-label="Options">...</button>', "mb-earn")
       + balanceCard(d)
       + expensesCard(d)
       + ordersCard(d)

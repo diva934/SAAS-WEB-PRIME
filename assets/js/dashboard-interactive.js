@@ -79,10 +79,11 @@
     if (!bars.length) { hideHover(); return; }
     var rects = bars.map(function (b) { return b.getBoundingClientRect(); });
     var i = nearestByX(rects, e.clientX);
-    var vals = values || [];
+    var series = decodeAttr(svg.getAttribute("data-series"));
+    var labels = decodeAttr(svg.getAttribute("data-labels"));
     var r = rects[i];
     if (dot) dot.classList.remove("on");
-    showTip(r.left + r.width / 2, r.top, MONTHS[i] || ("M" + (i + 1)), Number(vals[i] || 0));
+    showTip(r.left + r.width / 2, r.top, labels[i] || MONTHS[i] || ("M" + (i + 1)), Number(series[i] || 0));
   }
 
   function decodeAttr(v) { try { return JSON.parse(decodeURIComponent(v || "")); } catch (e) { return []; } }
@@ -133,7 +134,7 @@
     if (svg && svg.getAttribute("viewBox") === BARS_VB) { e.preventDefault(); openModal(); }
   }, true);
 
-  var modal = null, range = 12;
+  var modal = null, modalVals = [], modalLabels = [];
   function buildModal() {
     if (modal) return modal;
     modal = document.createElement("div");
@@ -141,23 +142,27 @@
     modal.innerHTML =
       '<div class="dic-card">' +
         '<div class="dic-head"><h3>Revenus</h3><span class="dic-total" id="dicTotal"></span>' +
-          '<select id="dicRange"><option value="12">12 mois</option><option value="6">6 mois</option><option value="3">3 mois</option></select>' +
           '<button class="dic-close" id="dicClose" aria-label="Fermer">&times;</button></div>' +
         '<div class="dic-big" id="dicBig"></div>' +
       '</div>';
     document.body.appendChild(modal);
     modal.addEventListener("click", function (e) { if (e.target === modal) closeModal(); });
     modal.querySelector("#dicClose").addEventListener("click", closeModal);
-    modal.querySelector("#dicRange").addEventListener("change", function () { range = parseInt(this.value, 10) || 12; drawBig(); });
     return modal;
   }
-  function openModal() { buildModal(); range = 12; modal.querySelector("#dicRange").value = "12"; modal.classList.add("open"); drawBig(); }
+  function openModal() {
+    buildModal();
+    var svg = document.querySelector("#overviewView svg.mb-svg[viewBox='" + BARS_VB + "']");
+    modalVals = svg ? decodeAttr(svg.getAttribute("data-series")) : [];
+    modalLabels = svg ? decodeAttr(svg.getAttribute("data-labels")) : [];
+    modal.classList.add("open");
+    drawBig();
+  }
   function closeModal() { if (modal) modal.classList.remove("open"); hideHover(); }
 
   function drawBig() {
-    var all = values || [];
-    var vals = all.slice(Math.max(0, all.length - range));
-    var labels = MONTHS.slice(0, all.length).slice(Math.max(0, all.length - range));
+    var vals = modalVals || [];
+    var labels = modalLabels || [];
     var n = vals.length || 1;
     var W = 920, H = 380, top = 30, bottom = 44, plot = H - top - bottom;
     var max = Math.max.apply(null, vals.concat([1]));
