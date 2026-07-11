@@ -12,13 +12,22 @@
   try { DEMO = new URLSearchParams(location.search).get("demo") === "1"; } catch (e) {}
 
   var ROBOT = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3.2V5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="2.6" r="1.05" fill="currentColor"/><rect x="4.6" y="6.8" width="14.8" height="12" rx="3.6" stroke="currentColor" stroke-width="1.8"/><path d="M2.6 11.4v3.2M21.4 11.4v3.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="9.1" cy="12.4" r="1.45" fill="currentColor"/><circle cx="14.9" cy="12.4" r="1.45" fill="currentColor"/><path d="M9.4 15.9h5.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
+  var ROBOT_IMG = '<img class="ea-robot-img" src="/assets/robot-chat.png" alt="" />';
 
   var CSS = [
+    '.live-indicator{display:inline-flex;align-items:center;gap:7px;padding:6px 11px;border-radius:999px;background:var(--soft,#f7f7fb);border:1px solid var(--line,#e8e8f0);font-size:12px;font-weight:600;color:var(--muted,#727389);white-space:nowrap;margin-right:8px}',
+    '.live-indicator .live-dot{width:8px;height:8px;border-radius:50%;background:var(--muted,#727389)}',
+    '.live-indicator.is-live{color:var(--green,#1eaa73);border-color:rgba(30,170,115,.35);background:rgba(30,170,115,.08)}',
+    '.live-indicator.is-live .live-dot{background:var(--green,#1eaa73);animation:livePulse 1.4s ease-out infinite}',
+    '.live-indicator.is-stale{color:var(--red,#d95866);border-color:rgba(217,88,102,.35);background:rgba(217,88,102,.08)}',
+    '.live-indicator.is-stale .live-dot{background:var(--red,#d95866)}',
+    '@keyframes livePulse{0%{box-shadow:0 0 0 0 rgba(30,170,115,.45)}70%{box-shadow:0 0 0 7px rgba(30,170,115,0)}100%{box-shadow:0 0 0 0 rgba(30,170,115,0)}}',
     '.expertly-assistant{--a:#5547e7;--a2:#786bf8;position:fixed;right:22px;bottom:22px;z-index:900;display:flex;flex-direction:column;align-items:flex-end;gap:12px;font-family:"DM Sans",system-ui,sans-serif}',
     '.ea-launcher{display:inline-flex;align-items:center;gap:10px;border:0;padding:8px;border-radius:999px;background:#fff;box-shadow:0 12px 30px rgba(39,56,105,.18);cursor:pointer;transition:transform .15s ease,box-shadow .15s ease}',
     '.ea-launcher:hover{transform:translateY(-2px);box-shadow:0 16px 36px rgba(39,56,105,.24)}',
     '.ea-launcher-icon{width:46px;height:46px;flex:none;display:grid;place-items:center;border-radius:50%;color:#fff;background:linear-gradient(145deg,var(--a2),var(--a))}',
     '.ea-launcher-icon svg{width:26px;height:26px}',
+    '.ea-robot-img{width:88%;height:88%;object-fit:contain;display:block;filter:drop-shadow(0 1px 2px rgba(0,0,0,.25))}',
     '.ea-launcher-label{font-size:14px;font-weight:700;color:#12151f;padding-right:8px}',
     '.expertly-assistant.is-open .ea-launcher-label{display:none}',
     '.ea-panel{width:340px;max-width:calc(100vw - 32px);background:#fff;border:1px solid #e8e8f0;border-radius:20px;box-shadow:0 24px 60px rgba(39,56,105,.22);overflow:hidden;display:flex;flex-direction:column}',
@@ -52,8 +61,22 @@
 
   /* ---------------- Rafraichissement live ---------------- */
   var liveTimer = null, inFlight = false, lastSig = "";
-  function setIndicator(ok) {
+  function ensureIndicator() {
     var i = document.querySelector("#liveIndicator");
+    if (!i) {
+      var a = document.querySelector(".topbar-actions");
+      if (!a) return null;
+      i = document.createElement("span");
+      i.id = "liveIndicator";
+      i.className = "live-indicator";
+      i.title = "Le dashboard se met a jour automatiquement";
+      i.innerHTML = '<i class="live-dot"></i><span class="live-text">Connexion...</span>';
+      a.prepend(i);
+    }
+    return i;
+  }
+  function setIndicator(ok) {
+    var i = ensureIndicator();
     if (!i) return;
     i.classList.toggle("is-live", ok);
     i.classList.toggle("is-stale", !ok);
@@ -90,6 +113,7 @@
   }
   function startLive() {
     if (DEMO || liveTimer) return;
+    ensureIndicator();
     liveTimer = window.setInterval(refresh, 1000);
     document.addEventListener("visibilitychange", function () { if (!document.hidden) refresh(); });
     refresh();
@@ -167,7 +191,7 @@
     root.innerHTML =
       '<div class="ea-panel" id="eaPanel" hidden>' +
         '<header class="ea-head">' +
-          '<div class="ea-avatar" aria-hidden="true">' + ROBOT + '</div>' +
+          '<div class="ea-avatar" aria-hidden="true">' + ROBOT_IMG + '</div>' +
           '<div class="ea-head-text"><strong>Assistant Expertly</strong>' +
             '<span><i class="ea-dot"></i>IA - base sur tes chiffres</span></div>' +
           '<button class="ea-close" type="button" id="eaClose" aria-label="Fermer">×</button>' +
@@ -180,7 +204,7 @@
         '<p class="ea-note">Assistant IA - tes chiffres servent a personnaliser les conseils.</p>' +
       '</div>' +
       '<button class="ea-launcher" type="button" id="eaLauncher" aria-label="Ouvrir l\'assistant">' +
-        '<span class="ea-launcher-icon" aria-hidden="true">' + ROBOT + '</span>' +
+        '<span class="ea-launcher-icon" aria-hidden="true">' + ROBOT_IMG + '</span>' +
         '<span class="ea-launcher-label">Besoin d\'un conseil ?</span>' +
       '</button>';
     document.body.appendChild(root);
