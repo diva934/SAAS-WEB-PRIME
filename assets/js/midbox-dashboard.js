@@ -19,13 +19,14 @@
     ".mb-title{flex:1;min-width:0;line-height:1.12;}.mb-title h2{margin:2px 0 3px;font-size:18px;font-weight:500;letter-spacing:0;}.mb-title span{display:block;color:#7f8178;font-size:12px;}",
     ".mb-menu,.mb-pill{border:0;background:rgba(241,243,237,.72);color:#151611;}.mb-menu{width:40px;height:40px;border-radius:18px;font-size:20px;line-height:1;}.mb-pill{height:38px;border-radius:20px;padding:0 14px;font-size:13px;white-space:nowrap;}",
     ".mb-svg{display:block;width:100%;height:100%;overflow:visible;}.mb-axis text{font-size:14px;fill:#999b91;}.mb-y{font-size:14px;fill:#a0a297;}.mb-total-tip text{font-size:14px;font-weight:600;}",
-    ".mb-wallet{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0 14px;padding:11px 16px;border:1px dashed rgba(21,22,17,.55);border-radius:22px;}",
+    ".mb-wallet{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0 16px;padding:26px 18px;border:1px dashed rgba(21,22,17,.55);border-radius:22px;}",
     ".mb-wallet div{display:grid;grid-template-columns:20px 1fr;column-gap:8px;align-items:center;}.mb-wallet svg{grid-row:1/3;width:18px;height:18px;}.mb-wallet strong{font-size:16px;font-weight:500;line-height:1;}.mb-wallet span{color:#777970;font-size:11px;}",
     ".mb-mini-labels{position:absolute;left:29px;right:24px;bottom:18px;display:flex;justify-content:space-between;color:#9ca096;font-size:14px;}.mb-day{padding:4px 12px;border-radius:6px;background:#75766e;color:#fff;}",
     ".mb-gauge-wrap{height:228px;position:relative;display:grid;place-items:center;margin-top:5px;}.mb-gauge-value{position:absolute;inset:62px 0 auto;text-align:center;font-size:54px;font-weight:500;letter-spacing:0;color:#030402;}.mb-gauge-delta{position:absolute;top:137px;left:50%;transform:translateX(-50%);padding:4px 10px;border-radius:16px;background:#d9ffc4;color:#2fac1c;font-size:13px;}.mb-note{margin:0 auto;color:#6f7168;text-align:center;font-size:14px;line-height:1.25;max-width:230px;}",
     ".mb-order-body{display:grid;grid-template-columns:132px 1fr;gap:10px;align-items:center;height:292px;}.mb-donut{width:126px;height:126px;position:relative;margin:0 auto;}.mb-donut-center{position:absolute;inset:0;display:grid;place-items:center;text-align:center;font-size:20px;font-weight:700;line-height:1.05;}.mb-donut-center small{display:block;color:#777970;font-size:12px;font-weight:400;}",
     ".mb-cat-list{display:grid;gap:14px;min-width:0;}.mb-cat{display:grid;grid-template-columns:36px minmax(0,1fr) auto;gap:10px;align-items:center;}.mb-cat i{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-style:normal;color:#151611;}.mb-cat strong{display:block;font-size:15px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}.mb-cat span{display:block;color:#7d8077;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}.mb-cat b{font-size:15px;font-weight:600;}",
     ".mb-acq-metrics{display:flex;gap:26px;margin:26px 0 2px 4px;}.mb-acq-metrics div{display:grid;grid-template-columns:20px 1fr;gap:0 8px;align-items:center;}.mb-acq-metrics svg{grid-row:1/3;width:18px;height:18px;}.mb-acq-metrics strong{font-size:16px;font-weight:500;}.mb-acq-metrics span{grid-column:2;color:#777970;font-size:11px;}",
+    ".mb-denied{min-height:calc(100vh - 150px);position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:#151611;}.mb-denied-main{width:100%;display:flex;flex-direction:column;align-items:center;text-align:center;gap:16px;}.mb-denied-robot{width:min(360px,44vw);height:auto;opacity:.96;}.mb-denied h1{margin:24px 0 0;font-size:31px;font-weight:600;}.mb-denied p{margin:0;color:#6f7168;font-size:15px;}.mb-denied-footer{margin-top:26px;display:flex;align-items:center;justify-content:center;gap:18px;color:#9ca096;font-size:12px;flex-wrap:wrap;}.mb-denied-links{display:flex;gap:22px;}.mb-denied-links a{color:#9ca096;text-decoration:none;}",
     ".mb-best .mb-head{margin-bottom:25px;}.mb-table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:14px;}.mb-table th{padding:0 8px 10px 0;border-bottom:1px dashed rgba(21,22,17,.24);color:#777970;text-align:left;font-weight:400;}.mb-table td{padding:10px 8px 10px 0;border-bottom:1px solid rgba(21,22,17,.1);vertical-align:middle;color:#20221d;}.mb-table th:nth-child(1){width:46%;}.mb-table th:nth-child(2){width:13%;}.mb-table th:nth-child(3){width:13%;}.mb-table th:nth-child(4){width:13%;}.mb-table th:nth-child(5){width:15%;text-align:right;}.mb-table td:last-child,.mb-table th:last-child{text-align:right;padding-right:0;}",
     ".mb-product{display:grid;grid-template-columns:46px 1fr;gap:10px;align-items:center;min-width:0;}.mb-product-img{width:46px;height:38px;border-radius:13px;display:grid;place-items:center;overflow:hidden;background:#e9ece5;box-shadow:inset 0 0 0 1px rgba(21,22,17,.08);}.mb-product-img span{font-size:10px;font-weight:700;color:#fff;}.mb-product strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px;font-weight:500;}.mb-product small{display:block;color:#86897f;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}.mb-muted-row{opacity:.42;}",
     "@media(max-width:1180px){.mb-grid{grid-template-columns:1fr 1fr;grid-template-rows:auto;}.mb-earn,.mb-balance,.mb-expenses,.mb-orders,.mb-acq,.mb-best{grid-column:auto;grid-row:auto;}.mb-earn,.mb-best{grid-column:1/-1;}.mb-card{min-height:300px;}}",
@@ -297,8 +298,7 @@
 
   function balanceCard(d) {
     var body = '<div class="mb-wallet"><div>' + icon("wallet") + '<strong>' + formatInt(d.wallet) + '</strong><span>Wallet</span></div><div>' + icon("dollar") + '<strong>' + formatInt(d.paypal) + '</strong><span>PayPal</span></div></div>'
-      + '<div style="height:158px;margin-top:7px">' + smoothArea(d.series, "#62c600", "mbBalanceFill", 260, 140, "€", d.monthsLabels) + '</div>'
-      + '<div class="mb-mini-labels"><span>N</span><span class="mb-day">D</span><span>J</span><span>F</span><span>M</span><span>A</span></div>';
+      + '<div style="height:150px;margin-top:8px">' + smoothArea(d.series, "#62c600", "mbBalanceFill", 260, 140, "€", d.monthsLabels) + '</div>';
     return shell("Balance", "", "dollar", body, '<button class="mb-menu" aria-label="Options">...</button>', "mb-balance");
   }
 
@@ -358,6 +358,34 @@
     return shell("Best Sellers", "", "bolt", body, '<button class="mb-pill">Last Month⌄</button><button class="mb-menu" aria-label="Options">...</button>', "mb-best");
   }
 
+  function deniedRobotSvg() {
+    return '<svg class="mb-denied-robot" viewBox="0 0 420 340" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Access denied 403">'
+      + '<ellipse cx="210" cy="292" rx="132" ry="18" fill="#F9BD91" fill-opacity=".72"/>'
+      + '<path d="M116 285c-18-24-21-54-4-67 20 18 29 41 25 70" fill="#77BBAF"/><path d="M132 288c-3-35 9-69 27-77 9 29-1 59-23 80" fill="#5DAE9D"/><path d="M151 287c-2-18 6-32 19-38 6 19-1 33-17 41" fill="#93D1C6"/>'
+      + '<rect x="172" y="151" width="94" height="89" rx="24" fill="#F8ECE1" stroke="#E4BFAE" stroke-width="2"/>'
+      + '<rect x="183" y="166" width="72" height="48" rx="14" fill="#FFF5E8"/><circle cx="199" cy="190" r="8" fill="#7AA5A5"/><circle cx="237" cy="190" r="8" fill="#7AA5A5"/><path d="M210 203c8 7 18 7 26 0" stroke="#6D8988" stroke-width="3" stroke-linecap="round"/>'
+      + '<rect x="163" y="175" width="9" height="31" rx="4.5" fill="#E99A85"/><rect x="266" y="175" width="9" height="31" rx="4.5" fill="#E99A85"/>'
+      + '<rect x="191" y="242" width="57" height="44" rx="10" fill="#F8ECE1" stroke="#E4BFAE" stroke-width="2"/><circle cx="219" cy="261" r="12" fill="#FF9D82"/><path d="M212 261h14M219 254v14" stroke="#FFF5E8" stroke-width="2.5" stroke-linecap="round"/>'
+      + '<path d="M187 244c-21 7-33 19-37 37" stroke="#DFA38D" stroke-width="8" stroke-linecap="round"/><path d="M252 245c20 7 31 18 35 34" stroke="#DFA38D" stroke-width="8" stroke-linecap="round"/>'
+      + '<path d="M152 284c-9 1-15-2-17-7" stroke="#E7B7A6" stroke-width="8" stroke-linecap="round"/><path d="M291 282c8 2 15 0 19-5" stroke="#E7B7A6" stroke-width="8" stroke-linecap="round"/>'
+      + '<path d="M202 286v35M238 286v35" stroke="#DFA38D" stroke-width="8" stroke-linecap="round"/><path d="M190 323h23M226 323h23" stroke="#91BDB7" stroke-width="8" stroke-linecap="round"/>'
+      + '<rect x="286" y="177" width="68" height="68" rx="6" fill="#FF896F"/><path d="M292 184h56v54h-56z" stroke="#FFD7C9" stroke-width="3" stroke-dasharray="8 8"/><text x="320" y="220" text-anchor="middle" font-family="Arial, sans-serif" font-size="30" font-weight="700" fill="white">403</text><path d="M320 245v46" stroke="#D0A97C" stroke-width="5" stroke-linecap="round"/>'
+      + '<path d="M92 170c19-7 34-4 43 9-21 2-35-1-43-9ZM282 126c22-5 39-1 49 14-24 1-40-3-49-14ZM307 158c17-3 30 1 38 12-18 0-30-4-38-12Z" fill="#F4EAD3" fill-opacity=".78"/>'
+      + '</svg>';
+  }
+
+  // Page Emails : illustration robot "403" centree (reprise de la maquette d'origine).
+  function renderEmailsDenied() {
+    var section = document.querySelector("#emailsView");
+    if (!section) return false;
+    var title = document.querySelector("#viewTitle");
+    if (title) title.textContent = "Emails";
+    section.innerHTML = '<div class="mb-denied"><div class="mb-denied-main">' + deniedRobotSvg()
+      + '<div><h1>Access Denied</h1><p>You have no permission to visit this page</p></div></div>'
+      + '<footer class="mb-denied-footer"><span>Copyright &copy; 2025 Expertly. All rights reserved.</span><nav class="mb-denied-links" aria-label="Legal"><a href="#">Conditions</a><a href="#">Confidentialite</a></nav></footer></div>';
+    return true;
+  }
+
   function renderMidboxOverview() {
     var overview = document.querySelector("#overviewView");
     if (!overview) return;
@@ -389,6 +417,15 @@
         if (window.__mbOrigRenderOverview) window.__mbOrigRenderOverview();
       }
     };
+    // Route la vue Emails vers l'illustration robot 403 (centre), laisse le reste intact.
+    if (typeof window.renderView === "function") {
+      window.__mbOrigRenderView = window.renderView;
+      window.renderView = function (view) {
+        try { if (view === "emails" && renderEmailsDenied()) return; } catch (e) {}
+        if (window.__mbOrigRenderView) return window.__mbOrigRenderView(view);
+      };
+      try { renderView = window.renderView; } catch (e) {}
+    }
     window.__mbHooked = true;
     try {
       if (typeof activeView === "undefined" || activeView === "overview") renderMidboxOverview();
