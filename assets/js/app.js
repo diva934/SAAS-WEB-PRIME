@@ -557,21 +557,36 @@ function showCreatorAccessGate({ title, message }) {
 function injectTrialPaywallCss() {
   if (document.getElementById("tpCss")) return;
   const css =
-    "#trialPaywall .tp-card{width:min(500px,100%)}" +
-    "#trialPaywall .tp-plans{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin:8px 0 18px}" +
-    "#trialPaywall .tp-plan{display:flex;flex-direction:column;gap:4px;align-items:flex-start;text-align:left;border:1.5px solid var(--line);border-radius:14px;padding:12px 12px;background:#fff;cursor:pointer;font:inherit;transition:border-color .15s,box-shadow .15s}" +
-    "#trialPaywall .tp-plan:hover{border-color:#c9c4ff}" +
-    "#trialPaywall .tp-plan.is-on{border-color:var(--purple,#6558f5);box-shadow:0 8px 22px rgba(101,88,245,.18)}" +
-    "#trialPaywall .tp-plan-tag{font-size:10px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:#8a8f9c}" +
-    "#trialPaywall .tp-plan-name{font-size:14px;font-weight:800;color:var(--ink,#15161c)}" +
-    "#trialPaywall .tp-plan-price{font-size:17px;font-weight:800;color:var(--ink,#15161c)}" +
-    "#trialPaywall .tp-plan-price small{font-size:11px;font-weight:600;color:#8a8f9c}" +
-    "#trialPaywall .tp-go{width:100%;border:0;border-radius:12px;padding:14px 18px;background:var(--purple,#6558f5);color:#fff;font:inherit;font-weight:800;cursor:pointer}" +
-    "#trialPaywall .tp-go:disabled{opacity:.65;cursor:wait}" +
-    "#trialPaywall .tp-note{display:block;min-height:16px;color:var(--red,#c0334e);font-weight:700;font-size:12.5px;margin-top:8px}" +
-    "#trialPaywall .tp-fine{display:block;font-size:11.5px;color:#8a8f9c;margin-top:10px;text-align:center}" +
-    "#trialPaywall .tp-logout{display:block;margin:16px auto 0;border:0;background:none;color:#8a8f9c;font:inherit;font-size:12.5px;font-weight:600;cursor:pointer;text-decoration:underline}" +
-    "@media(max-width:480px){#trialPaywall .tp-plans{grid-template-columns:1fr}}";
+    "#trialPaywall{align-items:start;overflow-y:auto;padding:34px 20px}" +
+    "#trialPaywall .tp-shell{width:min(1000px,100%);margin:auto}" +
+    "#trialPaywall .tp-head{text-align:center;margin-bottom:24px}" +
+    "#trialPaywall .tp-head img{height:30px;margin-bottom:16px}" +
+    "#trialPaywall .tp-head h1{font-family:'Manrope',sans-serif;font-size:28px;font-weight:800;margin:0 0 8px;color:var(--ink,#15161c)}" +
+    "#trialPaywall .tp-head p{margin:0 auto;max-width:600px;color:var(--muted,#6b7280);font-size:14px;line-height:1.55}" +
+    "#trialPaywall .tp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;align-items:stretch}" +
+    "#trialPaywall .tp-plan{position:relative;display:flex;flex-direction:column;gap:7px;text-align:left;background:#fff;border:2px solid var(--line,#e6e8ee);border-radius:20px;padding:22px 18px;cursor:pointer;font:inherit;transition:border-color .15s,box-shadow .15s,transform .15s}" +
+    "#trialPaywall .tp-plan:hover{border-color:#c9c4ff;transform:translateY(-2px)}" +
+    "#trialPaywall .tp-plan.featured{border-color:#d7d2ff}" +
+    "#trialPaywall .tp-plan.is-on{border-color:var(--purple,#6558f5);box-shadow:0 16px 34px rgba(101,88,245,.20)}" +
+    "#trialPaywall .tp-badge{position:absolute;top:-11px;left:50%;transform:translateX(-50%);background:var(--purple,#6558f5);color:#fff;font-size:11px;font-weight:800;padding:4px 12px;border-radius:999px;white-space:nowrap}" +
+    "#trialPaywall .tp-aud{font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#8a8f9c}" +
+    "#trialPaywall .tp-name{font-family:'Manrope',sans-serif;font-size:20px;font-weight:800;color:var(--ink,#15161c)}" +
+    "#trialPaywall .tp-price{font-size:13px;color:#8a8f9c}" +
+    "#trialPaywall .tp-price b{font-size:26px;color:var(--ink,#15161c);font-weight:800}" +
+    "#trialPaywall .tp-desc{font-size:12.5px;color:var(--muted,#6b7280);min-height:34px;line-height:1.4}" +
+    "#trialPaywall .tp-inc{font-size:12px;font-weight:700;color:#4a4f5c;margin-top:2px}" +
+    "#trialPaywall .tp-feats{list-style:none;padding:0;margin:0;display:grid;gap:8px}" +
+    "#trialPaywall .tp-feats li{position:relative;padding-left:23px;font-size:13px;color:#2a2e39;line-height:1.35}" +
+    "#trialPaywall .tp-feats li:before{content:'✓';position:absolute;left:0;top:0;font-size:12px;font-weight:800;color:#4f7d12}" +
+    "#trialPaywall .tp-pick{margin-top:auto;padding-top:12px;font-size:12.5px;font-weight:800;color:#8a8f9c}" +
+    "#trialPaywall .tp-plan.is-on .tp-pick{color:var(--purple,#6558f5)}" +
+    "#trialPaywall .tp-cta{text-align:center;margin-top:24px}" +
+    "#trialPaywall .tp-go{border:0;border-radius:14px;padding:15px 32px;background:var(--dark,#16171e);color:#fff;font:inherit;font-weight:800;font-size:15.5px;cursor:pointer;box-shadow:0 14px 30px rgba(16,17,26,.2)}" +
+    "#trialPaywall .tp-go:disabled{opacity:.6;cursor:wait}" +
+    "#trialPaywall .tp-note{display:block;min-height:16px;color:var(--red,#c0334e);font-weight:700;font-size:12.5px;margin-top:10px}" +
+    "#trialPaywall .tp-fine{display:block;font-size:11.5px;color:#8a8f9c;margin-top:8px}" +
+    "#trialPaywall .tp-logout{margin-top:14px;border:0;background:none;color:#8a8f9c;font:inherit;font-size:12.5px;font-weight:600;cursor:pointer;text-decoration:underline}" +
+    "@media(max-width:820px){#trialPaywall .tp-grid{grid-template-columns:1fr}#trialPaywall .tp-desc{min-height:0}}";
   const s = document.createElement("style");
   s.id = "tpCss";
   s.textContent = css;
@@ -590,36 +605,63 @@ function showTrialPaywall() {
     document.body.append(gate);
   }
   const PLANS = [
-    { id: "launch", name: "Lancement", price: "19 €", tag: "Pour démarrer" },
-    { id: "scale", name: "Croissance", price: "49 €", tag: "Le + choisi" },
-    { id: "studio", name: "Studio", price: "149 €", tag: "Pour scaler" },
+    {
+      id: "launch", name: "Launch", price: "19 €", audience: "Pour débuter",
+      desc: "Pour lancer ta première offre.", includes: "Tout le nécessaire :",
+      features: ["1 boutique personnalisable", "Jusqu'à 5 produits", "Lead magnets & collecte d'emails", "3 % de commission par vente"],
+    },
+    {
+      id: "scale", name: "Scale", price: "49 €", audience: "Pour accélérer", featured: true,
+      desc: "Pour développer des ventes régulières.", includes: "Tout dans Launch, plus :",
+      features: ["Produits & offres illimités", "Upsells & order bumps", "Emails automatisés", "Domaine personnalisé"],
+    },
+    {
+      id: "studio", name: "Studio", price: "149 €", audience: "Pour les équipes",
+      desc: "Pour gérer plusieurs marques ou clients.", includes: "Tout dans Scale, plus :",
+      features: ["Espaces multi-marques", "Affiliation avancée", "Exports comptables détaillés", "Support prioritaire"],
+    },
   ];
   let selected = "scale";
-  const cardsHtml = () =>
-    PLANS.map(
-      (p) =>
-        `<button type="button" class="tp-plan${p.id === selected ? " is-on" : ""}" data-plan="${p.id}">` +
-        `<span class="tp-plan-tag">${escapeHtml(p.tag)}</span>` +
-        `<span class="tp-plan-name">${escapeHtml(p.name)}</span>` +
-        `<span class="tp-plan-price">${escapeHtml(p.price)}<small>/mois</small></span></button>`
-    ).join("");
-  gate.innerHTML = `
-    <div class="auth-gate-card tp-card">
-      <img src="./assets/expertly-logo.png" alt="Expertly" />
-      <p class="eyebrow">Bienvenue sur Expertly</p>
-      <h1>Active ton essai gratuit</h1>
-      <p>14 jours pour tester tout Expertly. Choisis ta formule : ta carte n'est débitée qu'à la fin de l'essai, et tu peux annuler avant.</p>
-      <div class="tp-plans">${cardsHtml()}</div>
-      <button type="button" class="tp-go" id="tpGo">Démarrer mon essai gratuit</button>
-      <small class="tp-note" id="tpFeedback"></small>
-      <span class="tp-fine">Carte demandée · 0 € pendant 14 jours · annulable à tout moment.</span>
-      <button type="button" class="tp-logout" id="tpLogout">Se déconnecter</button>
-    </div>`;
-  gate.querySelectorAll(".tp-plan").forEach((b) => {
-    b.addEventListener("click", () => {
-      selected = b.getAttribute("data-plan");
-      gate.querySelectorAll(".tp-plan").forEach((x) => x.classList.remove("is-on"));
-      b.classList.add("is-on");
+  const feats = (arr) => arr.map((f) => `<li>${escapeHtml(f)}</li>`).join("");
+  const cardHtml = (p) =>
+    `<div class="tp-plan${p.featured ? " featured" : ""}${p.id === selected ? " is-on" : ""}" role="button" tabindex="0" data-plan="${p.id}" aria-pressed="${p.id === selected}">` +
+    (p.featured ? '<span class="tp-badge">Le plus choisi</span>' : "") +
+    `<span class="tp-aud">${escapeHtml(p.audience)}</span>` +
+    `<span class="tp-name">${escapeHtml(p.name)}</span>` +
+    `<span class="tp-price"><b>${escapeHtml(p.price)}</b> /mois</span>` +
+    `<span class="tp-desc">${escapeHtml(p.desc)}</span>` +
+    `<span class="tp-inc">${escapeHtml(p.includes)}</span>` +
+    `<ul class="tp-feats">${feats(p.features)}</ul>` +
+    `<span class="tp-pick">${p.id === selected ? "✓ Sélectionné" : "Choisir cette formule"}</span></div>`;
+  gate.innerHTML =
+    '<div class="tp-shell">' +
+      '<div class="tp-head">' +
+        '<img src="./assets/expertly-logo.png" alt="Expertly" onerror="this.style.display=\'none\'" />' +
+        "<h1>Active ton essai gratuit de 14 jours</h1>" +
+        "<p>Choisis ta formule pour ouvrir ton espace. 0 € aujourd'hui — le prélèvement ne démarre qu'après les 14 jours, et tu peux annuler avant.</p>" +
+      "</div>" +
+      '<div class="tp-grid">' + PLANS.map(cardHtml).join("") + "</div>" +
+      '<div class="tp-cta">' +
+        '<button type="button" class="tp-go" id="tpGo">Démarrer mon essai gratuit</button>' +
+        '<small class="tp-note" id="tpFeedback"></small>' +
+        '<span class="tp-fine">Carte demandée · 0 € pendant 14 jours · annulable à tout moment · paiement sécurisé par Stripe.</span>' +
+        '<button type="button" class="tp-logout" id="tpLogout">Se déconnecter</button>' +
+      "</div>" +
+    "</div>";
+  function selectPlan(id) {
+    selected = id;
+    gate.querySelectorAll(".tp-plan").forEach((el) => {
+      const on = el.getAttribute("data-plan") === id;
+      el.classList.toggle("is-on", on);
+      el.setAttribute("aria-pressed", on ? "true" : "false");
+      const pick = el.querySelector(".tp-pick");
+      if (pick) pick.textContent = on ? "✓ Sélectionné" : "Choisir cette formule";
+    });
+  }
+  gate.querySelectorAll(".tp-plan").forEach((el) => {
+    el.addEventListener("click", () => selectPlan(el.getAttribute("data-plan")));
+    el.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); selectPlan(el.getAttribute("data-plan")); }
     });
   });
   const go = gate.querySelector("#tpGo");
