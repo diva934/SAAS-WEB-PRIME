@@ -147,6 +147,8 @@ aside#sidebar .brand-row{ display:none !important; }
    2. Meme forme de cases que les cartes du dashboard (.mb-card) pour les vues restantes.
    3. Titres des cases alignes sur l'ecriture des cartes du dashboard (.mb-title h2 : 18px / 500). */
 .page-heading .eyebrow{ color:#8a8f9c !important; }
+/* Titres de page plus compacts (demande utilisateur) : meme taille dans toutes les sections. */
+.page-heading h1{ font-size:clamp(24px, 2vw, 30px) !important; letter-spacing:-0.5px !important; }
 
 #productsView .product-card,
 #pagesView .sales-page-card,
