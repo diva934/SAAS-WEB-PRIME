@@ -14,6 +14,11 @@ const PLANS = {
   studio: { name: "Studio", amount: 14900, description: "Tout Croissance + domaine et priorite support." },
 };
 
+// Affiliation influenceurs : commission versee UNE FOIS sur le 1er paiement d'un client.
+// Suivi + paiement manuel (aucune base : Stripe est la source de verite via les metadonnees).
+const ADMIN_EMAIL = "enzo.commerce.29@gmail.com";
+const AFFILIATE_RATE = 0.20;
+
 // Cree une session Stripe Checkout (abonnement + essai) pour l'utilisateur connecte.
 async function createTrialCheckout({ user, planId, origin }) {
   const plan = PLANS[planId];
@@ -39,6 +44,12 @@ async function createTrialCheckout({ user, planId, origin }) {
     "subscription_data[metadata][expertly_plan]": planId,
     "subscription_data[trial_period_days]": "14",
   });
+  // Attribution influenceur : reportee dans les metadonnees de l'abonnement Stripe.
+  const ref = (user.user_metadata && user.user_metadata.referral_code) || "";
+  if (ref) {
+    form.set("metadata[referral_code]", ref);
+    form.set("subscription_data[metadata][referral_code]", ref);
+  }
   const response = await fetch("https://api.stripe.com/v1/checkout/sessions", {
     method: "POST",
     headers: {
@@ -109,6 +120,33 @@ async function findActiveStripeByEmail(email) {
   return null;
 }
 
+// Construit le rapport d'affiliation : chaque abonnement portant un referral_code,
+// avec la commission (20% du 1er paiement) et si elle est deja "gagnee" (1er paiement passe).
+async function affiliateReport() {
+  const res = await stripeGet("/subscriptions?status=all&limit=100&expand[]=data.customer");
+  if (!res.ok || !Array.isArray(res.data && res.data.data)) return [];
+  const rows = [];
+  for (const sub of res.data.data) {
+    const code = sub.metadata && sub.metadata.referral_code;
+    if (!code) continue;
+    const item = sub.items && sub.items.data && sub.items.data[0];
+    const amount = item && item.price ? (Number(item.price.unit_amount) || 0) : 0;
+    const plan = (sub.metadata && sub.metadata.expertly_plan) || "";
+    const earned = ["active", "past_due", "unpaid"].includes(sub.status); // 1er paiement encaisse (hors essai)
+    const email = (sub.customer && typeof sub.customer === "object" && sub.customer.email) || "";
+    rows.push({
+      code: String(code),
+      email: email,
+      plan: plan,
+      status: sub.status,
+      firstPaymentCents: amount,
+      commissionCents: Math.round(amount * AFFILIATE_RATE),
+      earned: earned
+    });
+  }
+  return rows;
+}
+
 export default async function handler(req, res) {
   if (req.method !== "GET" && req.method !== "POST") {
     sendJson(res, 405, { error: "Method not allowed" });
@@ -121,7 +159,18 @@ export default async function handler(req, res) {
     // POST : demarrage d'un essai payant (checkout Stripe) directement depuis le CRM.
     if (req.method === "POST") {
       const body = req.body && typeof req.body === "object" ? req.body : {};
-      if ((body.action || "") !== "start-trial") {
+      const action = body.action || "";
+      // Rapport d'affiliation (reserve a l'admin).
+      if (action === "affiliate-report") {
+        if (String(user.email || "").toLowerCase() !== ADMIN_EMAIL) {
+          sendJson(res, 403, { error: "Acces reserve." });
+          return;
+        }
+        if (!process.env.STRIPE_SECRET_KEY) { sendJson(res, 503, { error: "Stripe non configure." }); return; }
+        sendJson(res, 200, { rate: AFFILIATE_RATE, rows: await affiliateReport() });
+        return;
+      }
+      if (action !== "start-trial") {
         sendJson(res, 400, { error: "Action inconnue." });
         return;
       }

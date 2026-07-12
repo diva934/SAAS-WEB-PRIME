@@ -13,6 +13,7 @@ export default async function handler(req, res) {
       const email = String(body.email || "").trim().toLowerCase();
       const password = String(body.password || "");
       const firstName = String(body.firstName || "").trim().slice(0, 60);
+      const referralCode = String(body.referralCode || "").trim().replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 40);
       if (!email || !/.+@.+\..+/.test(email)) {
         sendJson(res, 400, { error: "Email invalide." });
         return;
@@ -29,7 +30,7 @@ export default async function handler(req, res) {
             email,
             password,
             email_confirm: true,
-            user_metadata: { first_name: firstName },
+            user_metadata: { first_name: firstName, referral_code: referralCode },
           }),
         });
       } catch (e) {
