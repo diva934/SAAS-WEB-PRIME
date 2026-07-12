@@ -144,6 +144,33 @@ export async function requireActiveSubscription(userId) {
     error.status = 403;
     throw error;
   }
+  return rows[0];
+}
+
+// Renvoie la ligne d'abonnement active (ou null) SANS lever d'erreur.
+// Sert a connaitre la formule (plan) pour appliquer les limites.
+export async function getActiveSubscription(userId) {
+  const rows = await supabaseRequest(
+    `/rest/v1/subscriptions?select=user_id,status,plan&user_id=eq.${encodeURIComponent(userId)}&status=eq.active&limit=1`,
+  );
+  return Array.isArray(rows) && rows.length ? rows[0] : null;
+}
+
+// Limites et capacites par formule. Source de verite cote serveur pour l'application
+// des restrictions (le front s'y refere aussi pour l'affichage). maxProducts=null => illimite.
+export const PLAN_LIMITS = {
+  launch: { label: "Launch", maxProducts: 5, emailAutomation: false, customDomain: false, upsells: false, multiBrand: false },
+  scale: { label: "Scale", maxProducts: null, emailAutomation: true, customDomain: true, upsells: true, multiBrand: false },
+  studio: { label: "Studio", maxProducts: null, emailAutomation: true, customDomain: true, upsells: true, multiBrand: true },
+};
+
+// Ne restreint QUE lorsqu'on sait positivement que la formule est "launch" ou "studio".
+// Toute autre valeur (scale, inconnue, vide) => capacites "scale" (permissif) pour ne
+// jamais bloquer par erreur un client deja payant dont la formule serait absente.
+export function limitsForPlan(plan) {
+  if (plan === "launch") return PLAN_LIMITS.launch;
+  if (plan === "studio") return PLAN_LIMITS.studio;
+  return PLAN_LIMITS.scale;
 }
 
 export async function readCreatorState(userId) {

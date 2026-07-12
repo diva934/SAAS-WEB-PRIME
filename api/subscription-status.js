@@ -1,5 +1,6 @@
 import {
   appOrigin,
+  limitsForPlan,
   requireActiveSubscription,
   sendJson,
   supabaseRequest,
@@ -143,8 +144,9 @@ export default async function handler(req, res) {
 
     // 1. Déjà actif en base : réponse immédiate.
     try {
-      await requireActiveSubscription(user.id);
-      sendJson(res, 200, { active: true, plan: metadata.expertly_plan || "" });
+      const row = await requireActiveSubscription(user.id);
+      const plan = metadata.expertly_plan || row?.plan || "";
+      sendJson(res, 200, { active: true, plan, limits: limitsForPlan(plan) });
       return;
     } catch {
       // pas (encore) actif en base : on tente une réconciliation Stripe.
@@ -175,7 +177,7 @@ export default async function handler(req, res) {
         } catch {
           // non bloquant : la ligne d'abonnement active suffit.
         }
-        sendJson(res, 200, { active: true, plan: found.plan });
+        sendJson(res, 200, { active: true, plan: found.plan, limits: limitsForPlan(found.plan) });
         return;
       }
     }

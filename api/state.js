@@ -1,11 +1,39 @@
 import {
   appOrigin,
+  limitsForPlan,
   readCreatorState,
   requireActiveSubscription,
   saveCreatorState,
   sendJson,
   userFromRequest,
 } from "./_shared.js";
+
+// Applique les limites de la formule au state entrant AVANT sauvegarde.
+// - Plafond de produits (Launch = 5) : bloque l'ajout au-dela, mais laisse
+//   sauvegarder un compte qui aurait deja plus (ex. retrogradation) tant qu'il
+//   n'augmente pas son nombre de produits.
+// - Fonctionnalites reservees (emails automatises...) : desactivees pour Launch.
+function enforcePlanLimits(incoming, current, limits) {
+  const next = incoming || {};
+  const products = Array.isArray(next.products) ? next.products : [];
+  const currentCount = Array.isArray(current?.products) ? current.products.length : 0;
+
+  if (limits.maxProducts != null && products.length > limits.maxProducts && products.length > currentCount) {
+    const e = new Error(
+      `Ta formule ${limits.label} est limitee a ${limits.maxProducts} produits. Passe a une formule superieure pour en ajouter davantage.`,
+    );
+    e.status = 403;
+    e.code = "plan_product_limit";
+    throw e;
+  }
+
+  // Automatisation d'emails reservee aux formules superieures : on force l'etat inactif.
+  if (!limits.emailAutomation && Array.isArray(next.emails)) {
+    next.emails = next.emails.map((em) => (em && em.active ? { ...em, active: false } : em));
+  }
+
+  return next;
+}
 
 // Appel Stripe minimal (form-encoded). GET si pas de params, POST sinon.
 async function stripeApi(path, params) {
@@ -61,7 +89,8 @@ async function refreshConnect(userId, state) {
 export default async function handler(req, res) {
   try {
     const user = await userFromRequest(req);
-    await requireActiveSubscription(user.id);
+    const subscription = await requireActiveSubscription(user.id);
+    const limits = limitsForPlan(subscription?.plan);
 
     if (req.method === "GET") {
       sendJson(res, 200, await readCreatorState(user.id));
@@ -69,7 +98,9 @@ export default async function handler(req, res) {
     }
 
     if (req.method === "PUT") {
-      const saved = await saveCreatorState(user.id, req.body || {});
+      const current = await readCreatorState(user.id);
+      const guarded = enforcePlanLimits(req.body || {}, current, limits);
+      const saved = await saveCreatorState(user.id, guarded);
       sendJson(res, 200, { saved: true, state: saved });
       return;
     }
