@@ -3035,8 +3035,23 @@ async function startApp() {
     showToast("Paiement confirmé : ton espace Expertly est actif.");
     history.replaceState({}, "", `${location.pathname}${location.hash}`);
   }
-  const initialView = location.hash.replace("#", "");
-  setView(viewNames[initialView] ? initialView : "overview");
+  // Au chargement/rafraichissement, on revient toujours sur le dashboard (premiere page).
+  if (location.hash) history.replaceState(null, "", location.pathname + location.search);
+  setView("overview");
+  // Raccourci "Affiliation" dans le menu, visible UNIQUEMENT pour l'administrateur.
+  try {
+    var __adminEmail = (activeSupabaseSession && activeSupabaseSession.user && activeSupabaseSession.user.email || "").toLowerCase();
+    if (__adminEmail === "enzo.commerce.29@gmail.com") {
+      var __nav = document.querySelector(".main-nav");
+      if (__nav && !document.querySelector("#affiliateNavItem")) {
+        var __b = document.createElement("button");
+        __b.className = "nav-item"; __b.id = "affiliateNavItem"; __b.type = "button"; __b.title = "Affiliation";
+        __b.innerHTML = '<span class="nav-icon">\ud83e\udd1d</span><span>Affiliation</span>';
+        __b.addEventListener("click", function () { location.href = "/affiliation"; });
+        __nav.appendChild(__b);
+      }
+    }
+  } catch (e) {}
   const forceSetup = new URLSearchParams(location.search).get("setup") === "1";
   if (!DEMO_MODE && (forceSetup || (storeNeedsSetup() && !localStorage.getItem("expertly_onboarding_done")))) {
     openOnboardingWizard();
