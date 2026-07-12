@@ -52,7 +52,16 @@
     '.ea-composer textarea:focus{border-color:var(--a2)}',
     '.ea-send{width:34px;height:34px;flex:none;border:0;border-radius:10px;color:#fff;font-size:16px;font-weight:700;cursor:pointer;background:linear-gradient(145deg,var(--a2),var(--a))}',
     '.ea-note{margin:0;padding:8px 14px 12px;font-size:10.5px;color:#9aa0ad;text-align:center}',
-    '@media (max-width:640px){.expertly-assistant{right:14px;bottom:14px}.ea-launcher-label{display:none}}'
+    /* Bulle de conseil proactif (onboarding par etapes) */
+    '.ea-tip{position:relative;max-width:252px;background:#12151f;color:#fff;border-radius:16px;padding:14px 26px 12px 14px;box-shadow:0 16px 40px rgba(39,56,105,.28);animation:eaTipIn .25s ease}',
+    '.ea-tip:after{content:"";position:absolute;right:26px;bottom:-6px;width:13px;height:13px;background:#12151f;transform:rotate(45deg)}',
+    '.ea-tip-body{font-size:13px;line-height:1.5}',
+    '.ea-tip-cta{margin-top:11px;border:0;background:linear-gradient(145deg,var(--a2),var(--a));color:#fff;font:inherit;font-size:12.5px;font-weight:700;border-radius:10px;padding:8px 13px;cursor:pointer}',
+    '.ea-tip-cta:hover{filter:brightness(1.06)}',
+    '.ea-tip-x{position:absolute;top:6px;right:8px;border:0;background:none;color:#9aa0ad;font-size:17px;line-height:1;cursor:pointer;padding:2px}',
+    '.ea-tip-x:hover{color:#fff}',
+    '@keyframes eaTipIn{from{opacity:0;transform:translateY(8px)}}',
+    '@media (max-width:640px){.expertly-assistant{right:14px;bottom:14px}.ea-launcher-label{display:none}.ea-tip{max-width:220px}}'
   ].join("\n");
 
   var st = document.createElement("style");
@@ -293,7 +302,12 @@
     function setOpen(open) {
       panel.hidden = !open;
       root.classList.toggle("is-open", open);
-      if (open) { greet(); setTimeout(function () { input.focus(); }, 60); }
+      if (open) {
+        var t = root.querySelector(".ea-tip");
+        if (t && t.parentNode) t.parentNode.removeChild(t);
+        greet();
+        setTimeout(function () { input.focus(); }, 60);
+      }
     }
     launcher.addEventListener("click", function () { setOpen(panel.hidden); });
     closeBtn.addEventListener("click", function () { setOpen(false); });
@@ -305,6 +319,62 @@
       input.style.height = "auto";
       input.style.height = Math.min(input.scrollHeight, 120) + "px";
     });
+
+    /* -------- Conseils proactifs (onboarding par etapes) -------- */
+    function tipSeen(id) { try { return localStorage.getItem("ea_tip_" + id) === "1"; } catch (e) { return false; } }
+    function markTipSeen(id) { try { localStorage.setItem("ea_tip_" + id, "1"); } catch (e) {} }
+    function profileComplete() {
+      var s = (typeof state !== "undefined" && state) ? state : {};
+      var p = s.profile || {};
+      var name = (p.creatorName || "").trim();
+      var bio = (p.bio || "").trim();
+      return name.length > 1 && bio.length > 0;
+    }
+    var TIPS = [
+      {
+        id: "profile",
+        text: "Bienvenue sur Expertly \ud83d\udc4b Commence par la section \u00ab Tunnel de vente \u00bb : complete ton profil et structure ton offre.",
+        cta: "Ouvrir le tunnel",
+        achieved: function () { return profileComplete(); },
+        go: function () { var b = document.querySelector('[data-view="tunnel"]'); if (b) b.click(); }
+      },
+      {
+        id: "social",
+        text: "Prochaine etape : va dans \u00ab Reseaux sociaux \u00bb et lance un audit pour savoir quoi ameliorer sur tes comptes.",
+        cta: "Faire l'audit",
+        achieved: function () { try { return localStorage.getItem("sc_audit_done") === "1"; } catch (e) { return false; } },
+        go: function () { var b = document.querySelector("#socialNavItem"); if (b) b.click(); }
+      }
+    ];
+    function nextTip() {
+      for (var i = 0; i < TIPS.length; i++) {
+        var tp = TIPS[i];
+        if (tipSeen(tp.id)) continue;
+        if (tp.achieved && tp.achieved()) { markTipSeen(tp.id); continue; }
+        return tp;
+      }
+      return null;
+    }
+    function showProactiveTip() {
+      if (DEMO) return;
+      if (!panel.hidden) return;
+      if (root.querySelector(".ea-tip")) return;
+      var tp = nextTip();
+      if (!tp) return;
+      var tip = document.createElement("div");
+      tip.className = "ea-tip";
+      var x = document.createElement("button");
+      x.type = "button"; x.className = "ea-tip-x"; x.setAttribute("aria-label", "Fermer"); x.textContent = "\u00d7";
+      var body = document.createElement("div");
+      body.className = "ea-tip-body"; body.textContent = tp.text;
+      var cta = document.createElement("button");
+      cta.type = "button"; cta.className = "ea-tip-cta"; cta.textContent = tp.cta + " \u2192";
+      tip.appendChild(x); tip.appendChild(body); tip.appendChild(cta);
+      root.insertBefore(tip, root.firstChild);
+      x.addEventListener("click", function (e) { e.stopPropagation(); markTipSeen(tp.id); if (tip.parentNode) tip.parentNode.removeChild(tip); });
+      cta.addEventListener("click", function (e) { e.stopPropagation(); markTipSeen(tp.id); if (tip.parentNode) tip.parentNode.removeChild(tip); if (tp.go) tp.go(); });
+    }
+    setTimeout(showProactiveTip, 2600);
   }
 
   function setNavTooltips() {
