@@ -158,10 +158,12 @@ export async function getActiveSubscription(userId) {
 
 // Limites et capacites par formule. Source de verite cote serveur pour l'application
 // des restrictions (le front s'y refere aussi pour l'affichage). maxProducts=null => illimite.
+// commissionRate = part prelevee par la plateforme sur chaque vente d'un createur
+// (Launch : 3 %). Les formules superieures n'ont pas de commission.
 export const PLAN_LIMITS = {
-  launch: { label: "Launch", maxProducts: 5, emailAutomation: false, customDomain: false, upsells: false, multiBrand: false },
-  scale: { label: "Scale", maxProducts: null, emailAutomation: true, customDomain: true, upsells: true, multiBrand: false },
-  studio: { label: "Studio", maxProducts: null, emailAutomation: true, customDomain: true, upsells: true, multiBrand: true },
+  launch: { label: "Launch", maxProducts: 5, emailAutomation: false, customDomain: false, upsells: false, multiBrand: false, commissionRate: 0.03 },
+  scale: { label: "Scale", maxProducts: null, emailAutomation: true, customDomain: true, upsells: true, multiBrand: false, commissionRate: 0 },
+  studio: { label: "Studio", maxProducts: null, emailAutomation: true, customDomain: true, upsells: true, multiBrand: true, commissionRate: 0 },
 };
 
 // Ne restreint QUE lorsqu'on sait positivement que la formule est "launch" ou "studio".
@@ -171,6 +173,13 @@ export function limitsForPlan(plan) {
   if (plan === "launch") return PLAN_LIMITS.launch;
   if (plan === "studio") return PLAN_LIMITS.studio;
   return PLAN_LIMITS.scale;
+}
+
+// Taux de commission plateforme pour une formule. On ne preleve QUE si on sait avec
+// certitude que la formule est "launch" (3 %). Toute autre valeur => 0 %, pour ne jamais
+// prelever par erreur sur un createur Scale/Studio ou une formule inconnue.
+export function commissionRateForPlan(plan) {
+  return plan === "launch" ? PLAN_LIMITS.launch.commissionRate : 0;
 }
 
 export async function readCreatorState(userId) {

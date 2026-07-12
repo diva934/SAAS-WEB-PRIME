@@ -1,4 +1,4 @@
-import { makeAccessToken, readCreatorRecordBySlug, readCreatorStateBySlug, saveCreatorState, sendAccessEmail, sendJson } from "./_shared.js";
+import { commissionRateForPlan, getActiveSubscription, makeAccessToken, readCreatorRecordBySlug, readCreatorStateBySlug, saveCreatorState, sendAccessEmail, sendJson } from "./_shared.js";
 
 function appOrigin(req) {
   if (process.env.APP_URL?.startsWith("http")) return new URL(process.env.APP_URL).origin;
@@ -76,6 +76,21 @@ export default async function handler(req, res) {
     const connect = state.profile?.stripeConnect;
     const destinationAcct = connect?.accountId && connect?.chargesEnabled ? connect.accountId : null;
 
+    const unitAmount = Math.round(Number(product.price) * 100);
+
+    // Commission plateforme : on preleve un pourcentage selon la formule du CREATEUR
+    // (Launch = 3 %). On lit sa formule au moment de la vente ; en cas de doute -> 0 %.
+    let applicationFeeAmount = 0;
+    if (destinationAcct) {
+      try {
+        const sub = await getActiveSubscription(userId);
+        const rate = commissionRateForPlan(sub?.plan);
+        if (rate > 0) applicationFeeAmount = Math.round(unitAmount * rate);
+      } catch {
+        // en cas d'erreur de lecture de l'abonnement : pas de commission (securite cote createur).
+      }
+    }
+
     const origin = appOrigin(req);
     const form = new URLSearchParams({
       mode: "payment",
@@ -85,7 +100,7 @@ export default async function handler(req, res) {
       customer_email: String(customerEmail || "").slice(0, 180),
       "line_items[0][quantity]": "1",
       "line_items[0][price_data][currency]": "eur",
-      "line_items[0][price_data][unit_amount]": String(Math.round(Number(product.price) * 100)),
+      "line_items[0][price_data][unit_amount]": String(unitAmount),
       "line_items[0][price_data][product_data][name]": product.title,
       "line_items[0][price_data][product_data][description]": product.description || product.type || "Produit Expertly",
       "metadata[creator_slug]": state.profile.slug,
@@ -97,6 +112,11 @@ export default async function handler(req, res) {
 
     if (destinationAcct) {
       form.set("payment_intent_data[transfer_data][destination]", destinationAcct);
+      // Commission plateforme (ex. Launch 3 %) : prelevee automatiquement par Stripe,
+      // le reste va sur le compte connecte du createur.
+      if (applicationFeeAmount > 0) {
+        form.set("payment_intent_data[application_fee_amount]", String(applicationFeeAmount));
+      }
     }
 
     const stripeResponse = await fetch("https://api.stripe.com/v1/checkout/sessions", {
