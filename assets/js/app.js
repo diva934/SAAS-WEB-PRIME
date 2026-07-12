@@ -3,6 +3,13 @@ const DEMO_MODE = new URLSearchParams(window.location.search).get("demo") === "1
 let publicConfig = window.EXPERTLY_CONFIG || {};
 let supabaseClient = null;
 let activeSupabaseSession = null;
+// Formule active du createur + capacites associees (renseignees a l'ouverture du CRM).
+let currentPlan = "";
+let currentLimits = null;
+const PLAN_LABELS = { launch: "Launch", scale: "Scale", studio: "Studio" };
+function planLabel(plan) {
+  return PLAN_LABELS[plan] || (plan ? plan.charAt(0).toUpperCase() + plan.slice(1) : "Actif");
+}
 
 const seedState = {
   profile: {
@@ -726,6 +733,9 @@ async function ensureCreatorAccess() {
     showTrialPaywall();
     return false;
   }
+  // Formule active : sert a l'affichage (menu profil) et aux limites cote client.
+  currentPlan = subscription.plan || "";
+  currentLimits = subscription.limits || null;
   document.querySelector("#creatorAccessGate")?.remove();
   document.body.classList.remove("auth-pending", "auth-locked");
   return true;
@@ -757,7 +767,14 @@ function saveState() {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(state),
-    }).catch(() => showToast("La synchronisation serveur a échoué."));
+    })
+      .then(async (response) => {
+        if (response.ok) return;
+        // Rejet serveur (ex. limite de formule) : on remonte le message clair.
+        const data = await response.json().catch(() => ({}));
+        showToast(data.error || "La synchronisation serveur a échoué.");
+      })
+      .catch(() => showToast("La synchronisation serveur a échoué."));
   }
 }
 
@@ -2243,6 +2260,13 @@ function submitProduct(event) {
   const data = new FormData(event.currentTarget);
   const id = data.get("id");
   const existing = state.products.find((product) => product.id === id);
+  // Limite de produits selon la formule (Launch = 5). On ne bloque que la CREATION
+  // d'un nouveau produit au-dela du plafond ; l'edition d'un produit existant reste possible.
+  const maxProducts = currentLimits?.maxProducts;
+  if (!existing && maxProducts != null && state.products.length >= maxProducts) {
+    showToast(`Ta formule ${planLabel(currentPlan)} est limitee a ${maxProducts} produits. Passe a une formule superieure pour en ajouter plus.`);
+    return;
+  }
   const product = {
     id: id || `prod_${Date.now()}`,
     title: data.get("title").trim(),
@@ -2753,13 +2777,19 @@ document.querySelector("#manageSubscription")?.addEventListener("click", async (
   menu.className = "account-menu";
   menu.hidden = true;
   menu.innerHTML = `
+    <p class="account-menu-label">Compte</p>
     <p class="account-menu-email" id="accountMenuEmail">Connecté</p>
+    <div class="account-menu-sub" id="accountMenuSub">
+      <span class="account-menu-sub-label">Abonnement</span>
+      <span class="account-menu-plan" id="accountMenuPlan">—</span>
+    </div>
     <button type="button" id="logoutButton">Se déconnecter</button>`;
   (button.parentElement || document.body).appendChild(menu);
   button.addEventListener("click", (event) => {
     event.stopPropagation();
     const email = activeSupabaseSession?.user?.email || state.profile.creatorName || "Connecté";
     menu.querySelector("#accountMenuEmail").textContent = email;
+    menu.querySelector("#accountMenuPlan").textContent = planLabel(currentPlan);
     menu.hidden = !menu.hidden;
   });
   menu.addEventListener("click", (event) => event.stopPropagation());
