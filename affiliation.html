@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Affiliation influenceurs · Expertly</title>
+    <link rel="icon" href="./assets/expertly-logo.webp" type="image/webp" />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+      :root { --ink:#15161c; --muted:#6b7280; --line:#e6e8ee; --purple:#6558f5; --soft:#f6f6fb; }
+      * { box-sizing:border-box; }
+      body { margin:0; font-family:"Inter",system-ui,sans-serif; color:var(--ink); background:#f3f4f6; }
+      .wrap { max-width:960px; margin:0 auto; padding:34px 20px 60px; }
+      h1 { font-family:"Manrope",sans-serif; font-size:28px; font-weight:800; margin:0 0 4px; }
+      .eyebrow { font-size:11px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:#9aa0ad; margin:0 0 6px; }
+      .lead { color:var(--muted); font-size:14px; margin:0 0 24px; }
+      .card { background:#fff; border:1px solid var(--line); border-radius:18px; padding:22px; margin-bottom:20px; box-shadow:0 8px 24px rgba(20,22,40,.04); }
+      .card h2 { font-family:"Manrope",sans-serif; font-size:17px; font-weight:800; margin:0 0 14px; }
+      label { display:block; font-size:12.5px; font-weight:700; color:#4a4f5c; margin-bottom:6px; }
+      .gen-row { display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end; }
+      input { border:1px solid var(--line); border-radius:11px; padding:11px 12px; font:inherit; font-size:14px; min-width:220px; flex:1; }
+      input:focus { outline:none; border-color:var(--purple); box-shadow:0 0 0 3px rgba(101,88,245,.18); }
+      button { border:0; border-radius:11px; padding:11px 16px; font:inherit; font-weight:700; font-size:14px; cursor:pointer; background:var(--purple); color:#fff; }
+      button.sec { background:var(--soft); color:var(--ink); border:1px solid var(--line); }
+      button:hover { filter:brightness(1.05); }
+      .link-out { margin-top:12px; display:none; align-items:center; gap:10px; background:var(--soft); border:1px dashed var(--line); border-radius:11px; padding:11px 12px; font-size:13.5px; word-break:break-all; }
+      .link-out.show { display:flex; }
+      .link-out code { flex:1; }
+      table { width:100%; border-collapse:collapse; font-size:13.5px; }
+      th, td { text-align:left; padding:10px 8px; border-bottom:1px solid var(--line); }
+      th { font-size:11.5px; text-transform:uppercase; letter-spacing:.04em; color:#9aa0ad; }
+      td.num, th.num { text-align:right; }
+      .badge { display:inline-block; font-size:11px; font-weight:700; border-radius:999px; padding:3px 9px; }
+      .badge.earned { background:#eaf7ee; color:#1a8a5f; }
+      .badge.pending { background:#fff4e5; color:#9a6a12; }
+      .totals { display:flex; gap:24px; flex-wrap:wrap; margin-bottom:16px; }
+      .kpi { background:var(--soft); border-radius:14px; padding:14px 18px; min-width:150px; }
+      .kpi b { display:block; font-family:"Manrope",sans-serif; font-size:24px; font-weight:800; }
+      .kpi span { font-size:12px; color:var(--muted); }
+      .muted { color:var(--muted); font-size:13.5px; }
+      .toast { position:fixed; right:20px; bottom:20px; background:#19192e; color:#fff; padding:12px 15px; border-radius:11px; font-size:13px; opacity:0; transition:opacity .2s; }
+      .toast.show { opacity:1; }
+      .gate { max-width:460px; margin:12vh auto; text-align:center; }
+      .gate a { color:var(--purple); font-weight:700; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap" id="app" hidden>
+      <p class="eyebrow">Programme partenaires</p>
+      <h1>Affiliation influenceurs</h1>
+      <p class="lead">Commission de <b id="ratePct">20</b>% versee une seule fois sur le 1er paiement d'un client amene par un influenceur. Suivi ci-dessous, paiement manuel de ta part.</p>
+
+      <div class="card">
+        <h2>Generer un lien d'affiliation</h2>
+        <div class="gen-row">
+          <div style="flex:1"><label>Code de l'influenceur (ex. son pseudo)</label>
+            <input id="code" placeholder="ex. marie-insta" autocomplete="off" /></div>
+          <button id="genBtn" type="button">Generer le lien</button>
+        </div>
+        <div class="link-out" id="linkOut"><code id="linkText"></code><button class="sec" id="copyBtn" type="button">Copier</button></div>
+        <p class="muted" style="margin:12px 0 0">Donne ce lien a l'influenceur. Tout client qui s'inscrit via ce lien puis paie son abonnement genere une commission a son nom.</p>
+      </div>
+
+      <div class="card">
+        <h2>Commissions</h2>
+        <div class="totals" id="totals"></div>
+        <div style="overflow:auto"><table id="tbl"><thead><tr>
+          <th>Influenceur</th><th>Clients gagnes</th><th>En attente</th><th class="num">Commission due</th>
+        </tr></thead><tbody id="tbody"></tbody></table></div>
+        <div style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap">
+          <button class="sec" id="csvBtn" type="button">Exporter en CSV</button>
+          <button class="sec" id="refreshBtn" type="button">Rafraichir</button>
+        </div>
+        <p class="muted" id="reportNote" style="margin:12px 0 0"></p>
+      </div>
+    </div>
+
+    <div class="gate" id="gate" hidden></div>
+    <div class="toast" id="toast"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+      (function () {
+        "use strict";
+        var ADMIN_EMAIL = "enzo.commerce.29@gmail.com";
+        var app = document.getElementById("app");
+        var gate = document.getElementById("gate");
+        var toastEl = document.getElementById("toast");
+        var sb = null, session = null, lastRows = [], rate = 0.20;
+
+        function toast(m) { toastEl.textContent = m; toastEl.classList.add("show"); setTimeout(function(){ toastEl.classList.remove("show"); }, 1800); }
+        function showGate(html) { gate.innerHTML = html; gate.hidden = false; app.hidden = true; }
+        function eur(cents) { return (Math.round(cents)/100).toLocaleString("fr-FR",{minimumFractionDigits:2,maximumFractionDigits:2}) + " €"; }
+        function esc(s) { return String(s||"").replace(/[&<>"]/g, function(c){ return ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"})[c]; }); }
+
+        var cfgPromise = fetch("/api/config",{cache:"no-store"}).then(function(r){return r.json();}).catch(function(){return {};});
+
+        cfgPromise.then(function (c) {
+          if (!window.supabase || !c.supabaseUrl || !c.supabaseAnonKey) { showGate("<p>Service indisponible.</p>"); return; }
+          sb = window.supabase.createClient(c.supabaseUrl, c.supabaseAnonKey);
+          sb.auth.getSession().then(function (r) {
+            session = r && r.data && r.data.session;
+            if (!session || !session.user) { showGate('<h1>Connexion requise</h1><p>Connecte-toi avec ton compte administrateur. <a href="/connexion">Se connecter</a></p>'); return; }
+            if (String(session.user.email||"").toLowerCase() !== ADMIN_EMAIL) { showGate("<h1>Acces reserve</h1><p>Cette page est reservee a l'administrateur.</p>"); return; }
+            app.hidden = false; gate.hidden = true;
+            loadReport();
+          });
+        });
+
+        // --- Generateur de lien ---
+        var codeInput = document.getElementById("code");
+        var linkOut = document.getElementById("linkOut");
+        var linkText = document.getElementById("linkText");
+        document.getElementById("genBtn").addEventListener("click", function () {
+          var code = (codeInput.value || "").trim().replace(/[^a-zA-Z0-9_-]/g,"").slice(0,40);
+          if (!code) { codeInput.focus(); return; }
+          codeInput.value = code;
+          var url = location.origin + "/inscription?ref=" + encodeURIComponent(code);
+          linkText.textContent = url; linkOut.classList.add("show");
+        });
+        document.getElementById("copyBtn").addEventListener("click", function () {
+          navigator.clipboard && navigator.clipboard.writeText(linkText.textContent).then(function(){ toast("Lien copie ✓"); }).catch(function(){});
+        });
+
+        // --- Rapport commissions ---
+        function loadReport() {
+          var note = document.getElementById("reportNote");
+          note.textContent = "Chargement...";
+          fetch("/api/subscription-status", {
+            method:"POST",
+            headers:{ "Content-Type":"application/json", "Authorization":"Bearer " + session.access_token },
+            body: JSON.stringify({ action:"affiliate-report" })
+          }).then(function(r){ return r.json().then(function(j){ return {ok:r.ok, j:j}; }); })
+          .then(function(res){
+            if (!res.ok) { note.textContent = (res.j && res.j.error) || "Erreur de chargement."; return; }
+            rate = res.j.rate || 0.20;
+            document.getElementById("ratePct").textContent = Math.round(rate*100);
+            lastRows = Array.isArray(res.j.rows) ? res.j.rows : [];
+            render();
+            note.textContent = lastRows.length ? "" : "Aucune commission pour l'instant. Les commissions apparaitront quand un client parraine paiera son abonnement.";
+          }).catch(function(){ note.textContent = "Erreur reseau."; });
+        }
+
+        function aggregate() {
+          var map = {};
+          lastRows.forEach(function (r) {
+            var g = map[r.code] || (map[r.code] = { code:r.code, earned:0, pending:0, due:0 });
+            if (r.earned) { g.earned++; g.due += r.commissionCents; } else { g.pending++; }
+          });
+          return Object.keys(map).map(function(k){return map[k];}).sort(function(a,b){return b.due-a.due;});
+        }
+
+        function render() {
+          var groups = aggregate();
+          var totalDue = groups.reduce(function(x,g){return x+g.due;},0);
+          var totalEarned = groups.reduce(function(x,g){return x+g.earned;},0);
+          document.getElementById("totals").innerHTML =
+            '<div class="kpi"><b>' + eur(totalDue) + '</b><span>Total a verser</span></div>' +
+            '<div class="kpi"><b>' + totalEarned + '</b><span>Clients convertis</span></div>' +
+            '<div class="kpi"><b>' + groups.length + '</b><span>Influenceurs actifs</span></div>';
+          var tb = document.getElementById("tbody");
+          if (!groups.length) { tb.innerHTML = '<tr><td colspan="4" class="muted">—</td></tr>'; return; }
+          tb.innerHTML = groups.map(function(g){
+            return '<tr><td><b>' + esc(g.code) + '</b></td>' +
+              '<td><span class="badge earned">' + g.earned + '</span></td>' +
+              '<td>' + (g.pending ? '<span class="badge pending">' + g.pending + '</span>' : '<span class="muted">0</span>') + '</td>' +
+              '<td class="num"><b>' + eur(g.due) + '</b></td></tr>';
+          }).join("");
+        }
+
+        document.getElementById("refreshBtn").addEventListener("click", loadReport);
+        document.getElementById("csvBtn").addEventListener("click", function () {
+          var head = ["Influenceur","Email client","Formule","Statut abonnement","1er paiement","Commission","Gagnee"];
+          var lines = [head.join(";")];
+          lastRows.forEach(function(r){
+            lines.push([r.code, r.email, r.plan, r.status, (r.firstPaymentCents/100).toFixed(2), (r.commissionCents/100).toFixed(2), r.earned?"oui":"non"].map(function(x){return '"'+String(x==null?"":x).replace(/"/g,'""')+'"';}).join(";"));
+          });
+          var blob = new Blob(["﻿"+lines.join("\n")], {type:"text/csv;charset=utf-8"});
+          var a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "commissions-affiliation.csv"; a.click();
+        });
+      })();
+    </script>
+  </body>
+</html>

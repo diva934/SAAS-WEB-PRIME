@@ -100,6 +100,8 @@
         var submit = document.getElementById("inSubmit");
         var feedback = document.getElementById("inFeedback");
         var sb = null;
+        var REF = "";
+        try { REF = (new URLSearchParams(location.search).get("ref") || "").replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 40); } catch (e) {}
 
         function setFeedback(msg, type, html) {
           if (html) { feedback.innerHTML = msg || ""; } else { feedback.textContent = msg || ""; }
@@ -146,7 +148,7 @@
           fetch("/api/config", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ action: "signup", email: email, password: password, firstName: firstName })
+            body: JSON.stringify({ action: "signup", email: email, password: password, firstName: firstName, referralCode: REF })
           }).then(function (r) {
             return r.json().then(function (j) { return { ok: r.ok, status: r.status, j: j }; });
           }).then(function (res) {
