@@ -172,3 +172,18 @@ aside#sidebar .brand-row{ display:none !important; }
   font-weight:500 !important;
   letter-spacing:0 !important;
 }
+
+
+/* Uniformisation sur le style "Pages de vente" (reference), hors dashboard :
+   memes libelles de carte (gris), meme padding coherent. Titres deja unifies plus haut. */
+#productsView .panel-label, #ordersView .panel-label, #contactsView .panel-label,
+#analyticsView .panel-label, #financeView .panel-label, #emailsView .panel-label,
+#settingsView .panel-label, #tunnelView .panel-label, #socialView .panel-label,
+#productsView .product-card .panel-label{
+  color:#8a8f9c !important; font-size:11px !important; letter-spacing:.04em !important; font-weight:700 !important; text-transform:uppercase !important;
+}
+#productsView .panel, #ordersView .panel, #contactsView .panel,
+#analyticsView .panel, #financeView .panel, #emailsView .panel,
+#settingsView .panel, #tunnelView .panel, #socialView .panel{
+  padding:22px !important;
+}
