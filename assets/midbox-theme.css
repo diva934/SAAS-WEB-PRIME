@@ -141,3 +141,32 @@ aside#sidebar .brand-row{ display:none !important; }
   backdrop-filter:blur(20px) !important;
   box-shadow:none !important;
 }
+
+/* === Unification visuelle demandee ===
+   1. Sous-titre de page (eyebrow) en gris comme le reste (au lieu de violet).
+   2. Meme forme de cases que les cartes du dashboard (.mb-card) pour les vues restantes.
+   3. Titres des cases alignes sur l'ecriture des cartes du dashboard (.mb-title h2 : 18px / 500). */
+.page-heading .eyebrow{ color:#8a8f9c !important; }
+
+#productsView .product-card,
+#pagesView .sales-page-card,
+#emailsView .email-card, #emailsView .email-config-card, #emailsView .panel,
+#settingsView .panel, #settingsView .metric-card,
+#tunnelView .panel, #tunnelView .tunnel-step{
+  border-radius:34px !important;
+  border:1px solid rgba(21,22,17,.1) !important;
+  background:rgba(255,255,255,.62) !important;
+  -webkit-backdrop-filter:blur(20px) !important;
+  backdrop-filter:blur(20px) !important;
+  box-shadow:none !important;
+}
+
+.panel-heading h2,
+.product-card h3,
+.sales-page-card h3,
+.email-card h3,
+.email-config-card h2{
+  font-size:18px !important;
+  font-weight:500 !important;
+  letter-spacing:0 !important;
+}
