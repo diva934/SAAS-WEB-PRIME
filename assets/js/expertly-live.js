@@ -126,7 +126,7 @@
   function startLive() {
     if (DEMO || liveTimer) return;
     ensureIndicator();
-    liveTimer = window.setInterval(refresh, 1000);
+    liveTimer = window.setInterval(refresh, 30000);
     document.addEventListener("visibilitychange", function () { if (!document.hidden) refresh(); });
     refresh();
   }

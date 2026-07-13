@@ -2934,8 +2934,9 @@ let liveRefreshTimer = null;
 let liveRefreshInFlight = false;
 let lastLiveSignature = "";
 // Intervalle du rafraichissement live du dashboard (lecture Supabase via /api/state,
-// alimente par le webhook Stripe). 1s = quasi temps reel cote UI.
-const LIVE_REFRESH_INTERVAL_MS = 1000;
+// alimente par le webhook Stripe). 30s : temps quasi reel tout en menageant le quota
+// "origin transfer" de Vercel (evite la mise en pause du plan gratuit).
+const LIVE_REFRESH_INTERVAL_MS = 30000;
 
 function ensureLiveIndicator() {
   let indicator = document.querySelector("#liveIndicator");
