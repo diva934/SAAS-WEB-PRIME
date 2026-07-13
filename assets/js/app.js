@@ -2933,6 +2933,7 @@ async function hydrateServerState() {
 let liveRefreshTimer = null;
 let liveRefreshInFlight = false;
 let lastLiveSignature = "";
+let lastLiveEtag = "";
 // Intervalle du rafraichissement live du dashboard (lecture Supabase via /api/state,
 // alimente par le webhook Stripe). 30s : temps quasi reel tout en menageant le quota
 // "origin transfer" de Vercel (evite la mise en pause du plan gratuit).
@@ -2976,11 +2977,22 @@ async function refreshLiveDashboard() {
   if (liveRefreshInFlight) return; // evite l'empilement des requetes a 1s
   liveRefreshInFlight = true;
   try {
-    const response = await authenticatedFetch("/api/state", { cache: "no-store" });
+    // Requete conditionnelle : si rien n'a change, le serveur repond 304 sans corps
+    // (transfert quasi nul). On ne retelecharge le state que s'il a reellement change.
+    const response = await authenticatedFetch("/api/state", {
+      cache: "no-store",
+      headers: lastLiveEtag ? { "If-None-Match": lastLiveEtag } : {},
+    });
+    if (response.status === 304) {
+      setLiveIndicator(true);
+      return;
+    }
     if (!response.ok) {
       setLiveIndicator(false);
       return;
     }
+    const etag = response.headers.get("ETag");
+    if (etag) lastLiveEtag = etag;
     const text = await response.text();
     setLiveIndicator(true);
     // Ne re-render que si les donnees ont reellement change (pas de flicker inutile).

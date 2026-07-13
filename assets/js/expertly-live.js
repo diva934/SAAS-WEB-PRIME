@@ -124,11 +124,11 @@
     }
   }
   function startLive() {
-    if (DEMO || liveTimer) return;
+    if (DEMO) return;
+    // Le rafraichissement live est desormais gere UNIQUEMENT par app.js (une seule boucle).
+    // On supprime ce second interval qui appelait /api/state en doublon (2x le quota
+    // "origin transfer" de Vercel pour rien). L'indicateur reste alimente par app.js.
     ensureIndicator();
-    liveTimer = window.setInterval(refresh, 30000);
-    document.addEventListener("visibilitychange", function () { if (!document.hidden) refresh(); });
-    refresh();
   }
 
   /* ---------------- Metriques reelles (memes formules que le CRM) ---------------- */
