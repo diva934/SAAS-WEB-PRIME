@@ -1,3 +1,4 @@
+import { createHash } from "crypto";
 import {
   appOrigin,
   limitsForPlan,
@@ -93,7 +94,19 @@ export default async function handler(req, res) {
     const limits = limitsForPlan(subscription?.plan);
 
     if (req.method === "GET") {
-      sendJson(res, 200, await readCreatorState(user.id));
+      // Reponse conditionnelle (ETag) : le CRM interroge regulierement cet endpoint.
+      // Si l'etat n'a pas change depuis son dernier appel, on repond 304 SANS corps.
+      // Evite de retransferer tout le state a chaque fois (quota "origin transfer" Vercel).
+      const current = await readCreatorState(user.id);
+      const payload = JSON.stringify(current);
+      const etag = '"' + createHash("sha1").update(payload).digest("hex") + '"';
+      res.setHeader("ETag", etag);
+      res.setHeader("Cache-Control", "no-store");
+      if (req.headers["if-none-match"] === etag) {
+        res.status(304).end();
+        return;
+      }
+      sendJson(res, 200, current);
       return;
     }
 
