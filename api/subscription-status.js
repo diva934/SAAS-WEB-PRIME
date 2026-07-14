@@ -16,7 +16,7 @@ const PLANS = {
 
 // Affiliation influenceurs : commission versee UNE FOIS sur le 1er paiement d'un client.
 // Suivi + paiement manuel (aucune base : Stripe est la source de verite via les metadonnees).
-const ADMIN_EMAIL = "unknown35225@gmail.com";
+const ADMIN_EMAIL = "unknown35225+admin@gmail.com";
 const AFFILIATE_RATE = 0.20;
 
 // Cree une session Stripe Checkout (abonnement + essai) pour l'utilisateur connecte.
