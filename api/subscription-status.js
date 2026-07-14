@@ -294,3 +294,5 @@ export default async function handler(req, res) {
     sendJson(res, error.status || 500, { error: error.message || "Erreur interne." });
   }
 }
+
+// build 20260714T160654Z
