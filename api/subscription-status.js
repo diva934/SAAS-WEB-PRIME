@@ -175,6 +175,22 @@ export default async function handler(req, res) {
     if (req.method === "POST") {
       const body = req.body && typeof req.body === "object" ? req.body : {};
       const action = body.action || "";
+      // Revoque un abonnement (reserve a l'admin) : sert a rejouer le parcours d'un
+      // nouveau client (checkout d'essai) sans creer de compte supplementaire.
+      if (action === "revoke-access") {
+        if (String(user.email || "").toLowerCase() !== ADMIN_EMAIL) {
+          sendJson(res, 403, { error: "Acces reserve." });
+          return;
+        }
+        const email = String(body.email || "").trim();
+        if (!email) { sendJson(res, 400, { error: "Email requis." }); return; }
+        const target = await findUserByEmail(email);
+        if (!target) { sendJson(res, 404, { error: "Compte introuvable." }); return; }
+        await upsertStatus(target.id, "canceled", "launch");
+        sendJson(res, 200, { revoked: true, email: target.email, userId: target.id });
+        return;
+      }
+
       // Acces de test offert (reserve a l'admin). Aucune trace cote Stripe :
       // on marque le plan en base et on note "offert" dans les metadonnees du compte,
       // pour pouvoir distinguer plus tard un acces offert d'un vrai client payant.
