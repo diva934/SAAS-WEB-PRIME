@@ -6,8 +6,24 @@ import {
   requireActiveSubscription,
   saveCreatorState,
   sendJson,
+  supabaseRequest,
   userFromRequest,
 } from "./_shared.js";
+
+// Lit UNIQUEMENT la date de derniere modification (quelques octets), pas tout l'etat.
+// L'etat complet contient les images en base64 (~centaines de Ko) : le relire a chaque
+// sondage du CRM faisait exploser l'egress Supabase, meme quand on repondait 304.
+async function readStateStamp(userId) {
+  try {
+    const rows = await supabaseRequest(
+      `/rest/v1/creator_states?select=updated_at&user_id=eq.${encodeURIComponent(userId)}&limit=1`,
+    );
+    if (Array.isArray(rows) && rows[0] && rows[0].updated_at) return String(rows[0].updated_at);
+  } catch {
+    // En cas d'echec on renvoie null : on retombe sur la lecture complete (comportement d'origine).
+  }
+  return null;
+}
 
 // Applique les limites de la formule au state entrant AVANT sauvegarde.
 // - Plafond de produits (Launch = 5) : bloque l'ajout au-dela, mais laisse
@@ -94,14 +110,27 @@ export default async function handler(req, res) {
     const limits = limitsForPlan(subscription?.plan);
 
     if (req.method === "GET") {
-      // Reponse conditionnelle (ETag) : le CRM interroge regulierement cet endpoint.
-      // Si l'etat n'a pas change depuis son dernier appel, on repond 304 SANS corps.
-      // Evite de retransferer tout le state a chaque fois (quota "origin transfer" Vercel).
-      const current = await readCreatorState(user.id);
-      const payload = JSON.stringify(current);
-      const etag = '"' + createHash("sha1").update(payload).digest("hex") + '"';
-      res.setHeader("ETag", etag);
+      // Reponse conditionnelle (ETag). Le CRM sonde cet endpoint en continu.
+      // On calcule d'abord l'ETag a partir de la seule date de modification :
+      // si rien n'a change, on repond 304 SANS jamais lire l'etat complet.
+      // -> economise l'egress Vercel ET l'egress Supabase.
       res.setHeader("Cache-Control", "no-store");
+      const stamp = await readStateStamp(user.id);
+      if (stamp) {
+        const etag = '"' + createHash("sha1").update("v2:" + user.id + ":" + stamp).digest("hex") + '"';
+        res.setHeader("ETag", etag);
+        if (req.headers["if-none-match"] === etag) {
+          res.status(304).end();
+          return;
+        }
+        const current = await readCreatorState(user.id);
+        sendJson(res, 200, current);
+        return;
+      }
+      // Pas d'horodatage exploitable : on garde le comportement d'origine.
+      const current = await readCreatorState(user.id);
+      const etag = '"' + createHash("sha1").update(JSON.stringify(current)).digest("hex") + '"';
+      res.setHeader("ETag", etag);
       if (req.headers["if-none-match"] === etag) {
         res.status(304).end();
         return;

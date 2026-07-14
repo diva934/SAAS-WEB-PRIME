@@ -37,8 +37,31 @@ async function collectStates(slug) {
     // containment indisponible : on bascule sur le scan.
   }
   if (states.length === 0) {
-    const all = await supabaseRequest(`/rest/v1/creator_states?select=state&limit=1000`);
-    for (const row of Array.isArray(all) ? all : []) states.push(normalizeState(row.state));
+    // Repli econome : on ne lit QUE la liste des pages (quelques octets par createur),
+    // au lieu d'aspirer l'etat complet de tout le monde (images base64 comprises).
+    let owners = null;
+    try {
+      const light = await supabaseRequest(
+        `/rest/v1/creator_states?select=user_id,pages:state->pages&limit=1000`,
+      );
+      owners = (Array.isArray(light) ? light : [])
+        .filter((row) => Array.isArray(row.pages) && row.pages.some((pg) => pg && pg.slug === slug))
+        .map((row) => row.user_id)
+        .slice(0, 5);
+    } catch {
+      owners = null; // syntaxe non supportee : on retombe sur l'ancien comportement.
+    }
+    if (owners) {
+      for (const uid of owners) {
+        const rows = await supabaseRequest(
+          `/rest/v1/creator_states?select=state&user_id=eq.${encodeURIComponent(uid)}&limit=1`,
+        );
+        if (Array.isArray(rows) && rows[0]) states.push(normalizeState(rows[0].state));
+      }
+    } else {
+      const all = await supabaseRequest(`/rest/v1/creator_states?select=state&limit=1000`);
+      for (const row of Array.isArray(all) ? all : []) states.push(normalizeState(row.state));
+    }
   }
   return states;
 }
