@@ -3054,7 +3054,7 @@ async function startApp() {
   // Raccourci "Affiliation" dans le menu, visible UNIQUEMENT pour l'administrateur.
   try {
     var __adminEmail = (activeSupabaseSession && activeSupabaseSession.user && activeSupabaseSession.user.email || "").toLowerCase();
-    if (__adminEmail === "unknown35225@gmail.com") {
+    if (__adminEmail === "unknown35225+admin@gmail.com") {
       var __nav = document.querySelector(".main-nav");
       if (__nav && !document.querySelector("#affiliateNavItem")) {
         var __b = document.createElement("button");
