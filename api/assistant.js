@@ -283,7 +283,9 @@ export default async function handler(req, res) {
       const handle = String(body.handle || "").slice(0, 60).trim();
       const objective = String(body.objective || "").slice(0, 500).trim();
       if (!handle) { sendJson(res, 400, { error: "Pseudo requis." }); return; }
-      try { socialStats = await fetchSocialStats(platform, handle); } catch { socialStats = null; }
+      const dbg = [];
+      try { socialStats = await fetchSocialStats(platform, handle, dbg); } catch (e) { socialStats = null; dbg.push("throw=" + String(e && e.message).slice(0, 120)); }
+      console.log("[assistant] stats " + platform + " @" + handle + " -> " + (socialStats ? "OK" : "ECHEC") + " | " + dbg.join(" | "));
       const dataRule = socialStats
         ? "Tu DISPOSES des vraies statistiques du compte ci-dessous : appuie ton audit et tes conseils dessus et cite les chiffres pertinents. " + statsPromptLine(socialStats)
         : "IMPORTANT: tu n'as PAS pu recuperer les vraies statistiques de @" + handle + " (l'acces automatique a ce compte a ete bloque par la plateforme). Apres la ligne NOTE, commence OBLIGATOIREMENT par une seule phrase honnete du type \"Je n'ai pas pu recuperer les vraies stats de @" + handle + ", mais voici une strategie generale.\" Ensuite, ne fais JAMAIS semblant de connaitre son nombre d'abonnes, ses vues ou son contenu reel, et n'invente AUCUN chiffre : donne des conseils strategiques generaux applicables sans les chiffres. ";
@@ -335,7 +337,14 @@ export default async function handler(req, res) {
       return;
     }
     const data = await gRes.json().catch(() => null);
-    if (!gRes.ok) { sendJson(res, 502, { error: "assistant_error" }); return; }
+    if (!gRes.ok) {
+      // Motif exact renvoye par Google (statut + message). La cle n'apparait jamais dans le corps d'erreur.
+      const gErr = (data && data.error) || {};
+      const detail = String(gErr.message || gErr.status || "").slice(0, 300);
+      console.error("[assistant] Gemini HTTP " + gRes.status + " : " + detail);
+      sendJson(res, 502, { error: "assistant_error", googleStatus: gRes.status, detail });
+      return;
+    }
     const parts = data && data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts;
     const text = Array.isArray(parts) ? parts.map((p) => p.text || "").join("").trim() : "";
     if (!text) { sendJson(res, 502, { error: "assistant_empty" }); return; }
