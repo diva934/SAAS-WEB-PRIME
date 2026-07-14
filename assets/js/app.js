@@ -240,12 +240,25 @@ function normalizeState(input = {}) {
   return next;
 }
 
+// Etat de repli d'un VRAI compte : vide. Le catalogue fictif de `seedState` ne doit
+// jamais pouvoir etre sauvegarde ni publie sur la boutique d'un createur reel.
+function blankState() {
+  const base = clone(seedState);
+  base.products = [];
+  base.pages = [];
+  base.contacts = [];
+  base.orders = [];
+  base.analytics = { ...base.analytics, visits: 0, leads: 0, checkouts: 0, visitLog: [] };
+  return base;
+}
+
 function loadState() {
+  const fallback = DEMO_MODE ? seedState : blankState();
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
-    return normalizeState(saved || seedState);
+    return normalizeState(saved || fallback);
   } catch {
-    return normalizeState(seedState);
+    return normalizeState(fallback);
   }
 }
 
@@ -763,6 +776,10 @@ function saveState() {
   updatePublicStoreLinks();
   renderLaunchProgress();
   if (location.protocol.startsWith("http")) {
+    if (!DEMO_MODE && !serverStateLoaded) {
+      showToast("Serveur injoignable : modification non enregistree. Recharge la page.");
+      return;
+    }
     authenticatedFetch("/api/state", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -2917,6 +2934,10 @@ window.addEventListener("keydown", (event) => {
   }
 });
 
+// Tant que l'etat serveur n'a pas ete charge avec succes, on bloque toute sauvegarde :
+// ecrire un etat local non confirme risquerait d'ecraser les vraies donnees du createur.
+let serverStateLoaded = false;
+
 async function hydrateServerState() {
   if (DEMO_MODE) return;
   if (!location.protocol.startsWith("http")) return;
@@ -2925,8 +2946,10 @@ async function hydrateServerState() {
     if (!response.ok) throw new Error("State unavailable");
     state = normalizeState(await response.json());
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    serverStateLoaded = true;
   } catch {
-    showToast("Mode hors ligne : les données locales sont utilisées.");
+    serverStateLoaded = false;
+    showToast("Connexion au serveur impossible : tes modifications ne seront pas enregistrees. Recharge la page.");
   }
 }
 
