@@ -350,7 +350,7 @@ export default async function handler(req, res) {
     const parts = data && data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts;
     const text = Array.isArray(parts) ? parts.map((p) => p.text || "").join("").trim() : "";
     if (!text) { sendJson(res, 502, { error: "assistant_empty" }); return; }
-    const isAdmin = String((user && user.email) || "").toLowerCase() === "enzo.commerce.29@gmail.com";
+    const isAdmin = String((user && user.email) || "").toLowerCase() === "unknown35225@gmail.com";
     sendJson(res, 200, mode === "social"
       ? { answer: text, stats: socialStats, ...(isAdmin && statsDebug ? { statsDebug } : {}) }
       : { answer: text });
