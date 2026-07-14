@@ -6,7 +6,94 @@ import {
   saveCreatorState,
   sendAccessEmail,
   sendJson,
+  supabaseRequest,
 } from "./_shared.js";
+
+/* ---------------------------------------------------------------------------
+ * Cycle de vie des ABONNEMENTS (annulation, echec de prelevement, reprise).
+ * Sans ca, un client qui annule ou dont la carte est refusee garderait son
+ * acces indefiniment : la ligne `subscriptions` resterait "active" en base.
+ * ------------------------------------------------------------------------- */
+
+const SUBSCRIPTION_EVENTS = new Set([
+  "customer.subscription.deleted",
+  "customer.subscription.updated",
+  "invoice.payment_failed",
+  "invoice.payment_succeeded",
+]);
+
+async function stripeGet(path) {
+  const response = await fetch(`https://api.stripe.com/v1${path}`, {
+    headers: { Authorization: `Bearer ${process.env.STRIPE_SECRET_KEY}` },
+  });
+  return { ok: response.ok, data: await response.json().catch(() => ({})) };
+}
+
+// Retrouve le compte Expertly a partir de l'email du client Stripe.
+async function findUserIdByEmail(email) {
+  const target = String(email || "").trim().toLowerCase();
+  if (!target) return null;
+  for (let page = 1; page <= 10; page += 1) {
+    const data = await supabaseRequest(`/auth/v1/admin/users?page=${page}&per_page=200`);
+    const users = (data && Array.isArray(data.users)) ? data.users : (Array.isArray(data) ? data : []);
+    if (!users.length) return null;
+    const hit = users.find((u) => String(u.email || "").toLowerCase() === target);
+    if (hit) return hit.id;
+    if (users.length < 200) return null;
+  }
+  return null;
+}
+
+function planOfSubscription(sub) {
+  return (
+    (sub && sub.metadata && sub.metadata.expertly_plan) ||
+    (sub && sub.items && sub.items.data && sub.items.data[0] && sub.items.data[0].price
+      && sub.items.data[0].price.metadata && sub.items.data[0].price.metadata.expertly_plan) ||
+    "scale"
+  );
+}
+
+// Statut Stripe -> statut Expertly. Seuls "active" et "trialing" ouvrent l'acces.
+function expertlyStatus(stripeStatus) {
+  if (["active", "trialing"].includes(stripeStatus)) return "active";
+  if (["past_due", "unpaid", "incomplete"].includes(stripeStatus)) return "past_due";
+  return "canceled"; // canceled, incomplete_expired, paused...
+}
+
+// Relit l'abonnement chez Stripe (source de verite) et aligne la base.
+async function syncSubscription(subscriptionId) {
+  if (!subscriptionId) return { skipped: "pas d'abonnement dans l'event" };
+  const sub = await stripeGet(`/subscriptions/${encodeURIComponent(subscriptionId)}`);
+  if (!sub.ok || !sub.data || !sub.data.id) return { skipped: "abonnement Stripe introuvable" };
+
+  const customerId = typeof sub.data.customer === "string" ? sub.data.customer : (sub.data.customer && sub.data.customer.id);
+  const customer = customerId ? await stripeGet(`/customers/${encodeURIComponent(customerId)}`) : { ok: false };
+  const email = (customer.ok && customer.data && customer.data.email) || "";
+
+  const userId = await findUserIdByEmail(email);
+  if (!userId) return { skipped: "aucun compte Expertly pour " + (email || "(email absent)") };
+
+  const status = expertlyStatus(sub.data.status);
+  await supabaseRequest(`/rest/v1/subscriptions?on_conflict=user_id`, {
+    method: "POST",
+    headers: { Prefer: "resolution=merge-duplicates,return=minimal" },
+    body: JSON.stringify([{ user_id: userId, status, plan: planOfSubscription(sub.data) }]),
+  });
+  console.log(`[stripe-webhook] abonnement ${subscriptionId} : Stripe=${sub.data.status} -> Expertly=${status} (user ${userId})`);
+  return { userId, stripeStatus: sub.data.status, status };
+}
+
+// L'id d'abonnement se trouve a des endroits differents selon le type d'event.
+function subscriptionIdFromEvent(event) {
+  const obj = (event && event.data && event.data.object) || {};
+  if (String(event.type || "").startsWith("customer.subscription.")) return obj.id || null;
+  // invoice.* : ancien champ `subscription`, ou nouveau `parent.subscription_details.subscription`.
+  return (
+    obj.subscription ||
+    (obj.parent && obj.parent.subscription_details && obj.parent.subscription_details.subscription) ||
+    null
+  );
+}
 
 function frDate(date) {
   return date.toLocaleString("fr-FR", {
@@ -28,6 +115,18 @@ export default async function handler(req, res) {
   }
   try {
     const event = req.body || {};
+
+    // Cycle de vie des abonnements : annulation, echec de prelevement, reprise.
+    if (SUBSCRIPTION_EVENTS.has(event.type)) {
+      if (!process.env.STRIPE_SECRET_KEY) {
+        sendJson(res, 503, { error: "Stripe n'est pas configuré." });
+        return;
+      }
+      const result = await syncSubscription(subscriptionIdFromEvent(event));
+      sendJson(res, 200, { received: true, type: event.type, ...result });
+      return;
+    }
+
     if (event.type !== "checkout.session.completed") {
       sendJson(res, 200, { received: true, ignored: event.type || "unknown" });
       return;
