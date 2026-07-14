@@ -1,34 +1,127 @@
 {
   "version": 2,
   "builds": [
-    { "src": "api/store.js", "use": "@vercel/node" },
-    { "src": "api/checkout.js", "use": "@vercel/node" },
-    { "src": "api/state.js", "use": "@vercel/node" },
-    { "src": "api/page.js", "use": "@vercel/node" },
-    { "src": "api/config.js", "use": "@vercel/node" },
-    { "src": "api/slug-available.js", "use": "@vercel/node" },
-    { "src": "api/stripe-webhook.js", "use": "@vercel/node" },
-    { "src": "api/subscription-status.js", "use": "@vercel/node" },
-    { "src": "api/events/visit.js", "use": "@vercel/node" },
-    { "src": "api/orders/resend-access.js", "use": "@vercel/node" },
-    { "src": "api/assistant.js", "use": "@vercel/node" },
-    { "src": "api/social/connect.js", "use": "@vercel/node" },
-    { "src": "*.html", "use": "@vercel/static" },
-    { "src": "*.css", "use": "@vercel/static" },
-    { "src": "*.js", "use": "@vercel/static" },
-    { "src": "assets/**", "use": "@vercel/static" }
+    {
+      "src": "api/store.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "api/checkout.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "api/state.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "api/page.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "api/config.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "api/slug-available.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "api/stripe-webhook.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "api/subscription-status.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "api/events/visit.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "api/orders/resend-access.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "api/assistant.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "api/social/connect.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "*.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "*.css",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "*.js",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "assets/**",
+      "use": "@vercel/static"
+    }
   ],
   "routes": [
-    { "src": "/api/(.*)", "dest": "/api/$1.js" },
-    { "src": "/app", "dest": "/app.html" },
-    { "src": "/connexion", "dest": "/login.html" },
-    { "src": "/login", "dest": "/login.html" },
-    { "src": "/inscription", "dest": "/inscription.html" },
-    { "src": "/signup", "dest": "/inscription.html" },
-    { "src": "/affiliation", "dest": "/affiliation.html" },
-    { "src": "/b/([^/]+)", "dest": "/store.html" },
-    { "src": "/go/([^/]+)", "dest": "/open.html" },
-    { "src": "/p/(.*)", "dest": "/sales.html" },
-    { "src": "/(.*)", "dest": "/$1" }
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/$1.js"
+    },
+    {
+      "src": "/app",
+      "dest": "/app.html"
+    },
+    {
+      "src": "/connexion",
+      "dest": "/login.html"
+    },
+    {
+      "src": "/login",
+      "dest": "/login.html"
+    },
+    {
+      "src": "/inscription",
+      "dest": "/inscription.html"
+    },
+    {
+      "src": "/signup",
+      "dest": "/inscription.html"
+    },
+    {
+      "src": "/affiliation",
+      "dest": "/affiliation.html"
+    },
+    {
+      "src": "/b/([^/]+)",
+      "dest": "/store.html"
+    },
+    {
+      "src": "/go/([^/]+)",
+      "dest": "/open.html"
+    },
+    {
+      "src": "/p/(.*)",
+      "dest": "/sales.html"
+    },
+    {
+      "src": "/mentions-legales",
+      "dest": "/mentions-legales.html"
+    },
+    {
+      "src": "/cgv",
+      "dest": "/cgv.html"
+    },
+    {
+      "src": "/confidentialite",
+      "dest": "/confidentialite.html"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/$1"
+    }
   ]
 }
