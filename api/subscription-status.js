@@ -63,6 +63,21 @@ async function createTrialCheckout({ user, planId, origin }) {
   return data.url;
 }
 
+// Retrouve un compte par son email (API admin GoTrue). Renvoie null si introuvable.
+async function findUserByEmail(email) {
+  const target = String(email || "").trim().toLowerCase();
+  if (!target) return null;
+  for (let page = 1; page <= 10; page += 1) {
+    const data = await supabaseRequest(`/auth/v1/admin/users?page=${page}&per_page=200`);
+    const users = (data && Array.isArray(data.users)) ? data.users : (Array.isArray(data) ? data : []);
+    if (!users.length) return null;
+    const hit = users.find((u) => String(u.email || "").toLowerCase() === target);
+    if (hit) return hit;
+    if (users.length < 200) return null;
+  }
+  return null;
+}
+
 // Upsert (insert si absent) de l'état d'abonnement — robuste même si aucune
 // ligne n'existe encore pour ce créateur.
 async function upsertStatus(userId, status, plan) {
@@ -160,6 +175,33 @@ export default async function handler(req, res) {
     if (req.method === "POST") {
       const body = req.body && typeof req.body === "object" ? req.body : {};
       const action = body.action || "";
+      // Acces de test offert (reserve a l'admin). Aucune trace cote Stripe :
+      // on marque le plan en base et on note "offert" dans les metadonnees du compte,
+      // pour pouvoir distinguer plus tard un acces offert d'un vrai client payant.
+      if (action === "grant-test-access") {
+        if (String(user.email || "").toLowerCase() !== ADMIN_EMAIL) {
+          sendJson(res, 403, { error: "Acces reserve." });
+          return;
+        }
+        const email = String(body.email || "").trim();
+        const plan = ["launch", "scale", "studio"].includes(String(body.plan || "")) ? String(body.plan) : "studio";
+        if (!email) { sendJson(res, 400, { error: "Email requis." }); return; }
+        const target = await findUserByEmail(email);
+        if (!target) {
+          sendJson(res, 404, { error: "Aucun compte avec cet email. Il doit d'abord s'inscrire sur /inscription." });
+          return;
+        }
+        await upsertStatus(target.id, "active", plan);
+        try {
+          await supabaseRequest(`/auth/v1/admin/users/${encodeURIComponent(target.id)}`, {
+            method: "PUT",
+            body: JSON.stringify({ app_metadata: { expertly_plan: plan, comp_access: true, comp_granted_at: new Date().toISOString() } }),
+          });
+        } catch { /* le marquage est un confort, pas un bloquant */ }
+        sendJson(res, 200, { granted: true, email: target.email, userId: target.id, plan });
+        return;
+      }
+
       // Rapport d'affiliation (reserve a l'admin).
       if (action === "affiliate-report") {
         if (String(user.email || "").toLowerCase() !== ADMIN_EMAIL) {
