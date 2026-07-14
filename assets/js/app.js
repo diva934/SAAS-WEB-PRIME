@@ -2937,7 +2937,7 @@ let lastLiveEtag = "";
 // Intervalle du rafraichissement live du dashboard (lecture Supabase via /api/state,
 // alimente par le webhook Stripe). 30s : temps quasi reel tout en menageant le quota
 // "origin transfer" de Vercel (evite la mise en pause du plan gratuit).
-const LIVE_REFRESH_INTERVAL_MS = 30000;
+const LIVE_REFRESH_INTERVAL_MS = 60000;
 
 function ensureLiveIndicator() {
   let indicator = document.querySelector("#liveIndicator");
