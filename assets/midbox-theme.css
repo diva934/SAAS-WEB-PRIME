@@ -34,7 +34,7 @@ aside.sidebar#sidebar{ width:238px !important; min-width:238px !important; backg
 .nav-item.active .nav-icon{ color:#12151f !important; }
 
 /* Carte checklist compacte (sombre) */
-.sidebar .launch-card{ background:#1c1f28 !important; border:1px solid #262a33 !important; border-radius:16px !important; padding:14px !important; color:#dfe2e8 !important; display:flex !important; flex-direction:column !important; gap:6px !important; }
+.sidebar .launch-card{ display:none !important; }
 .sidebar .launch-card span{ color:#9aa0ad !important; font-size:12px !important; }
 .sidebar .launch-card strong{ color:#fff !important; font-size:13px !important; }
 .sidebar .launch-card button{ background:#c6f24e !important; color:#12151f !important; border:none !important; border-radius:10px !important; padding:8px 10px !important; font-weight:700 !important; font-size:12px !important; }
