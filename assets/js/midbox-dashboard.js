@@ -270,7 +270,7 @@
       var y = 218 - h;
       var active = index === highIndex && value > 0;
       var fill = active ? "url(#mbActiveHatch)" : "url(#mbHatch)";
-      var tip = active ? '<g class="mb-total-tip"><rect x="' + (x - 15).toFixed(1) + '" y="' + (y - 30).toFixed(1) + '" width="62" height="28" rx="8" fill="#c7ff5a"/><text x="' + (x + 16).toFixed(1) + '" y="' + (y - 11).toFixed(1) + '" text-anchor="middle" fill="#11120f">' + formatInt(value) + '</text></g>' : "";
+      var tip = active ? '<g class="mb-total-tip"><rect x="' + (x - 15).toFixed(1) + '" y="' + (y - 30).toFixed(1) + '" width="62" height="28" rx="8" fill="#6558f5"/><text x="' + (x + 16).toFixed(1) + '" y="' + (y - 11).toFixed(1) + '" text-anchor="middle" fill="#ffffff">' + formatInt(value) + '</text></g>' : "";
       return '<rect x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="24" height="' + h.toFixed(1) + '" rx="10" fill="' + fill + '"/>' + tip
         + '<text x="' + (x + 12).toFixed(1) + '" y="246" text-anchor="middle" fill="#999b91" font-size="14">' + (labels[index] || "") + '</text>';
     }).join("");
@@ -317,13 +317,13 @@
     var productSales = d.products.slice().sort(function (a, b) {
       return (Number(b.sales) || 0) - (Number(a.sales) || 0);
     }).slice(0, 4);
-    var colors = ["#d8f8ff", "#e1ffd7", "#c7ff5a", "#f1f3ed"];
+    var colors = ["#d8f8ff", "#e1ffd7", "#6558f5", "#f1f3ed"];
     var list = productSales.length ? productSales.map(function (product, index) {
       return '<div class="mb-cat"><i style="background:' + colors[index % colors.length] + '">' + ["□", "◇", "◎", "◌"][index % 4] + '</i><div><strong>' + esc(product.type || product.title || "Produit") + '</strong><span>' + esc(product.title || "Produit") + '</span></div><b>' + formatInt(product.sales || 0) + '</b></div>';
-    }).join("") : '<div class="mb-cat"><i style="background:#c7ff5a">◎</i><div><strong>Aucun produit</strong><span>Ajoute un produit</span></div><b>0</b></div>';
+    }).join("") : '<div class="mb-cat"><i style="background:#6558f5">◎</i><div><strong>Aucun produit</strong><span>Ajoute un produit</span></div><b>0</b></div>';
     var donutValue = Math.max(6, Math.min(96, d.conversion * 9 || d.orders.length * 8));
     var c = 2 * Math.PI * 50;
-    var body = '<div class="mb-order-body"><div><div class="mb-donut"><svg viewBox="0 0 126 126"><circle cx="63" cy="63" r="50" fill="none" stroke="#e7efe1" stroke-width="15"/><circle cx="63" cy="63" r="50" fill="none" stroke="#c7ff5a" stroke-width="15" stroke-linecap="round" stroke-dasharray="' + (c * donutValue / 100).toFixed(1) + " " + c.toFixed(1) + '" transform="rotate(-90 63 63)"/><circle cx="63" cy="63" r="36" fill="rgba(255,255,255,.75)"/></svg><div class="mb-donut-center">' + Math.round(donutValue) + '%<small>Weekly</small></div></div></div><div class="mb-cat-list">' + list + '</div></div>';
+    var body = '<div class="mb-order-body"><div><div class="mb-donut"><svg viewBox="0 0 126 126"><circle cx="63" cy="63" r="50" fill="none" stroke="#e7efe1" stroke-width="15"/><circle cx="63" cy="63" r="50" fill="none" stroke="#6558f5" stroke-width="15" stroke-linecap="round" stroke-dasharray="' + (c * donutValue / 100).toFixed(1) + " " + c.toFixed(1) + '" transform="rotate(-90 63 63)"/><circle cx="63" cy="63" r="36" fill="rgba(255,255,255,.75)"/></svg><div class="mb-donut-center">' + Math.round(donutValue) + '%<small>Weekly</small></div></div></div><div class="mb-cat-list">' + list + '</div></div>';
     return shell("Order Statistics", formatInt(d.winPurTotal) + " ventes sur la periode", "cart", body, '<button class="mb-menu" aria-label="Options">...</button>', "mb-orders");
   }
 
@@ -342,7 +342,7 @@
   }
 
   function bestSellersCard(d) {
-    var palette = ["#20231e", "#e6c6ba", "#23a878", "#9ea09b", "#c7ff5a"];
+    var palette = ["#20231e", "#e6c6ba", "#23a878", "#9ea09b", "#6558f5"];
     var sorted = d.products.slice().sort(function (a, b) {
       return (Number(b.sales) || 0) * (Number(b.price) || 0) - (Number(a.sales) || 0) * (Number(a.price) || 0);
     }).slice(0, 5);

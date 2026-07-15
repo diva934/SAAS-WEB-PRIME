@@ -24,7 +24,7 @@
       "svg.mb-svg[viewBox='" + BARS_VB + "']{cursor:pointer;}",
       ".dic-tip{position:fixed;z-index:1400;background:#11120f;color:#fff;border-radius:10px;padding:7px 11px;font-size:12.5px;font-weight:700;white-space:nowrap;transform:translate(-50%,-118%);pointer-events:none;box-shadow:0 10px 24px rgba(16,17,26,.3);opacity:0;transition:opacity .1s;font-family:'DM Sans',system-ui,sans-serif;}",
       ".dic-tip.on{opacity:1;}",
-      ".dic-tip b{color:#c7ff5a;}",
+      ".dic-tip b{color:#8b7bff;}",
       ".dic-tip small{display:block;color:#b9bdca;font-weight:600;font-size:10.5px;margin-bottom:1px;}",
       ".dic-dot{position:fixed;z-index:1399;width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid #62c600;transform:translate(-50%,-50%);pointer-events:none;opacity:0;transition:opacity .1s;box-shadow:0 3px 8px rgba(20,22,40,.25);}",
       ".dic-dot.on{opacity:1;}",
