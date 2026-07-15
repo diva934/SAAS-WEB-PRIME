@@ -2268,7 +2268,7 @@ function toggleProductDelivery() {
   const form = document.querySelector("#productForm");
   if (!form || !form.elements.kind) return;
   const physique = form.elements.kind.value === "physique";
-  const show = (el, visible) => { if (el) el.style.display = visible ? "" : "none"; };
+  const show = (el, visible) => { if (el) { el.hidden = !visible; el.style.display = visible ? "" : "none"; } };
   show(document.querySelector("#accessTypeField"), !physique);
   show(document.querySelector("#fileDeliveryField"), !physique);
   show(document.querySelector("#physicalDeliveryNote"), physique);
