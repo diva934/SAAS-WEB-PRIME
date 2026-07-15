@@ -3082,7 +3082,7 @@ async function startApp() {
       if (__nav && !document.querySelector("#affiliateNavItem")) {
         var __b = document.createElement("button");
         __b.className = "nav-item"; __b.id = "affiliateNavItem"; __b.type = "button"; __b.title = "Affiliation";
-        __b.innerHTML = '<span class="nav-icon">\ud83e\udd1d</span><span>Affiliation</span>';
+        __b.innerHTML = '<span class="nav-icon"><i class="ti ti-affiliate"></i></span><span>Affiliation</span>';
         __b.addEventListener("click", function () { location.href = "/affiliation"; });
         __nav.appendChild(__b);
       }
