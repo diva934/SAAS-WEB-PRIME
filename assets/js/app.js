@@ -185,6 +185,9 @@ function normalizeState(input = {}) {
       upsellProductId: "",
       coverUrl: "",
       cardSize: "m",
+      // Nature du produit : digital (accès en ligne) ou physique (livraison).
+      // Migration : les imports AliExpress ont type "physique"/"Produit physique".
+      kind: /physique/i.test(product.kind || product.type || "") ? "physique" : "digital",
       ...product,
     }))
     : base.products;
@@ -240,25 +243,12 @@ function normalizeState(input = {}) {
   return next;
 }
 
-// Etat de repli d'un VRAI compte : vide. Le catalogue fictif de `seedState` ne doit
-// jamais pouvoir etre sauvegarde ni publie sur la boutique d'un createur reel.
-function blankState() {
-  const base = clone(seedState);
-  base.products = [];
-  base.pages = [];
-  base.contacts = [];
-  base.orders = [];
-  base.analytics = { ...base.analytics, visits: 0, leads: 0, checkouts: 0, visitLog: [] };
-  return base;
-}
-
 function loadState() {
-  const fallback = DEMO_MODE ? seedState : blankState();
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
-    return normalizeState(saved || fallback);
+    return normalizeState(saved || seedState);
   } catch {
-    return normalizeState(fallback);
+    return normalizeState(seedState);
   }
 }
 
@@ -486,7 +476,8 @@ function emailStatusClass(status) {
 
 function productReadiness(product) {
   const issues = [];
-  if (!product.fileName) issues.push("accès manquant");
+  // Un produit physique n'a pas de lien d'accès à livrer.
+  if (product.kind !== "physique" && !product.fileName) issues.push("accès manquant");
   if (!product.description || product.description.length < 30) issues.push("description courte");
   if (product.status === "published" && product.price > 0 && !integrationConfig.stripe) issues.push("Stripe non connecté");
   return issues;
@@ -776,10 +767,6 @@ function saveState() {
   updatePublicStoreLinks();
   renderLaunchProgress();
   if (location.protocol.startsWith("http")) {
-    if (!DEMO_MODE && !serverStateLoaded) {
-      showToast("Serveur injoignable : modification non enregistree. Recharge la page.");
-      return;
-    }
     authenticatedFetch("/api/state", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -1471,6 +1458,7 @@ function renderProducts() {
               </span>
             </div>
             <div class="product-card-body">
+              <span class="kind-badge ${product.kind === "physique" ? "physique" : "digital"}">${product.kind === "physique" ? "📦 Physique" : "⬇ Digital"}</span>
               <span>${escapeHtml(product.type)} · ${escapeHtml(offerRoleLabels[product.offerRole] || "Offre principale")}</span>
               <h3>${escapeHtml(product.title)}</h3>
               <p>${escapeHtml(product.description)}</p>
@@ -1479,13 +1467,9 @@ function renderProducts() {
                 <div><span>Ventes</span><strong>${product.sales}</strong></div>
                 <div><span>Conversion</span><strong>${rate} %</strong></div>
               </div>
-              <div class="offer-links">
-                <span>Bump: ${escapeHtml(state.products.find((item) => item.id === product.bumpProductId)?.title || "Aucun")}</span>
-                <span>Upsell: ${escapeHtml(state.products.find((item) => item.id === product.upsellProductId)?.title || "Aucun")}</span>
-              </div>
               <div class="readiness-row ${issues.length ? "warning" : "ready"}">
                 <strong>${issues.length ? "À compléter" : "Prêt à vendre"}</strong>
-                <span>${issues.length ? escapeHtml(issues.join(" · ")) : escapeHtml(accessTypeLabels[product.accessType] || "Lien privé")}</span>
+                <span>${issues.length ? escapeHtml(issues.join(" · ")) : (product.kind === "physique" ? "Livraison à configurer" : escapeHtml(accessTypeLabels[product.accessType] || "Lien privé"))}</span>
               </div>
               <div class="product-actions">
                 <button data-edit-product="${product.id}">Modifier</button>
@@ -2236,34 +2220,60 @@ function renderView(view) {
 function openProductModal(product = null) {
   const modal = document.querySelector("#productModal");
   const form = document.querySelector("#productForm");
-  const productOptions = ['<option value="">Aucun</option>']
-    .concat(state.products
-      .filter((item) => item.id !== product?.id)
-      .map((item) => `<option value="${item.id}">${escapeHtml(item.title)}</option>`))
-    .join("");
-  document.querySelector("#bumpProductSelect").innerHTML = productOptions;
-  document.querySelector("#upsellProductSelect").innerHTML = productOptions;
   form.reset();
   form.elements.id.value = product?.id || "";
   form.elements.title.value = product?.title || "";
   form.elements.type.value = product?.type || "Formation";
+  form.elements.kind.value = product?.kind === "physique" ? "physique" : "digital";
   form.elements.price.value = product?.price ?? 0;
   form.elements.description.value = product?.description || "";
   form.elements.status.value = product?.status || "draft";
-  form.elements.color.value = product?.color || "#6558f5";
-  form.elements.offerRole.value = product?.offerRole || "core";
   form.elements.accessType.value = product?.accessType || "link";
-  form.elements.compareAtPrice.value = product?.compareAtPrice || "";
-  form.elements.funnelPriority.value = product?.funnelPriority || "standard";
-  form.elements.bumpProductId.value = product?.bumpProductId || "";
-  form.elements.upsellProductId.value = product?.upsellProductId || "";
   form.elements.coverUrl.value = product?.coverUrl || "";
-  form.elements.cardSize.value = product?.cardSize || "m";
   form.elements.fileName.value = product?.fileName || "";
+  renderProductVariants(product?.variants || []);
   document.querySelector("#productModalTitle").textContent = product ? "Modifier le produit" : "Créer un produit";
+  toggleProductDelivery();
   modal.classList.add("open");
   modal.setAttribute("aria-hidden", "false");
   setTimeout(() => form.elements.title.focus(), 50);
+}
+
+// Affiche les variantes (couleurs, tailles…) en lecture seule dans le formulaire produit.
+function renderProductVariants(variants) {
+  const box = document.querySelector("#variantsDisplay");
+  if (!box) return;
+  if (!Array.isArray(variants) || !variants.length) {
+    box.hidden = true;
+    box.innerHTML = "";
+    return;
+  }
+  box.hidden = false;
+  box.innerHTML =
+    '<span class="variants-title">Variantes</span>' +
+    variants
+      .map(
+        (v) =>
+          `<div class="variant-row"><strong>${escapeHtml(v.name || "Option")}</strong><span>${(v.values || [])
+            .map((x) => escapeHtml(x))
+            .join(", ")}</span></div>`,
+      )
+      .join("");
+}
+
+// Affiche/masque les champs de livraison selon la nature du produit.
+// On force via style.display (l'inline style prime sur toute regle CSS,
+// contrairement a l'attribut [hidden] qui peut etre neutralise par .full/.upload-zone).
+function toggleProductDelivery() {
+  const form = document.querySelector("#productForm");
+  if (!form || !form.elements.kind) return;
+  const physique = form.elements.kind.value === "physique";
+  const show = (el, visible) => { if (el) el.style.display = visible ? "" : "none"; };
+  show(document.querySelector("#accessTypeField"), !physique);
+  show(document.querySelector("#fileDeliveryField"), !physique);
+  show(document.querySelector("#physicalDeliveryNote"), physique);
+  // Le lien d'accès n'est obligatoire que pour un produit digital.
+  if (form.elements.fileName) form.elements.fileName.required = !physique;
 }
 
 function closeProductModal() {
@@ -2284,23 +2294,32 @@ function submitProduct(event) {
     showToast(`Ta formule ${planLabel(currentPlan)} est limitee a ${maxProducts} produits. Passe a une formule superieure pour en ajouter plus.`);
     return;
   }
+  // Accepte la virgule et les centimes (ex. "29,90" -> 29.9).
+  const price = Number(String(data.get("price") || "0").replace(",", ".")) || 0;
   const product = {
     id: id || `prod_${Date.now()}`,
     title: data.get("title").trim(),
     type: data.get("type"),
-    price: Number(data.get("price")),
+    kind: data.get("kind") === "physique" ? "physique" : "digital",
+    price: Math.round(price * 100) / 100,
     description: data.get("description").trim(),
     status: data.get("status"),
-    color: data.get("color"),
-    offerRole: data.get("offerRole") || "core",
-    accessType: data.get("accessType") || "link",
-    compareAtPrice: Number(data.get("compareAtPrice") || 0),
-    funnelPriority: data.get("funnelPriority") || "standard",
-    bumpProductId: data.get("bumpProductId") || "",
-    upsellProductId: data.get("upsellProductId") || "",
-    coverUrl: data.get("coverUrl").trim(),
-    cardSize: data.get("cardSize") || "m",
-    fileName: data.get("fileName").trim(),
+    accessType: data.get("accessType") || existing?.accessType || "link",
+    coverUrl: (data.get("coverUrl") || "").trim(),
+    fileName: (data.get("fileName") || "").trim(),
+    // Photos et variantes : préservées (renseignées à l'import ou ailleurs).
+    images: existing?.images || [],
+    variants: existing?.variants || [],
+    source: existing?.source,
+    sourceUrl: existing?.sourceUrl,
+    // Réglages boutique/tunnel : gérés dans la page de vente, valeurs préservées.
+    color: existing?.color || "#6558f5",
+    cardSize: existing?.cardSize || "m",
+    offerRole: existing?.offerRole || "core",
+    compareAtPrice: existing?.compareAtPrice || 0,
+    funnelPriority: existing?.funnelPriority || "standard",
+    bumpProductId: existing?.bumpProductId || "",
+    upsellProductId: existing?.upsellProductId || "",
     featured: existing?.featured || false,
     sales: existing?.sales || 0,
     views: existing?.views || 0,
@@ -2722,6 +2741,7 @@ document.addEventListener("submit", (event) => {
 document.querySelector("#menuButton").addEventListener("click", () => document.querySelector("#sidebar").classList.add("open"));
 document.querySelector("#sidebarClose").addEventListener("click", () => document.querySelector("#sidebar").classList.remove("open"));
 document.querySelector("#productForm").addEventListener("submit", submitProduct);
+document.querySelector("#productKind")?.addEventListener("change", toggleProductDelivery);
 document.querySelector("#pageForm").addEventListener("submit", submitPage);
 document.querySelector("#contactForm").addEventListener("submit", submitContact);
 document.querySelector("#orderForm").addEventListener("submit", submitOrder);
@@ -2934,10 +2954,6 @@ window.addEventListener("keydown", (event) => {
   }
 });
 
-// Tant que l'etat serveur n'a pas ete charge avec succes, on bloque toute sauvegarde :
-// ecrire un etat local non confirme risquerait d'ecraser les vraies donnees du createur.
-let serverStateLoaded = false;
-
 async function hydrateServerState() {
   if (DEMO_MODE) return;
   if (!location.protocol.startsWith("http")) return;
@@ -2946,21 +2962,17 @@ async function hydrateServerState() {
     if (!response.ok) throw new Error("State unavailable");
     state = normalizeState(await response.json());
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    serverStateLoaded = true;
   } catch {
-    serverStateLoaded = false;
-    showToast("Connexion au serveur impossible : tes modifications ne seront pas enregistrees. Recharge la page.");
+    showToast("Mode hors ligne : les données locales sont utilisées.");
   }
 }
 
 let liveRefreshTimer = null;
 let liveRefreshInFlight = false;
 let lastLiveSignature = "";
-let lastLiveEtag = "";
 // Intervalle du rafraichissement live du dashboard (lecture Supabase via /api/state,
-// alimente par le webhook Stripe). 30s : temps quasi reel tout en menageant le quota
-// "origin transfer" de Vercel (evite la mise en pause du plan gratuit).
-const LIVE_REFRESH_INTERVAL_MS = 60000;
+// alimente par le webhook Stripe). 1s = quasi temps reel cote UI.
+const LIVE_REFRESH_INTERVAL_MS = 1000;
 
 function ensureLiveIndicator() {
   let indicator = document.querySelector("#liveIndicator");
@@ -3000,22 +3012,11 @@ async function refreshLiveDashboard() {
   if (liveRefreshInFlight) return; // evite l'empilement des requetes a 1s
   liveRefreshInFlight = true;
   try {
-    // Requete conditionnelle : si rien n'a change, le serveur repond 304 sans corps
-    // (transfert quasi nul). On ne retelecharge le state que s'il a reellement change.
-    const response = await authenticatedFetch("/api/state", {
-      cache: "no-store",
-      headers: lastLiveEtag ? { "If-None-Match": lastLiveEtag } : {},
-    });
-    if (response.status === 304) {
-      setLiveIndicator(true);
-      return;
-    }
+    const response = await authenticatedFetch("/api/state", { cache: "no-store" });
     if (!response.ok) {
       setLiveIndicator(false);
       return;
     }
-    const etag = response.headers.get("ETag");
-    if (etag) lastLiveEtag = etag;
     const text = await response.text();
     setLiveIndicator(true);
     // Ne re-render que si les donnees ont reellement change (pas de flicker inutile).
@@ -3071,23 +3072,8 @@ async function startApp() {
     showToast("Paiement confirmé : ton espace Expertly est actif.");
     history.replaceState({}, "", `${location.pathname}${location.hash}`);
   }
-  // Au chargement/rafraichissement, on revient toujours sur le dashboard (premiere page).
-  if (location.hash) history.replaceState(null, "", location.pathname + location.search);
-  setView("overview");
-  // Raccourci "Affiliation" dans le menu, visible UNIQUEMENT pour l'administrateur.
-  try {
-    var __adminEmail = (activeSupabaseSession && activeSupabaseSession.user && activeSupabaseSession.user.email || "").toLowerCase();
-    if (__adminEmail === "unknown35225+admin@gmail.com") {
-      var __nav = document.querySelector(".main-nav");
-      if (__nav && !document.querySelector("#affiliateNavItem")) {
-        var __b = document.createElement("button");
-        __b.className = "nav-item"; __b.id = "affiliateNavItem"; __b.type = "button"; __b.title = "Affiliation";
-        __b.innerHTML = '<span class="nav-icon"><i class="ti ti-affiliate"></i></span><span>Affiliation</span>';
-        __b.addEventListener("click", function () { location.href = "/affiliation"; });
-        __nav.appendChild(__b);
-      }
-    }
-  } catch (e) {}
+  const initialView = location.hash.replace("#", "");
+  setView(viewNames[initialView] ? initialView : "overview");
   const forceSetup = new URLSearchParams(location.search).get("setup") === "1";
   if (!DEMO_MODE && (forceSetup || (storeNeedsSetup() && !localStorage.getItem("expertly_onboarding_done")))) {
     openOnboardingWizard();
