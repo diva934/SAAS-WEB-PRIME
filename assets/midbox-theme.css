@@ -1,44 +1,26 @@
 /* ===== Expertly - Theme Midbox =====
    Skin charge APRES styles.css : sidebar sombre a icones + accent vert-citron,
    fond gris clair, cartes blanches arrondies, boutons sombres. */
-:root{ --sidebar-width:238px !important; }
+:root{ --sidebar-width:120px !important; }
 body, .app-shell{ background:#f3f4f6 !important; }
-.app-shell{ grid-template-columns:238px 1fr !important; }
+.app-shell{ grid-template-columns:120px 1fr !important; }
 .content{ background:transparent !important; }
 
-/* ===== Sidebar large (nouveau design) ===== */
-aside.sidebar#sidebar{ width:238px !important; min-width:238px !important; background:#12141b !important; border:none !important; border-radius:0 !important; margin:0 !important; height:100vh !important; box-shadow:2px 0 24px rgba(16,17,26,.08) !important; overflow-y:auto !important; display:flex !important; flex-direction:column !important; padding:16px 14px !important; }
-.sidebar .brand-row{ order:0 !important; display:flex !important; justify-content:flex-start !important; align-items:center !important; padding:6px 8px 12px !important; }
-.sidebar .brand-row .brand{ display:flex !important; align-items:center !important; }
-.sidebar .brand-row img{ height:30px !important; width:auto !important; max-width:150px !important; display:block !important; filter:brightness(0) invert(1) !important; }
-.sidebar .brand-row .sidebar-close{ display:none !important; }
-.sidebar .main-nav{ order:1 !important; flex:1 1 auto !important; display:flex !important; flex-direction:column !important; align-items:stretch !important; gap:3px !important; padding:6px 0 !important; overflow:visible !important; }
-.sidebar .main-nav > p{ display:block !important; color:#5a5f6b !important; font-size:11px !important; font-weight:700 !important; letter-spacing:.05em !important; text-transform:uppercase !important; padding:14px 12px 6px !important; margin:0 !important; }
-.sidebar .sidebar-bottom{ order:2 !important; display:flex !important; flex-direction:column !important; gap:8px !important; padding:0 !important; }
-.sidebar .workspace-switcher{ order:3 !important; display:flex !important; align-items:center !important; gap:10px !important; background:transparent !important; border:none !important; border-top:1px solid #23262f !important; border-radius:0 !important; padding:12px 8px 2px !important; margin:6px 0 0 !important; }
-.sidebar .workspace-switcher .workspace-avatar{ width:34px !important; height:34px !important; border-radius:50% !important; background:linear-gradient(135deg,#6558f5,#8b7bff) !important; color:#fff !important; display:grid !important; place-items:center !important; font-family:"Manrope",sans-serif !important; font-weight:800 !important; font-size:13px !important; }
-.sidebar .workspace-switcher strong{ color:#dfe2e8 !important; font-size:13px !important; display:block !important; }
-.sidebar .workspace-switcher small{ color:#7a8090 !important; font-size:11px !important; }
-.sidebar .workspace-switcher button{ display:none !important; }
-
-.nav-item{ width:100% !important; height:auto !important; padding:10px 12px !important; margin:0 !important; display:flex !important; align-items:center !important; justify-content:flex-start !important; gap:12px !important; border-radius:12px !important; color:#9aa0ad !important; font-size:14px !important; font-weight:500 !important; background:transparent !important; text-align:left !important; }
-.nav-item > span:not(.nav-icon){ display:inline !important; }
-.nav-item .nav-icon{ font-size:19px !important; display:inline-flex !important; align-items:center !important; color:inherit !important; width:auto !important; }
-.nav-item .nav-icon .ti{ font-size:19px !important; line-height:1 !important; }
-.nav-item .nav-count, .nav-item .soon{ margin-left:auto !important; font-size:11px !important; font-weight:700 !important; }
-.nav-item .soon{ background:rgba(101,88,245,.22) !important; color:#a9a1f7 !important; border-radius:999px !important; padding:2px 8px !important; }
-.nav-item .nav-count{ background:#23262f !important; color:#c7cbd6 !important; border-radius:999px !important; padding:2px 8px !important; }
-.nav-item:hover{ background:#1c1f28 !important; color:#dfe2e8 !important; }
-.nav-item:hover .nav-icon{ color:#dfe2e8 !important; }
-.nav-item.active{ background:#6558f5 !important; color:#ffffff !important; box-shadow:none !important; font-weight:600 !important; }
-.nav-item.active .nav-icon{ color:#ffffff !important; }
-
-/* Carte checklist compacte (sombre) */
-.sidebar .launch-card{ display:none !important; }
-.sidebar .launch-card span{ color:#9aa0ad !important; font-size:12px !important; }
-.sidebar .launch-card strong{ color:#fff !important; font-size:13px !important; }
-.sidebar .launch-card button{ background:#6558f5 !important; color:#ffffff !important; border:none !important; border-radius:10px !important; padding:8px 10px !important; font-weight:700 !important; font-size:12px !important; }
-.sidebar .help-button{ color:#9aa0ad !important; background:transparent !important; }
+/* Sidebar icones sombre flottante */
+aside.sidebar#sidebar{ width:88px !important; min-width:88px !important; background:#16171e !important; border:none !important; border-radius:26px !important; margin:16px 0 16px 16px !important; height:calc(100vh - 32px) !important; box-shadow:0 20px 44px rgba(16,17,26,.2) !important; overflow:hidden !important; }
+.sidebar .brand-row{ justify-content:center !important; padding:18px 0 10px !important; }
+.sidebar .brand-row *:not(img):not(svg){ display:none !important; }
+.sidebar .brand-row img, .sidebar .brand-row svg{ width:32px !important; height:auto !important; }
+.sidebar .workspace-switcher{ display:none !important; }
+.sidebar .sidebar-bottom{ display:none !important; }
+.main-nav{ display:flex !important; flex-direction:column !important; align-items:center !important; gap:4px !important; padding:6px 0 !important; }
+.main-nav > :not(.nav-item){ display:none !important; }
+.nav-item{ width:54px !important; height:54px !important; padding:0 !important; margin:2px 0 !important; display:flex !important; align-items:center !important; justify-content:center !important; border-radius:16px !important; color:#b9bdca !important; }
+.nav-item > span:not(.nav-icon){ display:none !important; }
+.nav-item .nav-icon{ font-size:21px !important; }
+.nav-item:hover{ background:rgba(255,255,255,.08) !important; color:#fff !important; }
+.nav-item.active{ background:#c6f24e !important; color:#15161c !important; box-shadow:0 8px 20px rgba(198,242,78,.35) !important; }
+.nav-item.active .nav-icon{ color:#15161c !important; }
 
 /* Top bar epuree */
 .topbar{ background:transparent !important; border:none !important; box-shadow:none !important; }
@@ -53,18 +35,18 @@ aside.sidebar#sidebar{ width:238px !important; min-width:238px !important; backg
 .account-button{ border-radius:16px !important; background:#fff !important; border:1px solid #edeff3 !important; }
 .icon-button{ border-radius:12px !important; background:#fff !important; border:1px solid #edeff3 !important; }
 .store-link{ border-radius:12px !important; background:#16171e !important; color:#fff !important; }
-.store-link span{ color:#6558f5 !important; }
+.store-link span{ color:#c6f24e !important; }
 
 /* Graphique revenus -> vert */
-#revenueChart path[stroke]{ stroke:#6558f5 !important; }
-#revenueChart [stroke="#6558f5"]{ stroke:#6558f5 !important; }
-#revenueChart circle{ fill:#6558f5 !important; stroke:#6558f5 !important; }
-#revenueChart linearGradient stop{ stop-color:#8b7bff !important; }
-[class*="progress-bar"]{ background:#6558f5 !important; }
+#revenueChart path[stroke]{ stroke:#6fb52a !important; }
+#revenueChart [stroke="#6558f5"]{ stroke:#6fb52a !important; }
+#revenueChart circle{ fill:#6fb52a !important; stroke:#6fb52a !important; }
+#revenueChart linearGradient stop{ stop-color:#8fd14f !important; }
+[class*="progress-bar"]{ background:#c6f24e !important; }
 
 @media (max-width:640px){
   .app-shell{ grid-template-columns:1fr !important; }
-  aside.sidebar#sidebar{ margin:0 !important; width:100vw !important; min-width:0 !important; height:100vh !important; }
+  aside.sidebar#sidebar{ margin:8px !important; }
 }
 
 /* Top bar epuree : masque "En direct" + le losange (notifications), avatar rond a droite. */
@@ -90,7 +72,7 @@ aside.sidebar#sidebar{ width:238px !important; min-width:238px !important; backg
 
 /* Fix sidebar : le logo (wordmark large 1282x299) creait un bloc vert colle a l'onglet actif.
    On le retire du rail d'icones (le menu ecran reste accessible via le bouton du haut). */
-aside#sidebar .brand-row{ display:flex !important; }
+aside#sidebar .brand-row{ display:none !important; }
 .main-nav{ padding-top:16px !important; }
 
 /* Fix vue Emails : la page 403 "Access Denied" etait alignee a gauche.
@@ -165,8 +147,6 @@ aside#sidebar .brand-row{ display:flex !important; }
    2. Meme forme de cases que les cartes du dashboard (.mb-card) pour les vues restantes.
    3. Titres des cases alignes sur l'ecriture des cartes du dashboard (.mb-title h2 : 18px / 500). */
 .page-heading .eyebrow{ color:#8a8f9c !important; }
-/* Titres de page plus compacts (demande utilisateur) : meme taille dans toutes les sections. */
-.page-heading h1{ font-size:clamp(24px, 2vw, 30px) !important; letter-spacing:-0.5px !important; }
 
 #productsView .product-card,
 #pagesView .sales-page-card,
@@ -191,17 +171,18 @@ aside#sidebar .brand-row{ display:flex !important; }
   letter-spacing:0 !important;
 }
 
+/* --- Distinction produit physique / digital (section Produits) --- */
+.product-card-body .kind-badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;margin-bottom:6px;letter-spacing:.01em}
+.product-card-body .kind-badge.digital{background:#efeaff;color:#5a45e6}
+.product-card-body .kind-badge.physique{background:#e7f3ee;color:#0f7a54}
+#physicalDeliveryNote.physical-note{background:#f4f7f5;border:1px solid #d9e8e1;border-radius:12px;padding:12px 14px}
+#physicalDeliveryNote.physical-note strong{display:block;font-size:13px;color:#0f7a54;margin-bottom:4px}
+#physicalDeliveryNote.physical-note p{margin:0;font-size:12px;line-height:1.5;color:#4a5a52}
 
-/* Uniformisation sur le style "Pages de vente" (reference), hors dashboard :
-   memes libelles de carte (gris), meme padding coherent. Titres deja unifies plus haut. */
-#productsView .panel-label, #ordersView .panel-label, #contactsView .panel-label,
-#analyticsView .panel-label, #financeView .panel-label, #emailsView .panel-label,
-#settingsView .panel-label, #tunnelView .panel-label, #socialView .panel-label,
-#productsView .product-card .panel-label{
-  color:#8a8f9c !important; font-size:11px !important; letter-spacing:.04em !important; font-weight:700 !important; text-transform:uppercase !important;
-}
-#productsView .panel, #ordersView .panel, #contactsView .panel,
-#analyticsView .panel, #financeView .panel, #emailsView .panel,
-#settingsView .panel, #tunnelView .panel, #socialView .panel{
-  padding:22px !important;
-}
+/* --- Variantes (lecture seule) + note dans le formulaire produit --- */
+#variantsDisplay.product-variants{background:#f7f7fb;border:1px solid #ececf4;border-radius:12px;padding:11px 13px}
+#variantsDisplay .variants-title{display:block;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#8a8f9c;margin-bottom:7px}
+#variantsDisplay .variant-row{display:flex;gap:8px;flex-wrap:wrap;font-size:12.5px;margin-bottom:4px}
+#variantsDisplay .variant-row strong{color:#12141b}
+#variantsDisplay .variant-row span{color:#4a4f5c}
+.form-hint{font-size:12px;color:#8a8f9c;line-height:1.5;margin:10px 2px 0;grid-column:1/-1}

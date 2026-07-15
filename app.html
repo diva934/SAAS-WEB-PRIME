@@ -15,7 +15,6 @@
       rel="stylesheet"
     />
     <link rel="icon" href="./assets/expertly-logo.png" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/2.47.0/tabler-icons.min.css" />
     <link rel="stylesheet" href="./styles.css" />
     <link rel="stylesheet" href="./assets/midbox-theme.css" />
     <script>
@@ -47,34 +46,34 @@
         </div>
 
         <nav class="main-nav" aria-label="Navigation principale">
-          <p>Pilotage</p>
+          <p>Activité</p>
           <button class="nav-item active" data-view="overview">
-            <span class="nav-icon"><i class="ti ti-layout-dashboard"></i></span><span>Vue d’ensemble</span>
+            <span class="nav-icon">⌂</span><span>Vue d’ensemble</span>
           </button>
           <button class="nav-item" data-view="products">
-            <span class="nav-icon"><i class="ti ti-package"></i></span><span>Produits</span><span class="nav-count" id="productCount">0</span>
+            <span class="nav-icon">◇</span><span>Produits</span><span class="nav-count" id="productCount">0</span>
           </button>
           <button class="nav-item" data-view="pages">
-            <span class="nav-icon"><i class="ti ti-browser"></i></span><span>Pages de vente</span>
+            <span class="nav-icon">▤</span><span>Pages de vente</span>
           </button>
           <button class="nav-item" data-view="tunnel">
-            <span class="nav-icon"><i class="ti ti-filter"></i></span><span>Tunnel</span>
+            <span class="nav-icon">⇄</span><span>Tunnel</span>
           </button>
           <button class="nav-item" data-view="orders">
-            <span class="nav-icon"><i class="ti ti-shopping-bag"></i></span><span>Commandes</span>
+            <span class="nav-icon">↗</span><span>Commandes</span>
           </button>
           <button class="nav-item" data-view="contacts">
-            <span class="nav-icon"><i class="ti ti-users"></i></span><span>Contacts</span>
+            <span class="nav-icon">◎</span><span>Contacts</span>
           </button>
-          <p>Croissance</p>
+          <p>Développer</p>
           <button class="nav-item" data-view="analytics">
-            <span class="nav-icon"><i class="ti ti-chart-bar"></i></span><span>Analytics</span>
+            <span class="nav-icon">⌁</span><span>Analytics</span>
           </button>
           <button class="nav-item" data-view="finance">
-            <span class="nav-icon"><i class="ti ti-wallet"></i></span><span>Finance</span>
+            <span class="nav-icon">€</span><span>Finance</span>
           </button>
           <button class="nav-item" data-view="emails">
-            <span class="nav-icon"><i class="ti ti-mail"></i></span><span>Emails</span><span class="soon">Bêta</span>
+            <span class="nav-icon">✉</span><span>Emails</span><span class="soon">Bêta</span>
           </button>
         </nav>
 
@@ -86,7 +85,7 @@
             <button data-action="open-checklist">Continuer la configuration</button>
           </div>
           <button class="nav-item" data-view="settings">
-            <span class="nav-icon"><i class="ti ti-settings"></i></span><span>Réglages</span>
+            <span class="nav-icon">⚙</span><span>Réglages</span>
           </button>
           <button class="help-button" id="helpButton"><span>?</span> Centre d’aide</button>
         </div>
@@ -433,27 +432,27 @@
         <form id="productForm">
           <input type="hidden" name="id" />
           <div class="form-grid">
-            <label class="full">Nom du produit<input name="title" required placeholder="Ex. Bootcamp Offre Signature" /></label>
-            <label>Type<select name="type"><option>Formation</option><option>Coaching</option><option>Produit digital</option><option>Masterclass</option><option>Abonnement</option></select></label>
-            <label>Prix en euros<input name="price" type="number" min="0" step="1" required /></label>
-            <label class="full">Description<textarea name="description" rows="3" required placeholder="Décris le résultat obtenu par ton client…"></textarea></label>
+            <label class="full">Nom du produit<input name="title" required placeholder="Ex. Montre connectée sport" /></label>
+            <label>Type<select name="type"><option>Formation</option><option>Coaching</option><option>Produit digital</option><option>Masterclass</option><option>Abonnement</option><option>Produit physique</option></select></label>
+            <label>Nature<select name="kind" id="productKind"><option value="digital">Digital — accès en ligne</option><option value="physique">Physique — livraison</option></select></label>
+            <label>Prix en euros<input name="price" type="number" min="0" step="0.01" inputmode="decimal" required placeholder="Ex. 29,90" /></label>
             <label>Statut<select name="status"><option value="published">Publié</option><option value="draft">Brouillon</option></select></label>
-            <label>Couleur<input name="color" type="color" value="#6558f5" /></label>
-            <label>Taille de la carte<select name="cardSize"><option value="m">Moyenne</option><option value="s">Petite</option><option value="l">Large</option><option value="xl">Vedette (mise en avant)</option></select></label>
-            <label>Rôle dans le tunnel<select name="offerRole"><option value="core">Offre principale</option><option value="lead">Lead magnet</option><option value="tripwire">Produit d'appel</option><option value="upsell">Upsell</option></select></label>
-            <label>Type d'accès<select name="accessType"><option value="link">Lien privé</option><option value="file">Fichier</option><option value="calendar">Calendrier</option><option value="video">Vidéo</option><option value="member">Espace membre</option></select></label>
-            <label>Prix barré<input name="compareAtPrice" type="number" min="0" step="1" placeholder="Ex. 1497" /></label>
-            <label>Score de priorité<select name="funnelPriority"><option value="standard">Standard</option><option value="hero">Offre mise en avant</option><option value="support">Offre secondaire</option></select></label>
-            <label>Order bump associé<select name="bumpProductId" id="bumpProductSelect"></select></label>
-            <label>Upsell post-achat<select name="upsellProductId" id="upsellProductSelect"></select></label>
-            <label class="full">Image de couverture<input name="coverUrl" type="url" placeholder="https://ton-site.fr/visuel-produit.jpg" /></label>
-            <label class="full upload-zone">
+            <label class="full">Description (bio du produit)<textarea name="description" rows="3" required placeholder="Décris le produit : ce que c'est, ses bénéfices, ses caractéristiques…"></textarea></label>
+            <label class="full">Photo du produit<input name="coverUrl" type="url" placeholder="https://…/photo-produit.jpg" /></label>
+            <div class="full product-variants" id="variantsDisplay" hidden></div>
+            <label id="accessTypeField">Type d'accès<select name="accessType"><option value="link">Lien privé</option><option value="file">Fichier</option><option value="calendar">Calendrier</option><option value="video">Vidéo</option><option value="member">Espace membre</option></select></label>
+            <label class="full upload-zone" id="fileDeliveryField">
               <span>↓</span>
               <strong>Lien d’accès à livrer</strong>
               <small>URL du PDF, espace membre, vidéo, fichier cloud ou page privée.</small>
-              <input name="fileName" type="url" required placeholder="https://ton-site.fr/acces-produit" />
+              <input name="fileName" type="url" placeholder="https://ton-site.fr/acces-produit" />
             </label>
+            <div class="full physical-note" id="physicalDeliveryNote" hidden>
+              <strong>📦 Produit physique</strong>
+              <p>Aucun lien d’accès à fournir : le client ne reçoit pas de fichier après le paiement. La livraison (adresse, expédition) se configurera dans une prochaine étape.</p>
+            </div>
           </div>
+          <p class="form-hint full">Les réglages de boutique (mise en avant, order bump, upsell, prix barré, rôle dans le tunnel…) se configurent dans la page de vente.</p>
           <div class="modal-actions">
             <button type="button" class="secondary-button" data-close-modal>Annuler</button>
             <button type="submit" class="primary-button">Enregistrer le produit</button>
