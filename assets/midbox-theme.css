@@ -1,26 +1,44 @@
 /* ===== Expertly - Theme Midbox =====
    Skin charge APRES styles.css : sidebar sombre a icones + accent vert-citron,
    fond gris clair, cartes blanches arrondies, boutons sombres. */
-:root{ --sidebar-width:120px !important; }
+:root{ --sidebar-width:270px !important; }
 body, .app-shell{ background:#f3f4f6 !important; }
-.app-shell{ grid-template-columns:120px 1fr !important; }
+.app-shell{ grid-template-columns:270px 1fr !important; }
 .content{ background:transparent !important; }
 
-/* Sidebar icones sombre flottante */
-aside.sidebar#sidebar{ width:88px !important; min-width:88px !important; background:#16171e !important; border:none !important; border-radius:26px !important; margin:16px 0 16px 16px !important; height:calc(100vh - 32px) !important; box-shadow:0 20px 44px rgba(16,17,26,.2) !important; overflow:hidden !important; }
-.sidebar .brand-row{ justify-content:center !important; padding:18px 0 10px !important; }
-.sidebar .brand-row *:not(img):not(svg){ display:none !important; }
-.sidebar .brand-row img, .sidebar .brand-row svg{ width:32px !important; height:auto !important; }
-.sidebar .workspace-switcher{ display:none !important; }
-.sidebar .sidebar-bottom{ display:none !important; }
-.main-nav{ display:flex !important; flex-direction:column !important; align-items:center !important; gap:4px !important; padding:6px 0 !important; }
-.main-nav > :not(.nav-item){ display:none !important; }
-.nav-item{ width:54px !important; height:54px !important; padding:0 !important; margin:2px 0 !important; display:flex !important; align-items:center !important; justify-content:center !important; border-radius:16px !important; color:#b9bdca !important; }
-.nav-item > span:not(.nav-icon){ display:none !important; }
-.nav-item .nav-icon{ font-size:21px !important; }
-.nav-item:hover{ background:rgba(255,255,255,.08) !important; color:#fff !important; }
-.nav-item.active{ background:#c6f24e !important; color:#15161c !important; box-shadow:0 8px 20px rgba(198,242,78,.35) !important; }
-.nav-item.active .nav-icon{ color:#15161c !important; }
+/* ===== Sidebar large (nouveau design) ===== */
+aside.sidebar#sidebar{ width:238px !important; min-width:238px !important; background:#12141b !important; border:none !important; border-radius:24px !important; margin:16px 0 16px 16px !important; height:calc(100vh - 32px) !important; box-shadow:0 20px 44px rgba(16,17,26,.2) !important; overflow-y:auto !important; display:flex !important; flex-direction:column !important; padding:16px 14px !important; }
+.sidebar .brand-row{ order:0 !important; display:flex !important; justify-content:flex-start !important; align-items:center !important; padding:6px 8px 12px !important; }
+.sidebar .brand-row .brand{ display:flex !important; align-items:center !important; }
+.sidebar .brand-row img{ height:26px !important; width:auto !important; display:block !important; filter:none !important; }
+.sidebar .brand-row .sidebar-close{ display:none !important; }
+.sidebar .main-nav{ order:1 !important; flex:1 1 auto !important; display:flex !important; flex-direction:column !important; align-items:stretch !important; gap:3px !important; padding:6px 0 !important; overflow:visible !important; }
+.sidebar .main-nav > p{ display:block !important; color:#5a5f6b !important; font-size:11px !important; font-weight:700 !important; letter-spacing:.05em !important; text-transform:uppercase !important; padding:14px 12px 6px !important; margin:0 !important; }
+.sidebar .sidebar-bottom{ order:2 !important; display:flex !important; flex-direction:column !important; gap:8px !important; padding:0 !important; }
+.sidebar .workspace-switcher{ order:3 !important; display:flex !important; align-items:center !important; gap:10px !important; background:transparent !important; border:none !important; border-top:1px solid #23262f !important; border-radius:0 !important; padding:12px 8px 2px !important; margin:6px 0 0 !important; }
+.sidebar .workspace-switcher .workspace-avatar{ width:34px !important; height:34px !important; border-radius:50% !important; background:linear-gradient(135deg,#6558f5,#8b7bff) !important; color:#fff !important; display:grid !important; place-items:center !important; font-family:"Manrope",sans-serif !important; font-weight:800 !important; font-size:13px !important; }
+.sidebar .workspace-switcher strong{ color:#dfe2e8 !important; font-size:13px !important; display:block !important; }
+.sidebar .workspace-switcher small{ color:#7a8090 !important; font-size:11px !important; }
+.sidebar .workspace-switcher button{ display:none !important; }
+
+.nav-item{ width:100% !important; height:auto !important; padding:10px 12px !important; margin:0 !important; display:flex !important; align-items:center !important; justify-content:flex-start !important; gap:12px !important; border-radius:12px !important; color:#9aa0ad !important; font-size:14px !important; font-weight:500 !important; background:transparent !important; text-align:left !important; }
+.nav-item > span:not(.nav-icon){ display:inline !important; }
+.nav-item .nav-icon{ font-size:19px !important; display:inline-flex !important; align-items:center !important; color:inherit !important; width:auto !important; }
+.nav-item .nav-icon .ti{ font-size:19px !important; line-height:1 !important; }
+.nav-item .nav-count, .nav-item .soon{ margin-left:auto !important; font-size:11px !important; font-weight:700 !important; }
+.nav-item .soon{ background:rgba(198,242,78,.18) !important; color:#c6f24e !important; border-radius:999px !important; padding:2px 8px !important; }
+.nav-item .nav-count{ background:#23262f !important; color:#c7cbd6 !important; border-radius:999px !important; padding:2px 8px !important; }
+.nav-item:hover{ background:#1c1f28 !important; color:#dfe2e8 !important; }
+.nav-item:hover .nav-icon{ color:#dfe2e8 !important; }
+.nav-item.active{ background:#c6f24e !important; color:#12151f !important; box-shadow:none !important; font-weight:600 !important; }
+.nav-item.active .nav-icon{ color:#12151f !important; }
+
+/* Carte checklist compacte (sombre) */
+.sidebar .launch-card{ background:#1c1f28 !important; border:1px solid #262a33 !important; border-radius:16px !important; padding:14px !important; color:#dfe2e8 !important; display:flex !important; flex-direction:column !important; gap:6px !important; }
+.sidebar .launch-card span{ color:#9aa0ad !important; font-size:12px !important; }
+.sidebar .launch-card strong{ color:#fff !important; font-size:13px !important; }
+.sidebar .launch-card button{ background:#c6f24e !important; color:#12151f !important; border:none !important; border-radius:10px !important; padding:8px 10px !important; font-weight:700 !important; font-size:12px !important; }
+.sidebar .help-button{ color:#9aa0ad !important; background:transparent !important; }
 
 /* Top bar epuree */
 .topbar{ background:transparent !important; border:none !important; box-shadow:none !important; }
@@ -46,7 +64,7 @@ aside.sidebar#sidebar{ width:88px !important; min-width:88px !important; backgro
 
 @media (max-width:640px){
   .app-shell{ grid-template-columns:1fr !important; }
-  aside.sidebar#sidebar{ margin:8px !important; }
+  aside.sidebar#sidebar{ margin:8px !important; width:calc(100vw - 16px) !important; min-width:0 !important; }
 }
 
 /* Top bar epuree : masque "En direct" + le losange (notifications), avatar rond a droite. */
@@ -72,7 +90,7 @@ aside.sidebar#sidebar{ width:88px !important; min-width:88px !important; backgro
 
 /* Fix sidebar : le logo (wordmark large 1282x299) creait un bloc vert colle a l'onglet actif.
    On le retire du rail d'icones (le menu ecran reste accessible via le bouton du haut). */
-aside#sidebar .brand-row{ display:none !important; }
+aside#sidebar .brand-row{ display:flex !important; }
 .main-nav{ padding-top:16px !important; }
 
 /* Fix vue Emails : la page 403 "Access Denied" etait alignee a gauche.
