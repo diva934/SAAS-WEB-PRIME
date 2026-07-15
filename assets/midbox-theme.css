@@ -26,18 +26,18 @@ aside.sidebar#sidebar{ width:238px !important; min-width:238px !important; backg
 .nav-item .nav-icon{ font-size:19px !important; display:inline-flex !important; align-items:center !important; color:inherit !important; width:auto !important; }
 .nav-item .nav-icon .ti{ font-size:19px !important; line-height:1 !important; }
 .nav-item .nav-count, .nav-item .soon{ margin-left:auto !important; font-size:11px !important; font-weight:700 !important; }
-.nav-item .soon{ background:rgba(198,242,78,.18) !important; color:#c6f24e !important; border-radius:999px !important; padding:2px 8px !important; }
+.nav-item .soon{ background:rgba(101,88,245,.22) !important; color:#a9a1f7 !important; border-radius:999px !important; padding:2px 8px !important; }
 .nav-item .nav-count{ background:#23262f !important; color:#c7cbd6 !important; border-radius:999px !important; padding:2px 8px !important; }
 .nav-item:hover{ background:#1c1f28 !important; color:#dfe2e8 !important; }
 .nav-item:hover .nav-icon{ color:#dfe2e8 !important; }
-.nav-item.active{ background:#c6f24e !important; color:#12151f !important; box-shadow:none !important; font-weight:600 !important; }
-.nav-item.active .nav-icon{ color:#12151f !important; }
+.nav-item.active{ background:#6558f5 !important; color:#ffffff !important; box-shadow:none !important; font-weight:600 !important; }
+.nav-item.active .nav-icon{ color:#ffffff !important; }
 
 /* Carte checklist compacte (sombre) */
 .sidebar .launch-card{ display:none !important; }
 .sidebar .launch-card span{ color:#9aa0ad !important; font-size:12px !important; }
 .sidebar .launch-card strong{ color:#fff !important; font-size:13px !important; }
-.sidebar .launch-card button{ background:#c6f24e !important; color:#12151f !important; border:none !important; border-radius:10px !important; padding:8px 10px !important; font-weight:700 !important; font-size:12px !important; }
+.sidebar .launch-card button{ background:#6558f5 !important; color:#ffffff !important; border:none !important; border-radius:10px !important; padding:8px 10px !important; font-weight:700 !important; font-size:12px !important; }
 .sidebar .help-button{ color:#9aa0ad !important; background:transparent !important; }
 
 /* Top bar epuree */
@@ -53,14 +53,14 @@ aside.sidebar#sidebar{ width:238px !important; min-width:238px !important; backg
 .account-button{ border-radius:16px !important; background:#fff !important; border:1px solid #edeff3 !important; }
 .icon-button{ border-radius:12px !important; background:#fff !important; border:1px solid #edeff3 !important; }
 .store-link{ border-radius:12px !important; background:#16171e !important; color:#fff !important; }
-.store-link span{ color:#c6f24e !important; }
+.store-link span{ color:#6558f5 !important; }
 
 /* Graphique revenus -> vert */
-#revenueChart path[stroke]{ stroke:#6fb52a !important; }
-#revenueChart [stroke="#6558f5"]{ stroke:#6fb52a !important; }
-#revenueChart circle{ fill:#6fb52a !important; stroke:#6fb52a !important; }
-#revenueChart linearGradient stop{ stop-color:#8fd14f !important; }
-[class*="progress-bar"]{ background:#c6f24e !important; }
+#revenueChart path[stroke]{ stroke:#6558f5 !important; }
+#revenueChart [stroke="#6558f5"]{ stroke:#6558f5 !important; }
+#revenueChart circle{ fill:#6558f5 !important; stroke:#6558f5 !important; }
+#revenueChart linearGradient stop{ stop-color:#8b7bff !important; }
+[class*="progress-bar"]{ background:#6558f5 !important; }
 
 @media (max-width:640px){
   .app-shell{ grid-template-columns:1fr !important; }
