@@ -3,6 +3,13 @@ const DEMO_MODE = new URLSearchParams(window.location.search).get("demo") === "1
 let publicConfig = window.EXPERTLY_CONFIG || {};
 let supabaseClient = null;
 let activeSupabaseSession = null;
+// Formule active du createur + capacites associees (renseignees a l'ouverture du CRM).
+let currentPlan = "";
+let currentLimits = null;
+const PLAN_LABELS = { launch: "Launch", scale: "Scale", studio: "Studio" };
+function planLabel(plan) {
+  return PLAN_LABELS[plan] || (plan ? plan.charAt(0).toUpperCase() + plan.slice(1) : "Actif");
+}
 
 const seedState = {
   profile: {
@@ -178,7 +185,13 @@ function normalizeState(input = {}) {
       upsellProductId: "",
       coverUrl: "",
       cardSize: "m",
+      // Nature du produit : digital (accès en ligne) ou physique (livraison).
+      // Migration : les imports AliExpress ont type "physique"/"Produit physique".
+      kind: /physique/i.test(product.kind || product.type || "") ? "physique" : "digital",
       ...product,
+    })).map((product) => ({
+      ...product,
+      coverUrl: product.coverUrl || productImageUrl(product),
     }))
     : base.products;
   next.pages = Array.isArray(input.pages)
@@ -308,6 +321,17 @@ function escapeHtml(value = "") {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
+}
+
+function productImageUrl(product = {}) {
+  const candidates = [
+    product.coverUrl,
+    ...(Array.isArray(product.images) ? product.images : []),
+  ];
+  const url = candidates.map((item) => String(item || "").trim()).find(Boolean) || "";
+  if (/^\/\//.test(url)) return `https:${url}`;
+  if (/^(https?:|data:image\/)/i.test(url)) return url;
+  return "";
 }
 
 function initials(value = "") {
@@ -466,7 +490,8 @@ function emailStatusClass(status) {
 
 function productReadiness(product) {
   const issues = [];
-  if (!product.fileName) issues.push("accès manquant");
+  // Un produit physique n'a pas de lien d'accès à livrer.
+  if (product.kind !== "physique" && !product.fileName) issues.push("accès manquant");
   if (!product.description || product.description.length < 30) issues.push("description courte");
   if (product.status === "published" && product.price > 0 && !integrationConfig.stripe) issues.push("Stripe non connecté");
   return issues;
@@ -554,6 +579,145 @@ function showCreatorAccessGate({ title, message }) {
   });
 }
 
+function injectTrialPaywallCss() {
+  if (document.getElementById("tpCss")) return;
+  const css =
+    "#trialPaywall{align-items:start;overflow-y:auto;padding:34px 20px}" +
+    "body.auth-locked .expertly-assistant{display:none!important}" +
+    "#trialPaywall .tp-shell{width:min(1000px,100%);margin:auto}" +
+    "#trialPaywall .tp-head{text-align:center;margin-bottom:24px}" +
+    "#trialPaywall .tp-head img{height:28px;margin-bottom:14px;display:block;margin-left:auto;margin-right:auto}" +
+    "#trialPaywall .tp-freebadge{display:inline-flex;align-items:center;gap:7px;background:#eef7d6;color:#3f6d0e;font-size:14px;font-weight:800;padding:9px 18px;border-radius:999px;margin-bottom:14px;box-shadow:0 6px 18px rgba(122,180,40,.22)}" +
+    "#trialPaywall .tp-head h1{font-family:'Manrope',sans-serif;font-size:29px;font-weight:800;margin:0 0 6px;color:var(--ink,#15161c)}" +
+    "#trialPaywall .tp-head-sub{margin:0;color:var(--muted,#6b7280);font-size:13.5px}" +
+    "#trialPaywall .tp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;align-items:stretch}" +
+    "#trialPaywall .tp-plan{position:relative;display:flex;flex-direction:column;gap:7px;text-align:left;background:#fff;border:2px solid var(--line,#e6e8ee);border-radius:20px;padding:22px 18px;cursor:pointer;font:inherit;transition:border-color .15s,box-shadow .15s,transform .15s}" +
+    "#trialPaywall .tp-plan:hover{border-color:#c9c4ff;transform:translateY(-2px)}" +
+    "#trialPaywall .tp-plan.featured{border-color:#d7d2ff}" +
+    "#trialPaywall .tp-plan.is-on{border-color:var(--purple,#6558f5);box-shadow:0 16px 34px rgba(101,88,245,.20)}" +
+    "#trialPaywall .tp-badge{position:absolute;top:-11px;left:50%;transform:translateX(-50%);background:var(--purple,#6558f5);color:#fff;font-size:11px;font-weight:800;padding:4px 12px;border-radius:999px;white-space:nowrap}" +
+    "#trialPaywall .tp-aud{font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#8a8f9c}" +
+    "#trialPaywall .tp-name{font-family:'Manrope',sans-serif;font-size:20px;font-weight:800;color:var(--ink,#15161c)}" +
+    "#trialPaywall .tp-price{font-size:13px;color:#8a8f9c}" +
+    "#trialPaywall .tp-price b{font-size:26px;color:var(--ink,#15161c);font-weight:800}" +
+    "#trialPaywall .tp-desc{font-size:12.5px;color:var(--muted,#6b7280);min-height:34px;line-height:1.4}" +
+    "#trialPaywall .tp-inc{font-size:12px;font-weight:700;color:#4a4f5c;margin-top:2px}" +
+    "#trialPaywall .tp-feats{list-style:none;padding:0;margin:0;display:grid;gap:8px}" +
+    "#trialPaywall .tp-feats li{position:relative;padding-left:23px;font-size:13px;color:#2a2e39;line-height:1.35}" +
+    "#trialPaywall .tp-feats li:before{content:'✓';position:absolute;left:0;top:0;font-size:12px;font-weight:800;color:#4f7d12}" +
+    "#trialPaywall .tp-pick{margin-top:auto;padding-top:12px;font-size:12.5px;font-weight:800;color:#8a8f9c}" +
+    "#trialPaywall .tp-plan.is-on .tp-pick{color:var(--purple,#6558f5)}" +
+    "#trialPaywall .tp-cta{text-align:center;margin-top:24px}" +
+    "#trialPaywall .tp-go{border:0;border-radius:14px;padding:15px 32px;background:var(--dark,#16171e);color:#fff;font:inherit;font-weight:800;font-size:15.5px;cursor:pointer;box-shadow:0 14px 30px rgba(16,17,26,.2)}" +
+    "#trialPaywall .tp-go:disabled{opacity:.6;cursor:wait}" +
+    "#trialPaywall .tp-note{display:block;min-height:16px;color:var(--red,#c0334e);font-weight:700;font-size:12.5px;margin-top:10px}" +
+    "#trialPaywall .tp-fine{display:block;font-size:11.5px;color:#8a8f9c;margin-top:8px}" +
+    "#trialPaywall .tp-logout{margin-top:14px;border:0;background:none;color:#8a8f9c;font:inherit;font-size:12.5px;font-weight:600;cursor:pointer;text-decoration:underline}" +
+    "@media(max-width:820px){#trialPaywall .tp-grid{grid-template-columns:1fr}#trialPaywall .tp-desc{min-height:0}}";
+  const s = document.createElement("style");
+  s.id = "tpCss";
+  s.textContent = css;
+  document.head.appendChild(s);
+}
+
+function showTrialPaywall() {
+  document.body.classList.remove("auth-pending");
+  document.body.classList.add("auth-locked");
+  injectTrialPaywallCss();
+  let gate = document.querySelector("#trialPaywall");
+  if (!gate) {
+    gate = document.createElement("section");
+    gate.id = "trialPaywall";
+    gate.className = "auth-gate";
+    document.body.append(gate);
+  }
+  const PLANS = [
+    {
+      id: "launch", name: "Launch", price: "19 €", audience: "Pour débuter",
+      desc: "Pour lancer ta première offre.", includes: "Tout le nécessaire :",
+      features: ["1 boutique personnalisable", "Jusqu'à 5 produits", "Lead magnets & collecte d'emails", "3 % de commission par vente"],
+    },
+    {
+      id: "scale", name: "Scale", price: "49 €", audience: "Pour accélérer", featured: true,
+      desc: "Pour développer des ventes régulières.", includes: "Tout dans Launch, plus :",
+      features: ["Produits & offres illimités", "Upsells & order bumps", "Emails automatisés", "Domaine personnalisé"],
+    },
+    {
+      id: "studio", name: "Studio", price: "149 €", audience: "Pour les équipes",
+      desc: "Pour gérer plusieurs marques ou clients.", includes: "Tout dans Scale, plus :",
+      features: ["Espaces multi-marques", "Affiliation avancée", "Exports comptables détaillés", "Support prioritaire"],
+    },
+  ];
+  let selected = "scale";
+  const feats = (arr) => arr.map((f) => `<li>${escapeHtml(f)}</li>`).join("");
+  const cardHtml = (p) =>
+    `<div class="tp-plan${p.featured ? " featured" : ""}${p.id === selected ? " is-on" : ""}" role="button" tabindex="0" data-plan="${p.id}" aria-pressed="${p.id === selected}">` +
+    (p.featured ? '<span class="tp-badge">Le plus choisi</span>' : "") +
+    `<span class="tp-aud">${escapeHtml(p.audience)}</span>` +
+    `<span class="tp-name">${escapeHtml(p.name)}</span>` +
+    `<span class="tp-price"><b>${escapeHtml(p.price)}</b> /mois</span>` +
+    `<span class="tp-desc">${escapeHtml(p.desc)}</span>` +
+    `<span class="tp-inc">${escapeHtml(p.includes)}</span>` +
+    `<ul class="tp-feats">${feats(p.features)}</ul>` +
+    `<span class="tp-pick">${p.id === selected ? "✓ Sélectionné" : "Choisir cette formule"}</span></div>`;
+  gate.innerHTML =
+    '<div class="tp-shell">' +
+      '<div class="tp-head">' +
+        '<img src="./assets/expertly-logo.png" alt="Expertly" onerror="this.style.display=\'none\'" />' +
+        '<div><span class="tp-freebadge">🎁 14 jours d\'essai gratuit · 0 € aujourd\'hui</span></div>' +
+        "<h1>Choisis ta formule</h1>" +
+      "</div>" +
+      '<div class="tp-grid">' + PLANS.map(cardHtml).join("") + "</div>" +
+      '<div class="tp-cta">' +
+        '<button type="button" class="tp-go" id="tpGo">Démarrer mon essai gratuit</button>' +
+        '<small class="tp-note" id="tpFeedback"></small>' +
+        '<span class="tp-fine">Carte demandée · 0 € pendant 14 jours · annulable à tout moment · paiement sécurisé par Stripe.</span>' +
+        '<button type="button" class="tp-logout" id="tpLogout">Se déconnecter</button>' +
+      "</div>" +
+    "</div>";
+  function selectPlan(id) {
+    selected = id;
+    gate.querySelectorAll(".tp-plan").forEach((el) => {
+      const on = el.getAttribute("data-plan") === id;
+      el.classList.toggle("is-on", on);
+      el.setAttribute("aria-pressed", on ? "true" : "false");
+      const pick = el.querySelector(".tp-pick");
+      if (pick) pick.textContent = on ? "✓ Sélectionné" : "Choisir cette formule";
+    });
+  }
+  gate.querySelectorAll(".tp-plan").forEach((el) => {
+    el.addEventListener("click", () => selectPlan(el.getAttribute("data-plan")));
+    el.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); selectPlan(el.getAttribute("data-plan")); }
+    });
+  });
+  const go = gate.querySelector("#tpGo");
+  const feedback = gate.querySelector("#tpFeedback");
+  go.addEventListener("click", async () => {
+    go.disabled = true;
+    go.textContent = "Redirection vers le paiement…";
+    feedback.textContent = "";
+    try {
+      const response = await authenticatedFetch("/api/subscription-status", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "start-trial", plan: selected }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || !data.url) throw new Error(data.error || "Impossible de démarrer l'essai.");
+      window.location.href = data.url;
+    } catch (error) {
+      feedback.textContent = error.message || "Erreur. Réessaie.";
+      go.disabled = false;
+      go.textContent = "Démarrer mon essai gratuit";
+    }
+  });
+  gate.querySelector("#tpLogout").addEventListener("click", async () => {
+    try { await supabaseClient?.auth?.signOut(); } catch (e) {}
+    window.location.replace("/connexion");
+  });
+}
+
 async function ensureCreatorAccess() {
   if (DEMO_MODE) {
     document.querySelector("#creatorAccessGate")?.remove();
@@ -567,6 +731,12 @@ async function ensureCreatorAccess() {
   const { data } = await supabaseClient.auth.getSession();
   activeSupabaseSession = data.session;
   if (!activeSupabaseSession?.user) {
+    // Pas de session : on envoie vers la page de connexion dediee (/connexion),
+    // qui sert d'entree au CRM. (Le mode demo est deja gere plus haut.)
+    if (location.pathname !== "/connexion") {
+      location.replace("/connexion");
+      return false;
+    }
     showCreatorAccessGate({
       title: "Connecte-toi pour ouvrir le CRM",
       message: "Utilise le compte cree avant le paiement. Une fois l'abonnement actif, le CRM s'ouvrira automatiquement.",
@@ -576,12 +746,14 @@ async function ensureCreatorAccess() {
   const subscriptionResponse = await authenticatedFetch("/api/subscription-status", { cache: "no-store" });
   const subscription = await subscriptionResponse.json().catch(() => ({}));
   if (!subscriptionResponse.ok || !subscription.active) {
-    showCreatorAccessGate({
-      title: "Abonnement requis",
-      message: "Ce compte n'a pas d'abonnement actif. Termine le paiement sur le site Expertly, puis reconnecte-toi ici.",
-    });
+    // Compte connecte mais sans abonnement actif : on propose d'activer l'essai gratuit
+    // (paiement directement dans le CRM, modele "Shopify").
+    showTrialPaywall();
     return false;
   }
+  // Formule active : sert a l'affichage (menu profil) et aux limites cote client.
+  currentPlan = subscription.plan || "";
+  currentLimits = subscription.limits || null;
   document.querySelector("#creatorAccessGate")?.remove();
   document.body.classList.remove("auth-pending", "auth-locked");
   return true;
@@ -613,7 +785,14 @@ function saveState() {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(state),
-    }).catch(() => showToast("La synchronisation serveur a échoué."));
+    })
+      .then(async (response) => {
+        if (response.ok) return;
+        // Rejet serveur (ex. limite de formule) : on remonte le message clair.
+        const data = await response.json().catch(() => ({}));
+        showToast(data.error || "La synchronisation serveur a échoué.");
+      })
+      .catch(() => showToast("La synchronisation serveur a échoué."));
   }
 }
 
@@ -1284,15 +1463,18 @@ function renderProducts() {
       .map((product) => {
         const rate = product.views ? ((product.sales / product.views) * 100).toFixed(1).replace(".", ",") : "0";
         const issues = productReadiness(product);
+        const imageUrl = productImageUrl(product);
         return `
           <article class="product-card" style="--product-color:${product.color}">
-            <div class="product-card-visual"${product.coverUrl ? ` style="background-image:linear-gradient(140deg, color-mix(in srgb, ${product.color} 80%, #111827), rgba(12,18,45,.24)), url('${escapeHtml(product.coverUrl)}')"` : ""}>
+            <div class="product-card-visual ${imageUrl ? "has-product-image" : ""}">
+              ${imageUrl ? `<img class="product-card-image" src="${escapeHtml(imageUrl)}" alt="${escapeHtml(product.title)}" loading="lazy" />` : ""}
               <span class="product-symbol">${initials(product.title)}</span>
               <span class="status-badge ${product.status === "draft" ? "draft" : ""}">
                 ${product.status === "published" ? "Publié" : "Brouillon"}
               </span>
             </div>
             <div class="product-card-body">
+              <span class="kind-badge ${product.kind === "physique" ? "physique" : "digital"}">${product.kind === "physique" ? "📦 Physique" : "⬇ Digital"}</span>
               <span>${escapeHtml(product.type)} · ${escapeHtml(offerRoleLabels[product.offerRole] || "Offre principale")}</span>
               <h3>${escapeHtml(product.title)}</h3>
               <p>${escapeHtml(product.description)}</p>
@@ -1301,13 +1483,9 @@ function renderProducts() {
                 <div><span>Ventes</span><strong>${product.sales}</strong></div>
                 <div><span>Conversion</span><strong>${rate} %</strong></div>
               </div>
-              <div class="offer-links">
-                <span>Bump: ${escapeHtml(state.products.find((item) => item.id === product.bumpProductId)?.title || "Aucun")}</span>
-                <span>Upsell: ${escapeHtml(state.products.find((item) => item.id === product.upsellProductId)?.title || "Aucun")}</span>
-              </div>
               <div class="readiness-row ${issues.length ? "warning" : "ready"}">
                 <strong>${issues.length ? "À compléter" : "Prêt à vendre"}</strong>
-                <span>${issues.length ? escapeHtml(issues.join(" · ")) : escapeHtml(accessTypeLabels[product.accessType] || "Lien privé")}</span>
+                <span>${issues.length ? escapeHtml(issues.join(" · ")) : (product.kind === "physique" ? "Livraison à configurer" : escapeHtml(accessTypeLabels[product.accessType] || "Lien privé"))}</span>
               </div>
               <div class="product-actions">
                 <button data-edit-product="${product.id}">Modifier</button>
@@ -2058,34 +2236,60 @@ function renderView(view) {
 function openProductModal(product = null) {
   const modal = document.querySelector("#productModal");
   const form = document.querySelector("#productForm");
-  const productOptions = ['<option value="">Aucun</option>']
-    .concat(state.products
-      .filter((item) => item.id !== product?.id)
-      .map((item) => `<option value="${item.id}">${escapeHtml(item.title)}</option>`))
-    .join("");
-  document.querySelector("#bumpProductSelect").innerHTML = productOptions;
-  document.querySelector("#upsellProductSelect").innerHTML = productOptions;
   form.reset();
   form.elements.id.value = product?.id || "";
   form.elements.title.value = product?.title || "";
   form.elements.type.value = product?.type || "Formation";
+  form.elements.kind.value = product?.kind === "physique" ? "physique" : "digital";
   form.elements.price.value = product?.price ?? 0;
   form.elements.description.value = product?.description || "";
   form.elements.status.value = product?.status || "draft";
-  form.elements.color.value = product?.color || "#6558f5";
-  form.elements.offerRole.value = product?.offerRole || "core";
   form.elements.accessType.value = product?.accessType || "link";
-  form.elements.compareAtPrice.value = product?.compareAtPrice || "";
-  form.elements.funnelPriority.value = product?.funnelPriority || "standard";
-  form.elements.bumpProductId.value = product?.bumpProductId || "";
-  form.elements.upsellProductId.value = product?.upsellProductId || "";
   form.elements.coverUrl.value = product?.coverUrl || "";
-  form.elements.cardSize.value = product?.cardSize || "m";
   form.elements.fileName.value = product?.fileName || "";
+  renderProductVariants(product?.variants || []);
   document.querySelector("#productModalTitle").textContent = product ? "Modifier le produit" : "Créer un produit";
+  toggleProductDelivery();
   modal.classList.add("open");
   modal.setAttribute("aria-hidden", "false");
   setTimeout(() => form.elements.title.focus(), 50);
+}
+
+// Affiche les variantes (couleurs, tailles…) en lecture seule dans le formulaire produit.
+function renderProductVariants(variants) {
+  const box = document.querySelector("#variantsDisplay");
+  if (!box) return;
+  if (!Array.isArray(variants) || !variants.length) {
+    box.hidden = true;
+    box.innerHTML = "";
+    return;
+  }
+  box.hidden = false;
+  box.innerHTML =
+    '<span class="variants-title">Variantes</span>' +
+    variants
+      .map(
+        (v) =>
+          `<div class="variant-row"><strong>${escapeHtml(v.name || "Option")}</strong><span>${(v.values || [])
+            .map((x) => escapeHtml(x))
+            .join(", ")}</span></div>`,
+      )
+      .join("");
+}
+
+// Affiche/masque les champs de livraison selon la nature du produit.
+// On force via style.display (l'inline style prime sur toute regle CSS,
+// contrairement a l'attribut [hidden] qui peut etre neutralise par .full/.upload-zone).
+function toggleProductDelivery() {
+  const form = document.querySelector("#productForm");
+  if (!form || !form.elements.kind) return;
+  const physique = form.elements.kind.value === "physique";
+  const show = (el, visible) => { if (el) { el.hidden = !visible; el.style.display = visible ? "" : "none"; } };
+  show(document.querySelector("#accessTypeField"), !physique);
+  show(document.querySelector("#fileDeliveryField"), !physique);
+  show(document.querySelector("#physicalDeliveryNote"), physique);
+  // Le lien d'accès n'est obligatoire que pour un produit digital.
+  if (form.elements.fileName) form.elements.fileName.required = !physique;
 }
 
 function closeProductModal() {
@@ -2099,23 +2303,39 @@ function submitProduct(event) {
   const data = new FormData(event.currentTarget);
   const id = data.get("id");
   const existing = state.products.find((product) => product.id === id);
+  // Limite de produits selon la formule (Launch = 5). On ne bloque que la CREATION
+  // d'un nouveau produit au-dela du plafond ; l'edition d'un produit existant reste possible.
+  const maxProducts = currentLimits?.maxProducts;
+  if (!existing && maxProducts != null && state.products.length >= maxProducts) {
+    showToast(`Ta formule ${planLabel(currentPlan)} est limitee a ${maxProducts} produits. Passe a une formule superieure pour en ajouter plus.`);
+    return;
+  }
+  // Accepte la virgule et les centimes (ex. "29,90" -> 29.9).
+  const price = Number(String(data.get("price") || "0").replace(",", ".")) || 0;
   const product = {
     id: id || `prod_${Date.now()}`,
     title: data.get("title").trim(),
     type: data.get("type"),
-    price: Number(data.get("price")),
+    kind: data.get("kind") === "physique" ? "physique" : "digital",
+    price: Math.round(price * 100) / 100,
     description: data.get("description").trim(),
     status: data.get("status"),
-    color: data.get("color"),
-    offerRole: data.get("offerRole") || "core",
-    accessType: data.get("accessType") || "link",
-    compareAtPrice: Number(data.get("compareAtPrice") || 0),
-    funnelPriority: data.get("funnelPriority") || "standard",
-    bumpProductId: data.get("bumpProductId") || "",
-    upsellProductId: data.get("upsellProductId") || "",
-    coverUrl: data.get("coverUrl").trim(),
-    cardSize: data.get("cardSize") || "m",
-    fileName: data.get("fileName").trim(),
+    accessType: data.get("accessType") || existing?.accessType || "link",
+    coverUrl: (data.get("coverUrl") || "").trim(),
+    fileName: (data.get("fileName") || "").trim(),
+    // Photos et variantes : préservées (renseignées à l'import ou ailleurs).
+    images: existing?.images || [],
+    variants: existing?.variants || [],
+    source: existing?.source,
+    sourceUrl: existing?.sourceUrl,
+    // Réglages boutique/tunnel : gérés dans la page de vente, valeurs préservées.
+    color: existing?.color || "#6558f5",
+    cardSize: existing?.cardSize || "m",
+    offerRole: existing?.offerRole || "core",
+    compareAtPrice: existing?.compareAtPrice || 0,
+    funnelPriority: existing?.funnelPriority || "standard",
+    bumpProductId: existing?.bumpProductId || "",
+    upsellProductId: existing?.upsellProductId || "",
     featured: existing?.featured || false,
     sales: existing?.sales || 0,
     views: existing?.views || 0,
@@ -2537,6 +2757,7 @@ document.addEventListener("submit", (event) => {
 document.querySelector("#menuButton").addEventListener("click", () => document.querySelector("#sidebar").classList.add("open"));
 document.querySelector("#sidebarClose").addEventListener("click", () => document.querySelector("#sidebar").classList.remove("open"));
 document.querySelector("#productForm").addEventListener("submit", submitProduct);
+document.querySelector("#productKind")?.addEventListener("change", toggleProductDelivery);
 document.querySelector("#pageForm").addEventListener("submit", submitPage);
 document.querySelector("#contactForm").addEventListener("submit", submitContact);
 document.querySelector("#orderForm").addEventListener("submit", submitOrder);
@@ -2609,13 +2830,19 @@ document.querySelector("#manageSubscription")?.addEventListener("click", async (
   menu.className = "account-menu";
   menu.hidden = true;
   menu.innerHTML = `
+    <p class="account-menu-label">Compte</p>
     <p class="account-menu-email" id="accountMenuEmail">Connecté</p>
+    <div class="account-menu-sub" id="accountMenuSub">
+      <span class="account-menu-sub-label">Abonnement</span>
+      <span class="account-menu-plan" id="accountMenuPlan">—</span>
+    </div>
     <button type="button" id="logoutButton">Se déconnecter</button>`;
   (button.parentElement || document.body).appendChild(menu);
   button.addEventListener("click", (event) => {
     event.stopPropagation();
     const email = activeSupabaseSession?.user?.email || state.profile.creatorName || "Connecté";
     menu.querySelector("#accountMenuEmail").textContent = email;
+    menu.querySelector("#accountMenuPlan").textContent = planLabel(currentPlan);
     menu.hidden = !menu.hidden;
   });
   menu.addEventListener("click", (event) => event.stopPropagation());
@@ -2756,6 +2983,83 @@ async function hydrateServerState() {
   }
 }
 
+let liveRefreshTimer = null;
+let liveRefreshInFlight = false;
+let lastLiveSignature = "";
+// Intervalle du rafraichissement live du dashboard (lecture Supabase via /api/state,
+// alimente par le webhook Stripe). 1s = quasi temps reel cote UI.
+const LIVE_REFRESH_INTERVAL_MS = 1000;
+
+function ensureLiveIndicator() {
+  let indicator = document.querySelector("#liveIndicator");
+  if (!indicator) {
+    const actions = document.querySelector(".topbar-actions");
+    if (!actions) return null;
+    indicator = document.createElement("span");
+    indicator.id = "liveIndicator";
+    indicator.className = "live-indicator";
+    indicator.title = "Le dashboard se met a jour automatiquement";
+    indicator.innerHTML = '<i class="live-dot"></i><span class="live-text">Connexion...</span>';
+    actions.prepend(indicator);
+  }
+  return indicator;
+}
+
+function setLiveIndicator(ok) {
+  const indicator = ensureLiveIndicator();
+  if (!indicator) return;
+  indicator.classList.toggle("is-live", ok);
+  indicator.classList.toggle("is-stale", !ok);
+  const text = indicator.querySelector(".live-text");
+  if (!text) return;
+  if (ok) {
+    const now = new Date();
+    const hh = String(now.getHours()).padStart(2, "0");
+    const mm = String(now.getMinutes()).padStart(2, "0");
+    const ss = String(now.getSeconds()).padStart(2, "0");
+    text.textContent = `En direct - ${hh}:${mm}:${ss}`;
+  } else {
+    text.textContent = "Hors ligne";
+  }
+}
+
+async function refreshLiveDashboard() {
+  if (DEMO_MODE || document.hidden || !location.protocol.startsWith("http")) return;
+  if (liveRefreshInFlight) return; // evite l'empilement des requetes a 1s
+  liveRefreshInFlight = true;
+  try {
+    const response = await authenticatedFetch("/api/state", { cache: "no-store" });
+    if (!response.ok) {
+      setLiveIndicator(false);
+      return;
+    }
+    const text = await response.text();
+    setLiveIndicator(true);
+    // Ne re-render que si les donnees ont reellement change (pas de flicker inutile).
+    if (text === lastLiveSignature) return;
+    lastLiveSignature = text;
+    state = normalizeState(JSON.parse(text));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    const pc = document.querySelector("#productCount");
+    if (pc) pc.textContent = String(state.products.length);
+    renderView(activeView);
+  } catch {
+    // Une coupure reseau ne doit jamais bloquer le CRM; le prochain cycle reessaiera.
+    setLiveIndicator(false);
+  } finally {
+    liveRefreshInFlight = false;
+  }
+}
+
+function startLiveRefresh() {
+  if (DEMO_MODE || liveRefreshTimer) return;
+  ensureLiveIndicator();
+  liveRefreshTimer = window.setInterval(refreshLiveDashboard, LIVE_REFRESH_INTERVAL_MS);
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) refreshLiveDashboard();
+  });
+}
+
 async function startApp() {
   await loadPublicConfig();
   if (!(await ensureCreatorAccess())) return;
@@ -2792,6 +3096,7 @@ async function startApp() {
   } else {
     await ensureStoreCode();
   }
+  startLiveRefresh();
 }
 
 startApp();

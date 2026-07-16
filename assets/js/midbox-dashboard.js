@@ -99,6 +99,17 @@
     return String(value || "EX").split(/\s+/).map(function (part) { return part[0]; }).join("").slice(0, 2).toUpperCase();
   }
 
+  function imageFor(product) {
+    if (typeof productImageUrl === "function") return productImageUrl(product);
+    var candidates = [product && product.coverUrl].concat(Array.isArray(product && product.images) ? product.images : []);
+    for (var i = 0; i < candidates.length; i++) {
+      var url = String(candidates[i] || "").trim();
+      if (url.indexOf("//") === 0) url = "https:" + url;
+      if (/^(https?:|data:image\/)/i.test(url)) return url;
+    }
+    return "";
+  }
+
   function metrics() {
     var s = safeState();
     var orders = paidOrders(s);
@@ -257,7 +268,11 @@
       var sales = Number(product.sales) || 0;
       var stock = Math.max(1, Number(product.views) || sales * 9 || 1);
       var muted = index > 2 ? " mb-muted-row" : "";
-      return '<tr class="' + muted + '"><td><div class="mb-product"><div class="mb-product-img" style="background:' + palette[index % palette.length] + '"><span>' + esc(initialsFor(product.title || "EX")) + '</span></div><div><strong>' + esc(product.title || "Produit") + '</strong><small>' + esc(product.type || "Produit digital") + '</small></div></div></td><td>' + formatEuro(price) + '</td><td>' + formatInt(sales) + '</td><td>' + formatInt(stock) + '</td><td>' + formatEuro(price * sales) + '</td></tr>';
+      var image = imageFor(product);
+      var thumb = image
+        ? '<div class="mb-product-img"><img src="' + esc(image) + '" alt="' + esc(product.title || "Produit") + '" loading="lazy"></div>'
+        : '<div class="mb-product-img" style="background:' + palette[index % palette.length] + '"><span>' + esc(initialsFor(product.title || "EX")) + '</span></div>';
+      return '<tr class="' + muted + '"><td><div class="mb-product">' + thumb + '<div><strong>' + esc(product.title || "Produit") + '</strong><small>' + esc(product.type || "Produit digital") + '</small></div></div></td><td>' + formatEuro(price) + '</td><td>' + formatInt(sales) + '</td><td>' + formatInt(stock) + '</td><td>' + formatEuro(price * sales) + '</td></tr>';
     }).join("");
     if (!rows) rows = '<tr><td colspan="5" style="color:#878a80;padding-top:18px">Aucun produit pour le moment</td></tr>';
     var body = '<table class="mb-table"><thead><tr><th>Item ↓</th><th>Price</th><th>Orders</th><th>Stock</th><th>Amount</th></tr></thead><tbody>' + rows + '</tbody></table>';

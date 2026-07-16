@@ -282,3 +282,8 @@ body.midbox-overview .expertly-assistant {
     display: none !important;
   }
 }
+
+/* Images importees AliExpress : affichage net dans les cases produit du CRM. */
+#productsView .product-card-visual.has-product-image{background:#f4f4f7 !important}
+#productsView .product-card-image{display:block !important;width:100% !important;height:100% !important;object-fit:cover !important}
+.mb-product-img img{display:block;width:100%;height:100%;object-fit:cover}
