@@ -302,13 +302,11 @@
     if (view === "emails") return renderDeniedPage(section);
     var d = metrics();
     var titles = {
-      products: "Best Sellers",
       orders: "Order Statistics",
       analytics: "Earning Reports",
       finance: "Balance"
     };
     var content = {
-      products: bestSellersCard(d),
       orders: ordersCard(d),
       analytics: earningChartPage(d),
       finance: financeChartPage(d)
