@@ -270,7 +270,7 @@
       var muted = index > 2 ? " mb-muted-row" : "";
       var image = imageFor(product);
       var thumb = image
-        ? '<div class="mb-product-img"><img src="' + esc(image) + '" alt="' + esc(product.title || "Produit") + '" loading="lazy"></div>'
+        ? '<div class="mb-product-img"><img src="' + esc(image) + '" alt="' + esc(product.title || "Produit") + '" loading="lazy" referrerpolicy="no-referrer"></div>'
         : '<div class="mb-product-img" style="background:' + palette[index % palette.length] + '"><span>' + esc(initialsFor(product.title || "EX")) + '</span></div>';
       return '<tr class="' + muted + '"><td><div class="mb-product">' + thumb + '<div><strong>' + esc(product.title || "Produit") + '</strong><small>' + esc(product.type || "Produit digital") + '</small></div></div></td><td>' + formatEuro(price) + '</td><td>' + formatInt(sales) + '</td><td>' + formatInt(stock) + '</td><td>' + formatEuro(price * sales) + '</td></tr>';
     }).join("");

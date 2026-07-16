@@ -1,0 +1,63 @@
+{
+  "manifest_version": 3,
+  "name": "Expertly Import — AliExpress",
+  "version": "0.3.1",
+  "description": "Importe un produit AliExpress directement dans ta boutique Expertly.",
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "storage",
+    "tabs"
+  ],
+  "host_permissions": [
+    "*://*.aliexpress.com/*",
+    "*://*.aliexpress.us/*",
+    "*://*.aliexpress.ru/*",
+    "*://expertly-client-app.vercel.app/*",
+    "https://*.supabase.co/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "Afficher / masquer le panneau Expertly"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.aliexpress.com/item/*",
+        "*://*.aliexpress.us/item/*",
+        "*://*.aliexpress.ru/item/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "css": [
+        "panel.css"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "*://expertly-client-app.vercel.app/*"
+      ],
+      "js": [
+        "crm-token.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "page-reader.js",
+        "expertly-logo.webp"
+      ],
+      "matches": [
+        "*://*.aliexpress.com/*",
+        "*://*.aliexpress.us/*",
+        "*://*.aliexpress.ru/*"
+      ]
+    }
+  ]
+}

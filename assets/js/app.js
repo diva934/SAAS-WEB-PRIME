@@ -323,15 +323,29 @@ function escapeHtml(value = "") {
     .replaceAll("'", "&#039;");
 }
 
+function normalizeImageUrl(value = "") {
+  let url = "";
+  if (typeof value === "string") url = value;
+  else if (value && typeof value.url === "string") url = value.url;
+  else if (value && typeof value.src === "string") url = value.src;
+  else if (value && typeof value.contentUrl === "string") url = value.contentUrl;
+  url = String(url || "").trim().replace(/\\\//g, "/");
+  if (/^\/\//.test(url)) url = `https:${url}`;
+  if (/^http:\/\//i.test(url)) url = url.replace(/^http:/i, "https:");
+  if (/^(https?:|data:image\/)/i.test(url)) return url;
+  return "";
+}
+
 function productImageUrl(product = {}) {
   const candidates = [
     product.coverUrl,
+    product.image,
+    product.imageUrl,
+    product.thumbnail,
+    product.thumbnailUrl,
     ...(Array.isArray(product.images) ? product.images : []),
   ];
-  const url = candidates.map((item) => String(item || "").trim()).find(Boolean) || "";
-  if (/^\/\//.test(url)) return `https:${url}`;
-  if (/^(https?:|data:image\/)/i.test(url)) return url;
-  return "";
+  return candidates.map(normalizeImageUrl).find(Boolean) || "";
 }
 
 function initials(value = "") {
@@ -1467,7 +1481,7 @@ function renderProducts() {
         return `
           <article class="product-card" style="--product-color:${product.color}">
             <div class="product-card-visual ${imageUrl ? "has-product-image" : ""}">
-              ${imageUrl ? `<img class="product-card-image" src="${escapeHtml(imageUrl)}" alt="${escapeHtml(product.title)}" loading="lazy" />` : ""}
+              ${imageUrl ? `<img class="product-card-image" src="${escapeHtml(imageUrl)}" alt="${escapeHtml(product.title)}" loading="lazy" referrerpolicy="no-referrer" />` : ""}
               <span class="product-symbol">${initials(product.title)}</span>
               <span class="status-badge ${product.status === "draft" ? "draft" : ""}">
                 ${product.status === "published" ? "Publié" : "Brouillon"}

@@ -101,13 +101,22 @@ function getToken() {
 function mapProduct(src) {
   var price = src.price && typeof src.price.value === "number" && isFinite(src.price.value) ? Math.round(src.price.value * 100) / 100 : 0;
   var seenImages = {};
-  var images = (src.images || []).map(function (item) {
+  var imageCandidates = []
+    .concat(src.coverUrl || [])
+    .concat(src.image || [])
+    .concat(src.imageUrl || [])
+    .concat(src.thumbnail || [])
+    .concat(src.thumbnailUrl || [])
+    .concat(src.images || []);
+  var images = imageCandidates.map(function (item) {
     var url = "";
     if (typeof item === "string") url = item;
+    else if (item && typeof item.src === "string") url = item.src;
     else if (item && typeof item.url === "string") url = item.url;
     else if (item && typeof item.contentUrl === "string") url = item.contentUrl;
-    url = String(url || "").trim();
+    url = String(url || "").trim().replace(/\\\//g, "/");
     if (url.indexOf("//") === 0) url = "https:" + url;
+    if (/^http:\/\//i.test(url)) url = url.replace(/^http:/i, "https:");
     return /^https?:\/\//i.test(url) && !seenImages[url] ? (seenImages[url] = true, url) : "";
   }).filter(Boolean).slice(0, 10);
   return {

@@ -1,0 +1,27 @@
+#expertly-panel,#expertly-panel *{box-sizing:border-box;font-family:"Inter",system-ui,-apple-system,sans-serif}
+#expertly-launcher{position:fixed;right:18px;bottom:18px;z-index:2147483000;width:52px;height:52px;border-radius:50%;background:#12141b;color:#fff;border:0;cursor:pointer;box-shadow:0 12px 30px rgba(16,17,26,.35);display:grid;place-items:center;font-weight:800;font-size:18px}
+#expertly-launcher .m{width:26px;height:26px;border-radius:8px;background:#6558f5;color:#12141b;display:grid;place-items:center;font-size:14px}
+#expertly-panel{position:fixed;right:18px;bottom:18px;z-index:2147483000;width:330px;max-height:82vh;overflow:auto;background:#fff;border-radius:18px;box-shadow:0 24px 60px rgba(16,17,26,.32);color:#12141b}
+#expertly-panel header{position:sticky;top:0;background:#12141b;color:#fff;padding:12px 14px;display:flex;align-items:center;gap:9px}
+#expertly-panel header .m{width:24px;height:24px;border-radius:7px;background:#6558f5;color:#12141b;display:grid;place-items:center;font-weight:800;font-size:13px}
+#expertly-panel header b{font-size:14px;flex:1;color:#fff;font-weight:800}
+#expertly-panel .ep-logo{height:20px;width:auto;max-width:150px;flex:1;object-fit:contain;object-position:left center;filter:brightness(0) invert(1)}
+#expertly-panel header button{background:transparent;border:0;color:#fff;cursor:pointer;font-size:18px;line-height:1}
+#expertly-panel .ep-body{padding:14px}
+#expertly-panel .ep-empty{padding:24px 14px;text-align:center;color:#8a8f9c;font-size:13px;line-height:1.5}
+#expertly-panel .ep-gal{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px}
+#expertly-panel .ep-gal img{width:62px;height:62px;object-fit:cover;border-radius:9px;border:1px solid #e8eaf0;flex:none}
+#expertly-panel h1{font-size:14px;font-weight:600;line-height:1.35;margin:11px 0 6px}
+#expertly-panel .ep-price{font-size:19px;font-weight:800;color:#6558f5}
+#expertly-panel .ep-price small{font-size:11px;color:#8a8f9c;font-weight:500}
+#expertly-panel .ep-price.miss{color:#8a8f9c;font-size:13px;font-weight:600}
+#expertly-panel .ep-t{font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#8a8f9c;margin:13px 0 5px}
+#expertly-panel .ep-desc{font-size:12px;color:#4a4f5c;line-height:1.5;white-space:pre-line;max-height:110px;overflow:auto;background:#f7f7fb;border-radius:10px;padding:9px 11px}
+#expertly-panel .ep-chips{display:flex;flex-wrap:wrap;gap:5px}
+#expertly-panel .ep-chip{font-size:11px;background:#f1f3f7;border:1px solid #e8eaf0;border-radius:999px;padding:3px 9px}
+#expertly-panel .ep-vname{font-size:11.5px;font-weight:600;margin:8px 0 4px}
+#expertly-panel .ep-btn{width:100%;margin-top:15px;border:0;border-radius:11px;padding:12px;font-weight:700;font-size:14px;cursor:pointer;background:#6558f5;color:#fff}
+#expertly-panel .ep-btn:disabled{opacity:.55;cursor:default}
+#expertly-panel .ep-note{font-size:11px;color:#8a8f9c;text-align:center;margin-top:8px;line-height:1.4}
+#expertly-panel .ep-ok{background:#dcf4ea;color:#0f6e56;border-radius:10px;padding:10px;text-align:center;font-size:12.5px;font-weight:600;margin-top:12px}
+#expertly-panel .ep-err{background:#fbe0e0;color:#a3341f;border-radius:10px;padding:10px;text-align:center;font-size:12.5px;font-weight:600;margin-top:12px}
