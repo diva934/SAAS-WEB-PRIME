@@ -1515,7 +1515,7 @@ function renderProducts() {
           </article>
         `;
       })
-      .join("") || `<div class="empty-state">Aucun produit. Clique sur « Nouveau produit » pour ajouter ta première offre digitale.</div>`;
+      .join("") || `<div class="empty-state">Aucun produit. Clique sur « Nouveau produit » pour ajouter ton premier produit.</div>`;
 }
 
 function renderPages() {

@@ -12,23 +12,47 @@
     ".mb-crumb{display:flex;align-items:center;gap:8px;margin:0 0 9px 4px;color:#71746a;font-size:12px;}",
     ".mb-crumb b{font-weight:500;color:#20221d;}.mb-crumb span{opacity:.55;}",
     ".mb-grid{display:grid;grid-template-columns:.93fr .93fr .78fr .78fr;grid-template-rows:328px 372px;gap:8px;}",
-    ".mb-card{position:relative;min-width:0;overflow:hidden;border:1px solid rgba(21,22,17,.1);border-radius:34px;background:rgba(255,255,255,.62);backdrop-filter:blur(20px);box-shadow:none;padding:20px;}",
+    ".mb-card{position:relative;min-width:0;overflow:hidden;border:1px solid rgba(21,22,17,.1);border-radius:34px;background:rgba(255,255,255,.62);backdrop-filter:blur(20px);box-shadow:none;padding:20px;cursor:pointer;}",
     ".mb-earn{grid-column:1/3;grid-row:1;}.mb-balance{grid-column:3;grid-row:1;}.mb-expenses{grid-column:4;grid-row:1;}.mb-orders{grid-column:1;grid-row:2;}.mb-acq{grid-column:2;grid-row:2;}.mb-best{grid-column:3/5;grid-row:2;}",
     ".mb-head{display:flex;align-items:flex-start;gap:10px;min-height:40px;}",
     ".mb-icon{width:40px;height:40px;border:1.2px solid #161711;border-radius:50%;display:grid;place-items:center;flex:none;color:#151611;font-size:22px;line-height:1;}",
     ".mb-title{flex:1;min-width:0;line-height:1.12;}.mb-title h2{margin:2px 0 3px;font-size:18px;font-weight:500;letter-spacing:0;}.mb-title span{display:block;color:#7f8178;font-size:12px;}",
-    ".mb-menu,.mb-pill{border:0;background:rgba(241,243,237,.72);color:#151611;}.mb-menu{width:40px;height:40px;border-radius:18px;font-size:20px;line-height:1;}.mb-pill{height:38px;border-radius:20px;padding:0 14px;font-size:13px;white-space:nowrap;}",
+    ".mb-menu,.mb-pill{border:0;background:rgba(241,243,237,.72);color:#151611;cursor:pointer;}.mb-menu{width:40px;height:40px;border-radius:18px;font-size:20px;line-height:1;}.mb-pill{height:38px;border-radius:20px;padding:0 14px;font-size:13px;white-space:nowrap;}",
     ".mb-svg{display:block;width:100%;height:100%;overflow:visible;}.mb-axis text{font-size:14px;fill:#999b91;}.mb-y{font-size:14px;fill:#a0a297;}.mb-total-tip text{font-size:14px;font-weight:600;}",
-    ".mb-wallet{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0 16px;padding:26px 18px;border:1px dashed rgba(21,22,17,.55);border-radius:22px;}",
+    ".mb-wallet{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0 14px;padding:11px 16px;border:1px dashed rgba(21,22,17,.55);border-radius:22px;}",
     ".mb-wallet div{display:grid;grid-template-columns:20px 1fr;column-gap:8px;align-items:center;}.mb-wallet svg{grid-row:1/3;width:18px;height:18px;}.mb-wallet strong{font-size:16px;font-weight:500;line-height:1;}.mb-wallet span{color:#777970;font-size:11px;}",
     ".mb-mini-labels{position:absolute;left:29px;right:24px;bottom:18px;display:flex;justify-content:space-between;color:#9ca096;font-size:14px;}.mb-day{padding:4px 12px;border-radius:6px;background:#75766e;color:#fff;}",
     ".mb-gauge-wrap{height:228px;position:relative;display:grid;place-items:center;margin-top:5px;}.mb-gauge-value{position:absolute;inset:62px 0 auto;text-align:center;font-size:54px;font-weight:500;letter-spacing:0;color:#030402;}.mb-gauge-delta{position:absolute;top:137px;left:50%;transform:translateX(-50%);padding:4px 10px;border-radius:16px;background:#d9ffc4;color:#2fac1c;font-size:13px;}.mb-note{margin:0 auto;color:#6f7168;text-align:center;font-size:14px;line-height:1.25;max-width:230px;}",
     ".mb-order-body{display:grid;grid-template-columns:132px 1fr;gap:10px;align-items:center;height:292px;}.mb-donut{width:126px;height:126px;position:relative;margin:0 auto;}.mb-donut-center{position:absolute;inset:0;display:grid;place-items:center;text-align:center;font-size:20px;font-weight:700;line-height:1.05;}.mb-donut-center small{display:block;color:#777970;font-size:12px;font-weight:400;}",
-    ".mb-cat-list{display:grid;gap:14px;min-width:0;}.mb-cat{display:grid;grid-template-columns:36px minmax(0,1fr) auto;gap:10px;align-items:center;}.mb-cat i{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-style:normal;color:#151611;}.mb-cat strong{display:block;font-size:15px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}.mb-cat span{display:block;color:#7d8077;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}.mb-cat b{font-size:15px;font-weight:600;}",
+    ".mb-cat-list{display:grid;gap:14px;min-width:0;}.mb-cat{display:grid;grid-template-columns:36px minmax(0,1fr) auto;gap:10px;align-items:center;cursor:pointer;}.mb-cat i{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-style:normal;color:#151611;}.mb-cat strong{display:block;font-size:15px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}.mb-cat span{display:block;color:#7d8077;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}.mb-cat b{font-size:15px;font-weight:600;}",
     ".mb-acq-metrics{display:flex;gap:26px;margin:26px 0 2px 4px;}.mb-acq-metrics div{display:grid;grid-template-columns:20px 1fr;gap:0 8px;align-items:center;}.mb-acq-metrics svg{grid-row:1/3;width:18px;height:18px;}.mb-acq-metrics strong{font-size:16px;font-weight:500;}.mb-acq-metrics span{grid-column:2;color:#777970;font-size:11px;}",
-    ".mb-denied{min-height:calc(100vh - 150px);position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:#151611;}.mb-denied-main{width:100%;display:flex;flex-direction:column;align-items:center;text-align:center;gap:16px;}.mb-denied-robot{width:min(360px,44vw);height:auto;opacity:.96;}.mb-denied h1{margin:24px 0 0;font-size:31px;font-weight:600;}.mb-denied p{margin:0;color:#6f7168;font-size:15px;}.mb-denied-footer{margin-top:26px;display:flex;align-items:center;justify-content:center;gap:18px;color:#9ca096;font-size:12px;flex-wrap:wrap;}.mb-denied-links{display:flex;gap:22px;}.mb-denied-links a{color:#9ca096;text-decoration:none;}",
     ".mb-best .mb-head{margin-bottom:25px;}.mb-table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:14px;}.mb-table th{padding:0 8px 10px 0;border-bottom:1px dashed rgba(21,22,17,.24);color:#777970;text-align:left;font-weight:400;}.mb-table td{padding:10px 8px 10px 0;border-bottom:1px solid rgba(21,22,17,.1);vertical-align:middle;color:#20221d;}.mb-table th:nth-child(1){width:46%;}.mb-table th:nth-child(2){width:13%;}.mb-table th:nth-child(3){width:13%;}.mb-table th:nth-child(4){width:13%;}.mb-table th:nth-child(5){width:15%;text-align:right;}.mb-table td:last-child,.mb-table th:last-child{text-align:right;padding-right:0;}",
-    ".mb-product{display:grid;grid-template-columns:46px 1fr;gap:10px;align-items:center;min-width:0;}.mb-product-img{width:46px;height:38px;border-radius:13px;display:grid;place-items:center;overflow:hidden;background:#e9ece5;box-shadow:inset 0 0 0 1px rgba(21,22,17,.08);}.mb-product-img span{font-size:10px;font-weight:700;color:#fff;}.mb-product strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px;font-weight:500;}.mb-product small{display:block;color:#86897f;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}.mb-muted-row{opacity:.42;}",
+    ".mb-product{display:grid;grid-template-columns:46px 1fr;gap:10px;align-items:center;min-width:0;cursor:pointer;}.mb-product-img{width:46px;height:38px;border-radius:13px;display:grid;place-items:center;overflow:hidden;background:#e9ece5;box-shadow:inset 0 0 0 1px rgba(21,22,17,.08);}.mb-product-img span{font-size:10px;font-weight:700;color:#fff;}.mb-product strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px;font-weight:500;}.mb-product small{display:block;color:#86897f;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}.mb-muted-row{opacity:.42;}",
+    ".mb-focus{position:fixed;inset:0;z-index:1200;display:grid;place-items:center;padding:24px;background:rgba(247,248,241,.72);backdrop-filter:blur(18px);}",
+    ".mb-focus-panel{width:min(980px,calc(100vw - 48px));max-height:calc(100vh - 48px);overflow:auto;}",
+    ".mb-focus-panel .mb-card{min-height:520px;cursor:default;transform:none;}",
+    ".mb-focus-panel .mb-earn,.mb-focus-panel .mb-best{min-height:560px;}",
+    ".mb-focus-panel .mb-svg{height:100%;}",
+    ".mb-focus-close{position:fixed;top:24px;right:24px;width:46px;height:46px;border:0;border-radius:18px;background:rgba(241,243,237,.9);color:#151611;font-size:22px;cursor:pointer;}",
+    ".mb-drill{display:grid;gap:16px;color:#151611;}",
+    ".mb-drill-head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:4px;}",
+    ".mb-drill-head h1{margin:0;font-size:28px;font-weight:500;letter-spacing:0;}",
+    ".mb-drill-head button{height:42px;border:0;border-radius:18px;padding:0 16px;background:rgba(241,243,237,.88);color:#151611;cursor:pointer;}",
+    ".mb-drill-grid{display:grid;grid-template-columns:1fr;gap:10px;}",
+    ".mb-drill-grid.two{grid-template-columns:1fr 1fr;}",
+    ".mb-drill .mb-card{min-height:560px;cursor:default;}",
+    ".mb-drill .mb-earn,.mb-drill .mb-best{grid-column:auto;grid-row:auto;}",
+    ".mb-drill .mb-balance,.mb-drill .mb-expenses,.mb-drill .mb-orders,.mb-drill .mb-acq{grid-column:auto;grid-row:auto;}",
+    ".mb-denied{min-height:calc(100vh - 122px);position:relative;display:grid;grid-template-rows:1fr auto;align-items:center;color:#151611;}",
+    ".mb-denied-main{display:grid;justify-items:center;text-align:center;gap:18px;padding-top:18px;}",
+    ".mb-denied-robot{width:min(360px,44vw);height:auto;opacity:.96;}",
+    ".mb-denied h1{margin:28px 0 0;font-size:31px;font-weight:500;letter-spacing:0;}",
+    ".mb-denied p{margin:0;color:#6f7168;font-size:15px;}",
+    ".mb-denied-footer{display:flex;align-items:center;justify-content:space-between;gap:18px;color:#777970;font-size:12px;padding:0 0 18px;}",
+    ".mb-denied-links{display:flex;gap:28px;}",
+    ".mb-denied-links a{color:#777970;text-decoration:none;}",
+    "@media(max-width:720px){.mb-denied{min-height:calc(100vh - 94px);}.mb-denied-robot{width:min(300px,78vw);}.mb-denied-footer{align-items:flex-start;flex-direction:column;}.mb-denied-links{gap:16px;}}",
+    "@media(max-width:900px){.mb-drill-grid.two{grid-template-columns:1fr;}}",
     "@media(max-width:1180px){.mb-grid{grid-template-columns:1fr 1fr;grid-template-rows:auto;}.mb-earn,.mb-balance,.mb-expenses,.mb-orders,.mb-acq,.mb-best{grid-column:auto;grid-row:auto;}.mb-earn,.mb-best{grid-column:1/-1;}.mb-card{min-height:300px;}}",
     "@media(max-width:720px){.mb-grid{grid-template-columns:1fr;}.mb-earn,.mb-best{grid-column:auto;}.mb-order-body{grid-template-columns:1fr;height:auto;}.mb-card{border-radius:24px;padding:16px;}.mb-table{font-size:12px;}.mb-table th:nth-child(4),.mb-table td:nth-child(4){display:none;}}"
   ].join("");
@@ -40,82 +64,6 @@
 
   var MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   var DAYS = ["M", "T", "T", "W", "F", "S"];
-
-  // ---- Periode globale (menu ...) + temps serveur ----
-  var PERIOD_KEY = "12mo";
-  var timeOffset = 0; // ms : (heure serveur) - (heure locale)
-  function serverNow() { return new Date(Date.now() + timeOffset); }
-  function pad2(x) { return ("0" + x).slice(-2); }
-  function hhmm(d) { return pad2(d.getHours()) + ":" + pad2(d.getMinutes()); }
-  function hhLab(d) { return pad2(d.getHours()) + "h"; }
-  function dayMon(d) { return pad2(d.getDate()) + "/" + pad2(d.getMonth() + 1); }
-  var PERIODS = [
-    { k: "10min", label: "10 dernieres minutes", kind: "time", n: 10, step: 60000, lab: hhmm },
-    { k: "1h", label: "Derniere heure", kind: "time", n: 12, step: 300000, lab: hhmm },
-    { k: "24h", label: "Dernieres 24 h", kind: "time", n: 12, step: 7200000, lab: hhLab },
-    { k: "7d", label: "7 derniers jours", kind: "time", n: 7, step: 86400000, lab: dayMon },
-    { k: "30d", label: "30 derniers jours", kind: "time", n: 10, step: 259200000, lab: dayMon },
-    { k: "12mo", label: "12 derniers mois", kind: "month", n: 12 }
-  ];
-  function periodOf(k) { for (var i = 0; i < PERIODS.length; i++) { if (PERIODS[i].k === k) return PERIODS[i]; } return PERIODS[5]; }
-  function orderTime(o) { var t = o && o.createdAt ? new Date(o.createdAt) : (o && o.date ? new Date(o.date) : null); return (t && !isNaN(t.getTime())) ? t : null; }
-  // Recalcule revenus / visites / achats sur la fenetre choisie, a partir des donnees
-  // horodatees (commandes = createdAt ; visites = visitLog ; + visitsByMonth pour 12 mois).
-  function buildWindow(orders, visitLog, visitsByMonth) {
-    var P = periodOf(PERIOD_KEY), now = serverNow();
-    var labels = [], rev = [], vis = [], pur = [];
-    if (P.kind === "month") {
-      for (var i = P.n - 1; i >= 0; i--) {
-        var d1 = new Date(now.getFullYear(), now.getMonth() - i, 1);
-        var d2 = new Date(now.getFullYear(), now.getMonth() - i + 1, 1);
-        var key = d1.getFullYear() + "-" + pad2(d1.getMonth() + 1);
-        labels.push(MONTHS[d1.getMonth()]);
-        var r = 0, p = 0;
-        orders.forEach(function (o) { var t = orderTime(o); if (t && t >= d1 && t < d2) { r += Number(o.amount) || 0; p += 1; } });
-        rev.push(r); pur.push(p);
-        vis.push(Number((visitsByMonth || {})[key] || 0));
-      }
-    } else {
-      var end = now.getTime();
-      for (var j = 0; j < P.n; j++) {
-        var bEnd = end - (P.n - 1 - j) * P.step, bStart = bEnd - P.step;
-        labels.push(P.lab(new Date(bEnd)));
-        var r2 = 0, p2 = 0, v2 = 0;
-        orders.forEach(function (o) { var t = orderTime(o); if (t) { var tm = t.getTime(); if (tm >= bStart && tm < bEnd) { r2 += Number(o.amount) || 0; p2 += 1; } } });
-        (visitLog || []).forEach(function (ts) { var tm = new Date(ts).getTime(); if (!isNaN(tm) && tm >= bStart && tm < bEnd) v2 += 1; });
-        rev.push(r2); pur.push(p2); vis.push(v2);
-      }
-    }
-    return { labels: labels, revenueSeries: rev, visitsSeries: vis, purchasesSeries: pur };
-  }
-  // Style + comportement du menu deroulant de periode (delegation : survit aux re-render).
-  (function () {
-    var s = document.createElement("style"); s.id = "mb-period-css";
-    s.textContent = ".mb-pmenu{position:fixed;z-index:1600;background:#fff;border:1px solid #e6e8e0;border-radius:14px;box-shadow:0 16px 40px rgba(16,17,26,.22);padding:6px;min-width:206px;display:none;font-family:'DM Sans',system-ui,sans-serif;}.mb-pmenu.open{display:block;}.mb-pmenu button{display:block;width:100%;text-align:left;border:0;background:none;padding:9px 12px;border-radius:9px;font:inherit;font-size:13px;color:#20221d;cursor:pointer;}.mb-pmenu button:hover{background:#f2f4ee;}.mb-pmenu button.on{background:#eef7d6;font-weight:700;}";
-    (document.head || document.documentElement).appendChild(s);
-  })();
-  var pmenu = null;
-  function openPeriodMenu(btn) {
-    if (!pmenu) { pmenu = document.createElement("div"); pmenu.className = "mb-pmenu"; document.body.appendChild(pmenu); }
-    pmenu.innerHTML = PERIODS.map(function (p) { return '<button data-pk="' + p.k + '" class="' + (p.k === PERIOD_KEY ? "on" : "") + '">' + p.label + "</button>"; }).join("");
-    var r = btn.getBoundingClientRect();
-    pmenu.style.left = Math.max(8, Math.min(r.left, window.innerWidth - 216)) + "px";
-    pmenu.style.top = (r.bottom + 6) + "px";
-    pmenu.classList.add("open");
-  }
-  document.addEventListener("click", function (e) {
-    var opt = e.target.closest ? e.target.closest("[data-pk]") : null;
-    if (opt) { PERIOD_KEY = opt.getAttribute("data-pk"); if (pmenu) pmenu.classList.remove("open"); try { renderMidboxOverview(); } catch (x) {} return; }
-    var trig = e.target.closest ? e.target.closest(".mb-menu, .mb-pill") : null;
-    if (trig && document.body.classList.contains("midbox-overview")) { e.preventDefault(); e.stopPropagation(); openPeriodMenu(trig); return; }
-    if (pmenu) pmenu.classList.remove("open");
-  }, true);
-  // Synchronise l'heure sur le serveur (source de verite pour les fenetres).
-  try {
-    fetch("/api/config", { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (c) {
-      if (c && c.now) { var sv = new Date(c.now).getTime(); if (!isNaN(sv)) timeOffset = sv - Date.now(); }
-    }).catch(function () {});
-  } catch (e) {}
 
   function safeState() {
     return typeof state !== "undefined" && state ? state : {};
@@ -151,6 +99,17 @@
     return String(value || "EX").split(/\s+/).map(function (part) { return part[0]; }).join("").slice(0, 2).toUpperCase();
   }
 
+  function imageFor(product) {
+    if (typeof productImageUrl === "function") return productImageUrl(product);
+    var candidates = [product && product.coverUrl].concat(Array.isArray(product && product.images) ? product.images : []);
+    for (var i = 0; i < candidates.length; i++) {
+      var url = String(candidates[i] || "").trim();
+      if (url.indexOf("//") === 0) url = "https:" + url;
+      if (/^(https?:|data:image\/)/i.test(url)) return url;
+    }
+    return "";
+  }
+
   function metrics() {
     var s = safeState();
     var orders = paidOrders(s);
@@ -167,36 +126,7 @@
     var conversion = visits ? (purchases / visits) * 100 : 0;
     var wallet = Math.round(revenue * 0.83);
     var paypal = Math.max(0, revenue - wallet);
-    // Series mensuelles REELLES (12 derniers mois) : visites (analytics.visitsByMonth,
-    // alimente par /api/events/visit) et achats (commandes payees, par mois de createdAt).
-    var now = new Date();
-    var buckets = [];
-    for (var bi = 11; bi >= 0; bi--) {
-      var bd = new Date(now.getFullYear(), now.getMonth() - bi, 1);
-      buckets.push({ key: bd.getFullYear() + "-" + ("0" + (bd.getMonth() + 1)).slice(-2), idx: bd.getMonth() });
-    }
-    var vbm = (analytics.visitsByMonth && typeof analytics.visitsByMonth === "object") ? analytics.visitsByMonth : {};
-    var visitsSeries = buckets.map(function (b) { return Number(vbm[b.key] || 0); });
-    var purchasesSeries = buckets.map(function () { return 0; });
-    orders.forEach(function (o) {
-      var dt = o.createdAt ? new Date(o.createdAt) : (o.date ? new Date(o.date) : null);
-      if (!dt || isNaN(dt.getTime())) return;
-      var key = dt.getFullYear() + "-" + ("0" + (dt.getMonth() + 1)).slice(-2);
-      for (var i = 0; i < buckets.length; i++) { if (buckets[i].key === key) { purchasesSeries[i] += 1; break; } }
-    });
-    var monthsLabels = buckets.map(function (b) { return MONTHS[b.idx]; });
-    // Series recalculees sur la periode choisie (menu ...).
-    var win = buildWindow(orders, (analytics.visitLog || []), vbm);
-    var sumArr = function (arr) { return arr.reduce(function (x, y) { return x + (Number(y) || 0); }, 0); };
     return {
-      winLabels: win.labels,
-      winRevenue: win.revenueSeries,
-      winVisits: win.visitsSeries,
-      winPurchases: win.purchasesSeries,
-      winRevTotal: sumArr(win.revenueSeries),
-      winVisTotal: sumArr(win.visitsSeries),
-      winPurTotal: sumArr(win.purchasesSeries),
-      periodLabel: periodOf(PERIOD_KEY).label,
       s: s,
       orders: orders,
       revenue: revenue,
@@ -205,9 +135,6 @@
       visits: visits,
       purchases: purchases,
       series: series,
-      visitsSeries: visitsSeries,
-      purchasesSeries: purchasesSeries,
-      monthsLabels: monthsLabels,
       products: products,
       contacts: contacts,
       conversion: conversion,
@@ -231,55 +158,46 @@
   }
 
   function shell(title, sub, iconName, body, actions, className) {
-    return '<article class="mb-card ' + (className || "") + '">'
+    var view = "";
+    if ((className || "").indexOf("mb-earn") >= 0) view = "analytics";
+    else if ((className || "").indexOf("mb-balance") >= 0) view = "finance";
+    else if ((className || "").indexOf("mb-expenses") >= 0) view = "finance";
+    else if ((className || "").indexOf("mb-orders") >= 0) view = "orders";
+    else if ((className || "").indexOf("mb-acq") >= 0) view = "analytics";
+    else if ((className || "").indexOf("mb-best") >= 0) view = "products";
+    return '<article class="mb-card ' + (className || "") + '"' + (view ? ' data-mb-focus="' + view + '"' : "") + '>'
       + '<div class="mb-head"><div class="mb-icon">' + icon(iconName) + '</div><div class="mb-title"><h2>' + title + '</h2>'
-      + (sub ? '<span>' + sub + '</span>' : "") + '</div>' + (actions || '<button class="mb-menu" aria-label="Options">...</button>') + '</div>'
+      + (sub ? '<span>' + sub + '</span>' : "") + '</div>' + (actions || '<button class="mb-menu" aria-label="Options" data-mb-view="overview">...</button>') + '</div>'
       + body + '</article>';
   }
 
-  function earningChart(values, labels) {
-    labels = labels || [];
-    var nums = values.map(Number);
-    var realMax = Math.max.apply(null, nums.concat([0]));
-    // Axe dynamique : arrondi "propre" au-dessus du max reel (ex: 15k -> 20k) pour que
-    // les reperes correspondent VRAIMENT aux barres (un mois a 15k tombe entre 12k et 16k).
-    function niceCeil(v) {
-      if (v <= 0) return 1000;
-      var exp = Math.pow(10, Math.floor(Math.log10(v)));
-      var f = v / exp;
-      var nice = f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10;
-      return nice * exp;
-    }
-    function axisLabel(v) {
-      if (v >= 1000) { var k = v / 1000; return (k % 1 === 0 ? k : k.toFixed(1).replace(/\.0$/, "")) + "k"; }
-      return String(Math.round(v));
-    }
-    var axisMax = niceCeil(realMax);
+  function earningChart(values) {
+    var max = Math.max.apply(null, values.concat([1]));
     var highIndex = 0;
-    nums.forEach(function (value, index) { if (value >= nums[highIndex]) highIndex = index; });
-    // 5 reperes proportionnels (20/40/60/80/100 % de l'axe). Baseline y=218 => 0, sommet y=34 => axisMax.
-    var grid = [5, 4, 3, 2, 1].map(function (k) {
-      var y = 218 - (k / 5) * 184;
-      return '<line x1="66" y1="' + y.toFixed(1) + '" x2="748" y2="' + y.toFixed(1) + '" stroke="rgba(21,22,17,.09)" />'
-        + '<text class="mb-y" x="22" y="' + (y + 4).toFixed(1) + '">' + axisLabel(axisMax * k / 5) + '</text>';
+    values.forEach(function (value, index) {
+      if (value >= values[highIndex]) highIndex = index;
+    });
+    var grid = [50, 90, 130, 170, 210].map(function (y, index) {
+      return '<line x1="66" y1="' + y + '" x2="748" y2="' + y + '" stroke="rgba(21,22,17,.09)" />'
+        + '<text class="mb-y" x="22" y="' + (y + 4) + '">' + (50 - index * 10) + 'k</text>';
     }).join("");
-    var bars = nums.map(function (value, index) {
-      var slot = 682 / nums.length;
-      var h = value > 0 ? Math.max(3, (value / axisMax) * 184) : 0;
+    var bars = values.map(function (value, index) {
+      var slot = 682 / values.length;
+      var h = Math.max(8, (value / max) * 184);
       var x = 66 + slot * index + slot / 2 - 12;
       var y = 218 - h;
       var active = index === highIndex && value > 0;
       var fill = active ? "url(#mbActiveHatch)" : "url(#mbHatch)";
-      var tip = active ? '<g class="mb-total-tip"><rect x="' + (x - 15).toFixed(1) + '" y="' + (y - 30).toFixed(1) + '" width="62" height="28" rx="8" fill="#6558f5"/><text x="' + (x + 16).toFixed(1) + '" y="' + (y - 11).toFixed(1) + '" text-anchor="middle" fill="#ffffff">' + formatInt(value) + '</text></g>' : "";
+      var tip = active ? '<g class="mb-total-tip"><rect x="' + (x - 15).toFixed(1) + '" y="' + (y - 30).toFixed(1) + '" width="62" height="28" rx="8" fill="#6558f5"/><text x="' + (x + 16).toFixed(1) + '" y="' + (y - 11).toFixed(1) + '" text-anchor="middle" fill="#11120f">' + formatInt(value) + '</text></g>' : "";
       return '<rect x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="24" height="' + h.toFixed(1) + '" rx="10" fill="' + fill + '"/>' + tip
-        + '<text x="' + (x + 12).toFixed(1) + '" y="246" text-anchor="middle" fill="#999b91" font-size="14">' + (labels[index] || "") + '</text>';
+        + '<text x="' + (x + 12).toFixed(1) + '" y="246" text-anchor="middle" fill="#999b91" font-size="14">' + MONTHS[index] + '</text>';
     }).join("");
-    return '<div style="height:244px;margin-top:10px"><svg class="mb-svg" viewBox="0 0 760 260" data-series="' + encodeURIComponent(JSON.stringify(nums)) + '" data-labels="' + encodeURIComponent(JSON.stringify(labels)) + '">'
+    return '<div style="height:244px;margin-top:10px"><svg class="mb-svg" viewBox="0 0 760 260">'
       + '<defs><pattern id="mbHatch" width="8" height="8" patternTransform="rotate(45)" patternUnits="userSpaceOnUse"><rect width="8" height="8" fill="#e9ebe3"/><line x1="0" y1="0" x2="0" y2="8" stroke="#bfc3b7" stroke-width="4"/></pattern><pattern id="mbActiveHatch" width="8" height="8" patternTransform="rotate(45)" patternUnits="userSpaceOnUse"><rect width="8" height="8" fill="#f7f8f1"/><line x1="0" y1="0" x2="0" y2="8" stroke="#70736b" stroke-width="4"/></pattern></defs>'
       + '<text class="mb-y" x="51" y="222">0</text>' + grid + bars + '</svg></div>';
   }
 
-  function smoothArea(values, color, id, width, height, unit, labels) {
+  function smoothArea(values, color, id, width, height) {
     var max = Math.max.apply(null, values.concat([1]));
     var n = values.length;
     var step = n > 1 ? width / (n - 1) : width;
@@ -291,15 +209,15 @@
     var guides = pts.map(function (point) {
       return '<line x1="' + point[0].toFixed(1) + '" y1="0" x2="' + point[0].toFixed(1) + '" y2="' + height + '" stroke="rgba(21,22,17,.08)" stroke-dasharray="2 3"/>';
     }).join("");
-    var meta = ' data-unit="' + (unit || "€") + '" data-series="' + encodeURIComponent(JSON.stringify(values)) + '" data-labels="' + encodeURIComponent(JSON.stringify(labels || [])) + '"';
     return '<svg class="mb-svg" viewBox="0 0 ' + width + " " + height + '"><defs><linearGradient id="' + id + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="' + color + '" stop-opacity=".35"/><stop offset="78%" stop-color="' + color + '" stop-opacity="0"/></linearGradient></defs>'
-      + guides + '<path d="' + area + '" fill="url(#' + id + ')"/><path' + meta + ' d="' + line + '" fill="none" stroke="' + color + '" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      + guides + '<path d="' + area + '" fill="url(#' + id + ')"/><path d="' + line + '" fill="none" stroke="' + color + '" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   }
 
   function balanceCard(d) {
     var body = '<div class="mb-wallet"><div>' + icon("wallet") + '<strong>' + formatInt(d.wallet) + '</strong><span>Wallet</span></div><div>' + icon("dollar") + '<strong>' + formatInt(d.paypal) + '</strong><span>PayPal</span></div></div>'
-      + '<div style="height:150px;margin-top:8px">' + smoothArea(d.series, "#62c600", "mbBalanceFill", 260, 140, "€", d.monthsLabels) + '</div>';
-    return shell("Balance", "", "dollar", body, '<button class="mb-menu" aria-label="Options">...</button>', "mb-balance");
+      + '<div style="height:158px;margin-top:7px">' + smoothArea(d.series, "#62c600", "mbBalanceFill", 260, 140) + '</div>'
+      + '<div class="mb-mini-labels"><span>N</span><span class="mb-day">D</span><span>J</span><span>F</span><span>M</span><span>A</span></div>';
+    return shell("Balance", "", "dollar", body, '<button class="mb-menu" aria-label="Ouvrir Finance" data-mb-view="finance">...</button>', "mb-balance");
   }
 
   function expensesCard(d) {
@@ -310,7 +228,7 @@
       + '<circle cx="110" cy="100" r="82" fill="none" stroke="#777b72" stroke-width="5" stroke-linecap="round" stroke-dasharray="348 520" transform="rotate(137 110 100)"/>'
       + '</svg><div class="mb-gauge-value">' + (expense ? (expense / 100).toFixed(1) : "0.0") + '</div><div class="mb-gauge-delta">-' + pct(Math.min(99, Math.max(0, d.conversion * 10))) + '%</div></div>'
       + '<p class="mb-note">' + formatEuro(comparison) + ' Expenses less than last month</p>';
-    return shell("Expenses", "", "expense", body, '<button class="mb-menu" aria-label="Options">...</button>', "mb-expenses");
+    return shell("Expenses", "", "expense", body, '<button class="mb-menu" aria-label="Ouvrir Finance" data-mb-view="finance">...</button>', "mb-expenses");
   }
 
   function ordersCard(d) {
@@ -324,21 +242,20 @@
     var donutValue = Math.max(6, Math.min(96, d.conversion * 9 || d.orders.length * 8));
     var c = 2 * Math.PI * 50;
     var body = '<div class="mb-order-body"><div><div class="mb-donut"><svg viewBox="0 0 126 126"><circle cx="63" cy="63" r="50" fill="none" stroke="#e7efe1" stroke-width="15"/><circle cx="63" cy="63" r="50" fill="none" stroke="#6558f5" stroke-width="15" stroke-linecap="round" stroke-dasharray="' + (c * donutValue / 100).toFixed(1) + " " + c.toFixed(1) + '" transform="rotate(-90 63 63)"/><circle cx="63" cy="63" r="36" fill="rgba(255,255,255,.75)"/></svg><div class="mb-donut-center">' + Math.round(donutValue) + '%<small>Weekly</small></div></div></div><div class="mb-cat-list">' + list + '</div></div>';
-    return shell("Order Statistics", formatInt(d.winPurTotal) + " ventes sur la periode", "cart", body, '<button class="mb-menu" aria-label="Options">...</button>', "mb-orders");
+    return shell("Order Statistics", formatInt(d.orders.length) + " Total Sales", "cart", body, '<button class="mb-menu" aria-label="Ouvrir Commandes" data-mb-view="orders">...</button>', "mb-orders");
   }
 
   function acquisitionCard(d) {
-    // Orange = visites (par mois), Vert = achats (par mois). Donnees reelles.
-    var L = d.winLabels || [];
-    var stepL = Math.max(1, Math.ceil(L.length / 6));
-    var mini = L.filter(function (_, i) { return i % stepL === 0; });
-    var body = '<div class="mb-acq-metrics">'
-      + '<div>' + icon("page") + '<strong>' + formatInt(d.winVisTotal) + '</strong><span><i style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#ff9f20;margin-right:5px"></i>Visites</span></div>'
-      + '<div>' + icon("cart") + '<strong>' + formatInt(d.winPurTotal) + '</strong><span><i style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#62c600;margin-right:5px"></i>Achats</span></div></div>'
-      + '<div style="height:214px;margin-top:2px;position:relative">' + smoothArea(d.winVisits, "#ff9f20", "mbAcqOrange", 300, 178, "visites", d.winLabels)
-      + '<div style="position:absolute;inset:0">' + smoothArea(d.winPurchases, "#62c600", "mbAcqGreen", 300, 178, "achats", d.winLabels) + '</div></div>'
-      + '<div class="mb-mini-labels" style="left:38px;right:34px">' + mini.map(function (l) { return '<span>' + l + '</span>'; }).join("") + '</div>';
-    return shell("Acquisition", "Visites vs Achats", "grid", body, '<button class="mb-menu" aria-label="Options">...</button>', "mb-acq");
+    var bounce = Math.max(0, 100 - d.conversion * 10);
+    var sessions = Math.max(d.visits, d.contacts.length + d.orders.length);
+    var acqSeries = d.series.map(function (value, index) {
+      return Math.round((value || 0) * (0.72 + (index % 4) * 0.07) + d.visits / 18);
+    });
+    var body = '<div class="mb-acq-metrics"><div>' + icon("bars") + '<strong>' + pct(bounce) + '%</strong><span>Bounce Rate</span></div><div>' + icon("page") + '<strong>' + formatInt(sessions) + '</strong><span>Page Session</span></div></div>'
+      + '<div style="height:214px;margin-top:2px;position:relative">' + smoothArea(acqSeries, "#ff9f20", "mbAcqOrange", 300, 178)
+      + '<div style="position:absolute;inset:0">' + smoothArea(d.series, "#62c600", "mbAcqGreen", 300, 178) + '</div></div>'
+      + '<div class="mb-mini-labels" style="left:38px;right:34px">' + DAYS.map(function (day) { return '<span>' + day + '</span>'; }).join("") + '</div>';
+    return shell("Acquisition", "", "grid", body, '<button class="mb-menu" aria-label="Ouvrir Analytics" data-mb-view="analytics">...</button>', "mb-acq");
   }
 
   function bestSellersCard(d) {
@@ -351,11 +268,74 @@
       var sales = Number(product.sales) || 0;
       var stock = Math.max(1, Number(product.views) || sales * 9 || 1);
       var muted = index > 2 ? " mb-muted-row" : "";
-      return '<tr class="' + muted + '"><td><div class="mb-product"><div class="mb-product-img" style="background:' + palette[index % palette.length] + '"><span>' + esc(initialsFor(product.title || "EX")) + '</span></div><div><strong>' + esc(product.title || "Produit") + '</strong><small>' + esc(product.type || "Produit digital") + '</small></div></div></td><td>' + formatEuro(price) + '</td><td>' + formatInt(sales) + '</td><td>' + formatInt(stock) + '</td><td>' + formatEuro(price * sales) + '</td></tr>';
+      var image = imageFor(product);
+      var thumb = image
+        ? '<div class="mb-product-img"><img src="' + esc(image) + '" alt="' + esc(product.title || "Produit") + '" loading="lazy" referrerpolicy="no-referrer"></div>'
+        : '<div class="mb-product-img" style="background:' + palette[index % palette.length] + '"><span>' + esc(initialsFor(product.title || "EX")) + '</span></div>';
+      return '<tr class="' + muted + '"><td><div class="mb-product">' + thumb + '<div><strong>' + esc(product.title || "Produit") + '</strong><small>' + esc(product.type || "Produit digital") + '</small></div></div></td><td>' + formatEuro(price) + '</td><td>' + formatInt(sales) + '</td><td>' + formatInt(stock) + '</td><td>' + formatEuro(price * sales) + '</td></tr>';
     }).join("");
     if (!rows) rows = '<tr><td colspan="5" style="color:#878a80;padding-top:18px">Aucun produit pour le moment</td></tr>';
     var body = '<table class="mb-table"><thead><tr><th>Item ↓</th><th>Price</th><th>Orders</th><th>Stock</th><th>Amount</th></tr></thead><tbody>' + rows + '</tbody></table>';
-    return shell("Best Sellers", "", "bolt", body, '<button class="mb-pill">Last Month⌄</button><button class="mb-menu" aria-label="Options">...</button>', "mb-best");
+    return shell("Best Sellers", "", "bolt", body, '<button class="mb-pill" data-mb-view="products">Last Month⌄</button><button class="mb-menu" aria-label="Ouvrir Produits" data-mb-view="products">...</button>', "mb-best");
+  }
+
+  function renderMidboxOverview() {
+    var overview = document.querySelector("#overviewView");
+    if (!overview) return;
+    var d = metrics();
+    var title = document.querySelector("#viewTitle");
+    if (title) title.textContent = "Dashboard";
+    document.body.classList.add("midbox-overview");
+    overview.innerHTML = '<div class="mb-page"><div class="mb-crumb"><b>Home</b><span>/</span><b>Dashboard</b></div><div class="mb-grid">'
+      + shell("Earning Reports", "Yearly Earnings Overview", "trend", earningChart(d.series), '<button class="mb-pill" data-mb-view="analytics">Last Year⌄</button><button class="mb-menu" aria-label="Ouvrir Analytics" data-mb-view="analytics">...</button>', "mb-earn")
+      + balanceCard(d)
+      + expensesCard(d)
+      + ordersCard(d)
+      + acquisitionCard(d)
+      + bestSellersCard(d)
+      + '</div></div>';
+  }
+
+  function renderMetricPage(view) {
+    var section = document.querySelector("#" + view + "View");
+    if (!section) return false;
+    if (view === "emails") return renderDeniedPage(section);
+    var d = metrics();
+    var titles = {
+      orders: "Order Statistics",
+      analytics: "Earning Reports",
+      finance: "Balance"
+    };
+    var content = {
+      orders: ordersCard(d),
+      analytics: earningChartPage(d),
+      finance: financeChartPage(d)
+    }[view];
+    if (!content) return false;
+    var title = document.querySelector("#viewTitle");
+    if (title) title.textContent = titles[view] || "Dashboard";
+    document.body.classList.add("midbox-overview");
+    section.innerHTML = '<div class="mb-drill"><div class="mb-drill-head"><h1>' + (titles[view] || "Dashboard") + '</h1><button type="button" data-mb-view="overview">Dashboard</button></div>' + content + '</div>';
+    return true;
+  }
+
+  function earningChartPage(d) {
+    return '<div class="mb-drill-grid two">' + shell("Earning Reports", "Yearly Earnings Overview", "trend", earningChart(d.series), '<button class="mb-pill" data-mb-view="overview">Dashboard</button>', "mb-earn")
+      + acquisitionCard(d) + '</div>';
+  }
+
+  function financeChartPage(d) {
+    return '<div class="mb-drill-grid two">' + balanceCard(d) + expensesCard(d) + '</div>';
+  }
+
+  function renderDeniedPage(section) {
+    var title = document.querySelector("#viewTitle");
+    if (title) title.textContent = "Emails";
+    document.body.classList.add("midbox-overview");
+    section.innerHTML = '<div class="mb-denied"><div class="mb-denied-main">' + deniedRobotSvg()
+      + '<div><h1>Access Denied</h1><p>You have no permission to visit this page</p></div></div>'
+      + '<footer class="mb-denied-footer"><span>Copyright © 2025 – Midbox. All rights reserved.</span><nav class="mb-denied-links" aria-label="Legal"><a href="#">Term &amp; Conditions</a><a href="#">Privacy &amp; Policy</a></nav></footer></div>';
+    return true;
   }
 
   function deniedRobotSvg() {
@@ -374,35 +354,6 @@
       + '</svg>';
   }
 
-  // Page Emails : illustration robot "403" centree (reprise de la maquette d'origine).
-  function renderEmailsDenied() {
-    var section = document.querySelector("#emailsView");
-    if (!section) return false;
-    var title = document.querySelector("#viewTitle");
-    if (title) title.textContent = "Emails";
-    section.innerHTML = '<div class="mb-denied"><div class="mb-denied-main">' + deniedRobotSvg()
-      + '<div><h1>Access Denied</h1><p>You have no permission to visit this page</p></div></div>'
-      + '<footer class="mb-denied-footer"><span>Copyright &copy; 2025 Expertly. All rights reserved.</span><nav class="mb-denied-links" aria-label="Legal"><a href="#">Conditions</a><a href="#">Confidentialite</a></nav></footer></div>';
-    return true;
-  }
-
-  function renderMidboxOverview() {
-    var overview = document.querySelector("#overviewView");
-    if (!overview) return;
-    var d = metrics();
-    var title = document.querySelector("#viewTitle");
-    if (title) title.textContent = "Dashboard";
-    document.body.classList.add("midbox-overview");
-    overview.innerHTML = '<div class="mb-page"><div class="mb-crumb"><b>Home</b><span>/</span><b>Dashboard</b></div><div class="mb-grid">'
-      + shell("Earning Reports", "Revenus sur la periode", "trend", earningChart(d.winRevenue, d.winLabels), '<button class="mb-pill">' + d.periodLabel + ' ⌄</button><button class="mb-menu" aria-label="Options">...</button>', "mb-earn")
-      + balanceCard(d)
-      + expensesCard(d)
-      + ordersCard(d)
-      + acquisitionCard(d)
-      + bestSellersCard(d)
-      + '</div></div>';
-  }
-
   function hook() {
     if (window.__mbHooked) return;
     if (typeof window.renderOverview !== "function") {
@@ -417,15 +368,12 @@
         if (window.__mbOrigRenderOverview) window.__mbOrigRenderOverview();
       }
     };
-    // Route la vue Emails vers l'illustration robot 403 (centre), laisse le reste intact.
-    if (typeof window.renderView === "function") {
-      window.__mbOrigRenderView = window.renderView;
-      window.renderView = function (view) {
-        try { if (view === "emails" && renderEmailsDenied()) return; } catch (e) {}
-        if (window.__mbOrigRenderView) return window.__mbOrigRenderView(view);
-      };
-      try { renderView = window.renderView; } catch (e) {}
-    }
+    window.__mbOrigRenderView = window.renderView;
+    window.renderView = function (view) {
+      if (renderMetricPage(view)) return;
+      if (window.__mbOrigRenderView) window.__mbOrigRenderView(view);
+    };
+    try { renderView = window.renderView; } catch (error) {}
     window.__mbHooked = true;
     try {
       if (typeof activeView === "undefined" || activeView === "overview") renderMidboxOverview();
@@ -434,10 +382,49 @@
     }
   }
 
+  function openFocus(card) {
+    var existing = document.querySelector(".mb-focus");
+    if (existing) existing.remove();
+    var overlay = document.createElement("div");
+    overlay.className = "mb-focus";
+    overlay.innerHTML = '<button class="mb-focus-close" type="button" aria-label="Fermer">×</button><div class="mb-focus-panel"></div>';
+    var clone = card.cloneNode(true);
+    clone.removeAttribute("data-mb-focus");
+    clone.querySelectorAll("[data-mb-view],[data-mb-focus]").forEach(function (node) {
+      node.removeAttribute("data-mb-view");
+      node.removeAttribute("data-mb-focus");
+    });
+    overlay.querySelector(".mb-focus-panel").appendChild(clone);
+    document.body.appendChild(overlay);
+  }
+
   document.addEventListener("click", function (event) {
+    var midboxTarget = event.target.closest("[data-mb-view]");
+    if (midboxTarget) {
+      event.preventDefault();
+      event.stopPropagation();
+      if (typeof setView === "function") setView(midboxTarget.dataset.mbView);
+      else window.location.hash = midboxTarget.dataset.mbView;
+      return;
+    }
+    var focusCard = event.target.closest(".mb-card[data-mb-focus]");
+    if (focusCard) {
+      event.preventDefault();
+      openFocus(focusCard);
+      return;
+    }
+    if (event.target.closest(".mb-focus-close") || event.target.classList.contains("mb-focus")) {
+      event.preventDefault();
+      event.target.closest(".mb-focus")?.remove();
+      return;
+    }
     var nav = event.target.closest(".nav-item[data-view]");
     if (nav && nav.dataset.view !== "overview") document.body.classList.remove("midbox-overview");
     if (nav && nav.dataset.view === "overview") document.body.classList.add("midbox-overview");
+  });
+
+  document.addEventListener("keydown", function (event) {
+    if (event.key === "Escape") document.querySelector(".mb-focus")?.remove();
   });
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", function () { setTimeout(hook, 60); });

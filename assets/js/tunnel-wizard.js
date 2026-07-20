@@ -1,4 +1,4 @@
-/* Tunnel de vente - wizard a cartes + onboarding premiere visite.
+/* Tunnel de vente - wizard a cartes + onboarding première visite.
    Reconstruit la vue #tunnelView en un assistant pas-a-pas : chaque etape est une carte,
    l'etape en cours est mise en avant, et quand une etape est terminee on passe a la suivante.
    Au tout premier passage sur le CRM (apres creation de compte + paiement), on ouvre
@@ -20,19 +20,19 @@
     {
       key: "profil", title: "Profil & bio",
       desc: "Renseigne le nom public de ta boutique, ta promesse et ton lien.",
-      cta: "Completer mon profil", target: "settings",
+      cta: "Compléter mon profil", target: "settings",
       done: function (s) { return s.identity; }
     },
     {
-      key: "produit", title: "Creer un produit",
-      desc: "Ajoute ta premiere offre au catalogue : nom, prix et fichier d'acces.",
-      cta: "Creer un produit", target: "products",
+      key: "produit", title: "Créer un produit",
+      desc: "Ajoute ta première offre au catalogue : nom, prix et fichier d'accès.",
+      cta: "Créer un produit", target: "products",
       done: function (s) { return s.product; }
     },
     {
       key: "page", title: "Page de vente",
-      desc: "Publie une page publique qui presente et vend ton offre.",
-      cta: "Creer ma page", target: "pages",
+      desc: "Publie une page publique qui présente et vend ton offre.",
+      cta: "Créer ma page", target: "pages",
       done: function (s) { return s.page; }
     },
     {
@@ -43,7 +43,7 @@
     },
     {
       key: "email", title: "Email de livraison",
-      desc: "Connecte l'envoi automatique de l'acces au client apres l'achat.",
+      desc: "Connecte l'envoi automatique de l'accès au client après l'achat.",
       cta: "Configurer la livraison", target: "emails",
       done: function (s) { return s.email; }
     },
@@ -142,7 +142,7 @@
     var doneFlags = STEPS.map(function (st) { return !!st.done(status); });
     var total = STEPS.length;
     var doneCount = doneFlags.filter(Boolean).length;
-    var currentIndex = doneFlags.indexOf(false); // premiere etape non terminee
+    var currentIndex = doneFlags.indexOf(false); // première etape non terminee
     var allDone = currentIndex === -1;
     var pct = Math.round((doneCount / total) * 100);
 
@@ -162,7 +162,7 @@
       else badge = '<span class="tw-badge tw-badge-lock">' + LOCK_SVG + '</span>';
 
       var meta = isDone ? '<span class="tw-tag tw-tag-done">Termine</span>'
-        : (isCurrent ? '<span class="tw-tag tw-tag-now">A faire maintenant</span>'
+        : (isCurrent ? '<span class="tw-tag tw-tag-now">À faire maintenant</span>'
           : (stripeOpen ? '<span class="tw-tag tw-tag-now">Disponible maintenant</span>'
             : '<span class="tw-tag tw-tag-soon">Etape ' + (i + 1) + '</span>'));
 
@@ -209,7 +209,7 @@
 
     var headline = allDone
       ? "Tunnel complet - ta machine de vente tourne."
-      : "Etape " + (currentIndex + 1) + " sur " + total + " - on avance pas a pas.";
+      : "Etape " + (currentIndex + 1) + " sur " + total + " - on avance pas à pas.";
 
     var skipBtn = showSkip ? '<button type="button" class="tw-skip" data-tw-action="skip">Passer l\'intro &rarr;</button>' : '';
 
@@ -287,7 +287,7 @@
     }
   });
 
-  // ---- Onboarding : ouvrir automatiquement le Tunnel a la premiere visite ----
+  // ---- Onboarding : ouvrir automatiquement le Tunnel a la première visite ----
   function maybeAutoRoute() {
     if (window.__twAutoRouted || isDemo() || introDismissed()) return true;
     var hash = (location.hash || "").replace(/^#/, "");
@@ -339,7 +339,7 @@
       '.tw-skip{border:0;background:none;color:#8a8f9c;font:inherit;font-size:13px;font-weight:600;cursor:pointer;padding:2px;text-decoration:underline;text-underline-offset:3px}' +
       '.tw-skip:hover{color:#15161c}' +
       '.tw-progress{height:9px;border-radius:999px;background:#e7e9ef;overflow:hidden}' +
-      '.tw-progress span{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#8b7bff,#6558f5);transition:width .5s ease}' +
+      '.tw-progress span{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#4b3fd4,#6558f5);transition:width .5s ease}' +
       '.tw-steps{display:flex;flex-direction:column;gap:12px}' +
       '.tw-step{display:flex;gap:16px;align-items:flex-start;background:#fff;border:1px solid #edeff3;border-radius:22px;padding:18px 20px;box-shadow:0 12px 30px rgba(20,22,40,.05);opacity:0;transform:translateY(8px);animation:twIn .45s ease forwards}' +
       '@keyframes twIn{to{opacity:1;transform:translateY(0)}}' +
@@ -351,7 +351,7 @@
       '.tw-badge{flex:none;width:42px;height:42px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:16px}' +
       '.tw-badge svg{width:22px;height:22px}' +
       '.tw-badge-done{background:#1eaa73;color:#fff}' +
-      '.tw-badge-current{background:#6558f5;color:#ffffff}' +
+      '.tw-badge-current{background:#6558f5;color:#15161c}' +
       '.tw-badge-lock{background:#eef0f4;color:#aab0bd}' +
       '.tw-step-body{flex:1;min-width:0}' +
       '.tw-step-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}' +
