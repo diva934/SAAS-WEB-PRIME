@@ -2,9 +2,9 @@ import {
   requireActiveSubscription,
   sendJson,
   slugify,
-  supabaseRequest,
   userFromRequest,
 } from "./_shared.js";
+import { fsQuery } from "./_firebase.js";
 
 // GET /api/slug-available?slug=mon-slug
 // Returns { slug, available } where `available` is true when the slug is free
@@ -26,10 +26,8 @@ export default async function handler(req, res) {
       return;
     }
 
-    const rows = await supabaseRequest(
-      `/rest/v1/creator_states?select=user_id&slug=eq.${encodeURIComponent(slug)}&limit=2`,
-    );
-    const available = !Array.isArray(rows) || rows.every((row) => row.user_id === user.id);
+    const rows = await fsQuery("creators", "slug", slug, 2);
+    const available = rows.every((row) => row.id === user.id);
     sendJson(res, 200, { slug, available });
   } catch (error) {
     sendJson(res, error.status || 500, { error: error.message || "Erreur interne." });
