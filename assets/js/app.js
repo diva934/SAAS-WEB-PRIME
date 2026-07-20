@@ -877,8 +877,10 @@ function renderIdentity() {
   const nameInitials = initials(displayName) || "EX";
   const greeting = document.querySelector("#greetingName");
   if (greeting) greeting.textContent = shortName;
-  document.querySelector("#workspaceName").textContent = displayName;
-  document.querySelector("#workspaceInitials").textContent = nameInitials;
+  const wsName = document.querySelector("#workspaceName");
+  if (wsName) wsName.textContent = displayName;
+  const wsInit = document.querySelector("#workspaceInitials");
+  if (wsInit) wsInit.textContent = nameInitials;
   document.querySelector("#accountName").textContent = shortName;
   document.querySelector("#accountInitials").textContent = nameInitials;
   updatePublicStoreLinks();
@@ -2860,7 +2862,7 @@ document.querySelector("#orderSearch").addEventListener("input", renderOrders);
 document.querySelector("#orderFilter").addEventListener("change", renderOrders);
 document.querySelector("#contactSearch").addEventListener("input", renderContacts);
 document.querySelector("#contactFilter").addEventListener("change", renderContacts);
-document.querySelector("#notificationButton").addEventListener("click", () => showToast("Tu n'as aucune nouvelle notification."));
+document.querySelector("#notificationButton")?.addEventListener("click", () => showToast("Tu n'as aucune nouvelle notification."));
 
 document.querySelector("#helpButton")?.addEventListener("click", () => {
   window.open(marketingUrl(), "_blank", "noopener");
