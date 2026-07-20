@@ -4,9 +4,9 @@
   --line: #e8e8f0;
   --soft: #f7f7fb;
   --surface: #ffffff;
-  --purple: #073bd9;
-  --purple-dark: #082a9d;
-  --purple-soft: #eef4ff;
+  --purple: #6558f5;
+  --purple-dark: #4b3fd4;
+  --purple-soft: #efeaff;
   --blue: #496cff;
   --green: #1eaa73;
   --green-soft: #e6f7ef;
@@ -648,7 +648,7 @@ button {
   border: 1px solid var(--purple);
   color: #fff;
   background: var(--purple);
-  box-shadow: 0 8px 20px rgba(7, 59, 217, 0.18);
+  box-shadow: 0 8px 20px rgba(101, 88, 245, 0.18);
 }
 
 .primary-button:hover {
@@ -1079,12 +1079,47 @@ button {
 .product-card-visual::before { left: -35px; bottom: -45px; }
 .product-card-visual::after { right: -38px; top: -48px; }
 
+.product-card-visual.has-product-image {
+  background: #f4f4f7;
+}
+
+.product-card-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.product-card-visual.has-product-image::before,
+.product-card-visual.has-product-image::after {
+  display: none;
+}
+
+.product-card-visual.has-product-image::after {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: auto;
+  height: auto;
+  border: 0;
+  border-radius: 0;
+  background: linear-gradient(180deg, rgba(12, 18, 45, 0.08), rgba(12, 18, 45, 0.32));
+  content: "";
+  transform: none;
+}
+
 .product-card .product-symbol {
   width: 49px;
   height: 49px;
   border-radius: 14px;
   background: var(--product-color);
   box-shadow: 0 10px 28px color-mix(in srgb, var(--product-color) 30%, transparent);
+  z-index: 1;
+}
+
+.product-card-visual.has-product-image .product-symbol {
+  display: none;
 }
 
 .status-badge {
@@ -1116,6 +1151,7 @@ button {
   position: absolute;
   top: 12px;
   right: 12px;
+  z-index: 2;
 }
 
 .product-card-body {
@@ -3156,6 +3192,50 @@ body.wizard-open { overflow: hidden; }
 .bio-qr { flex: none; width: 96px; height: 96px; border-radius: 12px; background: #fff; box-shadow: 0 0 0 1px #ece9fb; }
 .bio-store-line { display: block; margin-top: 12px; color: #9a9bad; font-size: 12px; word-break: break-all; }
 .link-button { border: none; background: none; color: #6558f5; font: inherit; font-weight: 700; cursor: pointer; padding: 0; }
+
+/* Indicateur de rafraichissement live du dashboard (voir startLiveRefresh dans app.js). */
+.live-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 11px;
+  border-radius: 999px;
+  background: var(--soft);
+  border: 1px solid var(--line);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  white-space: nowrap;
+  transition: color .2s ease, background .2s ease, border-color .2s ease;
+}
+.live-indicator .live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--muted);
+}
+.live-indicator.is-live {
+  color: var(--green);
+  border-color: rgba(30, 170, 115, .35);
+  background: rgba(30, 170, 115, .08);
+}
+.live-indicator.is-live .live-dot {
+  background: var(--green);
+  animation: livePulse 1.4s ease-out infinite;
+}
+.live-indicator.is-stale {
+  color: var(--red);
+  border-color: rgba(217, 88, 102, .35);
+  background: rgba(217, 88, 102, .08);
+}
+.live-indicator.is-stale .live-dot {
+  background: var(--red);
+}
+@keyframes livePulse {
+  0% { box-shadow: 0 0 0 0 rgba(30, 170, 115, .45); }
+  70% { box-shadow: 0 0 0 7px rgba(30, 170, 115, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(30, 170, 115, 0); }
+}
 
 /* Menu compte (déconnexion) */
 .topbar-actions { position: relative; }
