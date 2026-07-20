@@ -3059,18 +3059,9 @@ let lastLiveSignature = "";
 const LIVE_REFRESH_INTERVAL_MS = 1000;
 
 function ensureLiveIndicator() {
-  let indicator = document.querySelector("#liveIndicator");
-  if (!indicator) {
-    const actions = document.querySelector(".topbar-actions");
-    if (!actions) return null;
-    indicator = document.createElement("span");
-    indicator.id = "liveIndicator";
-    indicator.className = "live-indicator";
-    indicator.title = "Le dashboard se met a jour automatiquement";
-    indicator.innerHTML = '<i class="live-dot"></i><span class="live-text">Connexion...</span>';
-    actions.prepend(indicator);
-  }
-  return indicator;
+  // Pastille "En direct / Connexion..." retiree de l'interface.
+  // Le rafraichissement automatique du dashboard reste actif, sans indicateur visible.
+  return null;
 }
 
 function setLiveIndicator(ok) {
