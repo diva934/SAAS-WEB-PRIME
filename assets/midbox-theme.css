@@ -294,8 +294,9 @@ body.midbox-overview .expertly-assistant {
   }
 
   aside.sidebar#sidebar {
-    height: calc(100vh - 24px) !important;
-    margin: 12px !important;
+    height: 100vh !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
   }
 
   .topbar,
