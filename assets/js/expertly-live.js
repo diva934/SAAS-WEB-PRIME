@@ -23,15 +23,12 @@
     '.live-indicator.is-stale .live-dot{background:var(--red,#d95866)}',
     '@keyframes livePulse{0%{box-shadow:0 0 0 0 rgba(30,170,115,.45)}70%{box-shadow:0 0 0 7px rgba(30,170,115,0)}100%{box-shadow:0 0 0 0 rgba(30,170,115,0)}}',
     '.expertly-assistant{--a:#5547e7;--a2:#786bf8;position:fixed;right:22px;bottom:22px;z-index:900;display:flex;flex-direction:column;align-items:flex-end;gap:12px;font-family:"DM Sans",system-ui,sans-serif}',
-    '.ea-launcher{display:inline-flex;align-items:center;gap:0;border:0;padding:8px;border-radius:999px;background:#12141b;box-shadow:0 12px 30px rgba(16,17,26,.28);cursor:pointer;transition:transform .15s ease,box-shadow .15s ease}',
+    '.ea-launcher{display:inline-flex;align-items:center;gap:10px;border:0;padding:8px;border-radius:999px;background:#fff;box-shadow:0 12px 30px rgba(39,56,105,.18);cursor:pointer;transition:transform .15s ease,box-shadow .15s ease}',
     '.ea-launcher:hover{transform:translateY(-2px);box-shadow:0 16px 36px rgba(39,56,105,.24)}',
     '.ea-launcher-icon{width:46px;height:46px;flex:none;display:grid;place-items:center;border-radius:50%;color:#fff;background:linear-gradient(145deg,var(--a2),var(--a))}',
     '.ea-launcher-icon svg{width:26px;height:26px}',
     '.ea-robot-img{width:88%;height:88%;object-fit:contain;display:block;filter:drop-shadow(0 1px 2px rgba(0,0,0,.25))}',
-    '.ea-launcher-label{display:inline-block;font-size:14px;font-weight:700;color:#ffffff;white-space:nowrap;overflow:hidden;max-width:0;opacity:0;margin-left:0;padding-right:0;animation:eaPeek 18s ease-in-out infinite}',
-    '.ea-launcher:hover .ea-launcher-label{animation:none;max-width:190px;opacity:1;margin-left:8px;padding-right:10px}',
-    '@keyframes eaPeek{0%,8%{max-width:0;opacity:0;margin-left:0;padding-right:0}18%,30%{max-width:190px;opacity:1;margin-left:8px;padding-right:10px}40%,100%{max-width:0;opacity:0;margin-left:0;padding-right:0}}',
-    '@media (prefers-reduced-motion:reduce){.ea-launcher-label{animation:none;max-width:190px;opacity:1;margin-left:8px;padding-right:10px}}',
+    '.ea-launcher-label{font-size:14px;font-weight:700;color:#12151f;padding-right:8px}',
     '.expertly-assistant.is-open .ea-launcher-label{display:none}',
     '.ea-panel{width:340px;max-width:calc(100vw - 32px);background:#fff;border:1px solid #e8e8f0;border-radius:20px;box-shadow:0 24px 60px rgba(39,56,105,.22);overflow:hidden;display:flex;flex-direction:column}',
     '.ea-panel[hidden]{display:none}',
@@ -74,18 +71,9 @@
   /* ---------------- Rafraichissement live ---------------- */
   var liveTimer = null, inFlight = false, lastSig = "";
   function ensureIndicator() {
-    var i = document.querySelector("#liveIndicator");
-    if (!i) {
-      var a = document.querySelector(".topbar-actions");
-      if (!a) return null;
-      i = document.createElement("span");
-      i.id = "liveIndicator";
-      i.className = "live-indicator";
-      i.title = "Le dashboard se met a jour automatiquement";
-      i.innerHTML = '<i class="live-dot"></i><span class="live-text">Connexion...</span>';
-      a.prepend(i);
-    }
-    return i;
+    // Indicateur "En direct" retire de l'interface : le rafraichissement
+    // automatique du dashboard reste actif, mais sans pastille visible.
+    return null;
   }
   function setIndicator(ok) {
     var i = ensureIndicator();
@@ -124,11 +112,10 @@
     }
   }
   function startLive() {
-    if (DEMO) return;
-    // Le rafraichissement live est desormais gere UNIQUEMENT par app.js (une seule boucle).
-    // On supprime ce second interval qui appelait /api/state en doublon (2x le quota
-    // "origin transfer" de Vercel pour rien). L'indicateur reste alimente par app.js.
-    ensureIndicator();
+    if (DEMO || liveTimer) return;
+    liveTimer = window.setInterval(refresh, 1000);
+    document.addEventListener("visibilitychange", function () { if (!document.hidden) refresh(); });
+    refresh();
   }
 
   /* ---------------- Metriques reelles (memes formules que le CRM) ---------------- */
@@ -323,7 +310,12 @@
       input.style.height = Math.min(input.scrollHeight, 120) + "px";
     });
 
-    /* -------- Conseils proactifs (onboarding par etapes) -------- */
+    /* -------- Conseils proactifs (onboarding par etapes) --------
+       L'assistant pousse automatiquement UN conseil selon l'avancement du createur :
+       1) juste apres la creation du compte -> aller dans "Tunnel de vente" completer son profil ;
+       2) ensuite -> aller dans "Reseaux sociaux" lancer un audit.
+       Chaque conseil ne s'affiche qu'une fois (memorise), et on saute celui dont
+       l'objectif est deja atteint. */
     function tipSeen(id) { try { return localStorage.getItem("ea_tip_" + id) === "1"; } catch (e) { return false; } }
     function markTipSeen(id) { try { localStorage.setItem("ea_tip_" + id, "1"); } catch (e) {} }
     function profileComplete() {
@@ -331,19 +323,20 @@
       var p = s.profile || {};
       var name = (p.creatorName || "").trim();
       var bio = (p.bio || "").trim();
+      // profil considere complet quand un nom de createur personnalise est defini.
       return name.length > 1 && bio.length > 0;
     }
     var TIPS = [
       {
         id: "profile",
-        text: "Bienvenue sur Expertly \ud83d\udc4b Commence par la section \u00ab Tunnel de vente \u00bb : complete ton profil et structure ton offre.",
+        text: "Bienvenue sur Expertly 👋 Commence par la section « Tunnel de vente » : complete ton profil et structure ton offre.",
         cta: "Ouvrir le tunnel",
         achieved: function () { return profileComplete(); },
         go: function () { var b = document.querySelector('[data-view="tunnel"]'); if (b) b.click(); }
       },
       {
         id: "social",
-        text: "Prochaine etape : va dans \u00ab Reseaux sociaux \u00bb et lance un audit pour savoir quoi ameliorer sur tes comptes.",
+        text: "Prochaine etape : va dans « Reseaux sociaux » et lance un audit pour savoir quoi ameliorer sur tes comptes.",
         cta: "Faire l'audit",
         achieved: function () { try { return localStorage.getItem("sc_audit_done") === "1"; } catch (e) { return false; } },
         go: function () { var b = document.querySelector("#socialNavItem"); if (b) b.click(); }
@@ -360,23 +353,25 @@
     }
     function showProactiveTip() {
       if (DEMO) return;
-      if (!panel.hidden) return;
-      if (root.querySelector(".ea-tip")) return;
+      if (!panel.hidden) return;                 // ne pas gener si l'assistant est ouvert
+      if (root.querySelector(".ea-tip")) return; // deja une bulle affichee
       var tp = nextTip();
       if (!tp) return;
       var tip = document.createElement("div");
       tip.className = "ea-tip";
       var x = document.createElement("button");
-      x.type = "button"; x.className = "ea-tip-x"; x.setAttribute("aria-label", "Fermer"); x.textContent = "\u00d7";
+      x.type = "button"; x.className = "ea-tip-x"; x.setAttribute("aria-label", "Fermer"); x.textContent = "×";
       var body = document.createElement("div");
       body.className = "ea-tip-body"; body.textContent = tp.text;
       var cta = document.createElement("button");
-      cta.type = "button"; cta.className = "ea-tip-cta"; cta.textContent = tp.cta + " \u2192";
+      cta.type = "button"; cta.className = "ea-tip-cta"; cta.textContent = tp.cta + " →";
       tip.appendChild(x); tip.appendChild(body); tip.appendChild(cta);
-      root.insertBefore(tip, root.firstChild);
-      x.addEventListener("click", function (e) { e.stopPropagation(); markTipSeen(tp.id); if (tip.parentNode) tip.parentNode.removeChild(tip); });
+      root.insertBefore(tip, root.firstChild);   // au-dessus du lanceur
+      function close() { markTipSeen(tp.id); if (tip.parentNode) tip.parentNode.removeChild(tip); }
+      x.addEventListener("click", function (e) { e.stopPropagation(); close(); });
       cta.addEventListener("click", function (e) { e.stopPropagation(); markTipSeen(tp.id); if (tip.parentNode) tip.parentNode.removeChild(tip); if (tp.go) tp.go(); });
     }
+    // Laisse le CRM se charger (state + vues) avant de proposer le conseil.
     setTimeout(showProactiveTip, 2600);
   }
 
