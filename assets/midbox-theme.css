@@ -293,10 +293,23 @@ body.midbox-overview .expertly-assistant {
     grid-template-columns: 1fr !important;
   }
 
+  /* Sidebar = vrai tiroir mobile : cachee par defaut, collee au bord gauche
+     quand ouverte, au-dessus du contenu. Fermeture geree par le JS (setView). */
   aside.sidebar#sidebar {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
     height: 100vh !important;
     margin: 0 !important;
     border-radius: 0 !important;
+    z-index: 1200 !important;
+    transform: translateX(-100%) !important;
+    transition: transform 0.25s ease !important;
+  }
+
+  aside.sidebar#sidebar.open {
+    transform: none !important;
+    box-shadow: 0 0 0 100vmax rgba(10, 12, 20, 0.5) !important;
   }
 
   .topbar,
@@ -316,6 +329,29 @@ body.midbox-overview .expertly-assistant {
 
   .notification-button {
     display: none !important;
+  }
+
+  /* Graphiques + stats en portrait : une seule colonne, empiles. */
+  .metric-grid,
+  .metric-grid.compact,
+  .analytics-grid,
+  .finance-grid,
+  .overview-grid,
+  .mb-grid,
+  .mb-drill-grid,
+  .mb-drill-grid.two {
+    grid-template-columns: 1fr !important;
+    grid-template-rows: auto !important;
+  }
+
+  .mb-grid .mb-card,
+  .overview-grid > .panel {
+    min-height: 0 !important;
+  }
+
+  .mb-order-body {
+    grid-template-columns: 1fr !important;
+    height: auto !important;
   }
 }
 
