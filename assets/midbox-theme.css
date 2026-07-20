@@ -240,12 +240,26 @@ aside.sidebar#sidebar {
 .panel,
 .launch-card,
 .detail-panel-card,
-[class*="card"]:not(.nav-item):not(.account-button):not(.modal-card) {
+[class*="card"]:not(.nav-item):not(.account-button):not(.modal-card):not([class*="-head"]):not([class*="-body"]):not([class*="-visual"]):not([class*="-foot"]):not([class*="-meta"]):not([class*="-figure"]):not([class*="-info"]) {
   border: 1px solid var(--mb-line) !important;
   border-radius: 20px !important;
   background: var(--mb-card) !important;
   box-shadow: none !important;
   backdrop-filter: blur(20px) !important;
+}
+
+/* Les sous-elements internes (en-tete, corps, visuel...) ne doivent PAS
+   recevoir de bordure/arrondi propre, sinon le texte colle a ce faux compartiment. */
+.metric-card-head,
+.email-card-head,
+[class*="card-head"],
+[class*="card-body"],
+[class*="card-visual"],
+[class*="card-foot"] {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  backdrop-filter: none !important;
 }
 
 /* Marge interne confortable pour que le texte ne colle pas aux bords/angles. */
