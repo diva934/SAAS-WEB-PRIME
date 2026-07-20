@@ -297,8 +297,12 @@
   }
 
   function renderMetricPage(view) {
-    // Midbox ne pilote QUE la Vue d'ensemble. Les vues Commandes, Finance,
-    // Analytics et Emails gardent leur rendu natif (francais). On ne detourne plus.
+    // Midbox ne pilote QUE la Vue d'ensemble et la page Emails (illustration robot).
+    // Commandes, Finance et Analytics gardent leur rendu natif (francais).
+    if (view === "emails") {
+      var emSection = document.querySelector("#emailsView");
+      if (emSection) return renderDeniedPage(emSection);
+    }
     return false;
     // eslint-disable-next-line no-unreachable
     var section = document.querySelector("#" + view + "View");
@@ -337,8 +341,7 @@
     if (title) title.textContent = "Emails";
     document.body.classList.add("midbox-overview");
     section.innerHTML = '<div class="mb-denied"><div class="mb-denied-main">' + deniedRobotSvg()
-      + '<div><h1>Access Denied</h1><p>You have no permission to visit this page</p></div></div>'
-      + '<footer class="mb-denied-footer"><span>Copyright © 2025 – Midbox. All rights reserved.</span><nav class="mb-denied-links" aria-label="Legal"><a href="#">Term &amp; Conditions</a><a href="#">Privacy &amp; Policy</a></nav></footer></div>';
+      + '<div><h1>Accès restreint</h1><p>Cette section n\'est pas encore disponible.</p></div></div></div>';
     return true;
   }
 
