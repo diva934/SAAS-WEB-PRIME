@@ -189,6 +189,9 @@ function normalizeState(input = {}) {
       // Migration : les imports AliExpress ont type "physique"/"Produit physique".
       kind: /physique/i.test(product.kind || product.type || "") ? "physique" : "digital",
       ...product,
+    })).map((product) => ({
+      ...product,
+      coverUrl: product.coverUrl || productImageUrl(product),
     }))
     : base.products;
   next.pages = Array.isArray(input.pages)
@@ -318,6 +321,31 @@ function escapeHtml(value = "") {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
+}
+
+function normalizeImageUrl(value = "") {
+  let url = "";
+  if (typeof value === "string") url = value;
+  else if (value && typeof value.url === "string") url = value.url;
+  else if (value && typeof value.src === "string") url = value.src;
+  else if (value && typeof value.contentUrl === "string") url = value.contentUrl;
+  url = String(url || "").trim().replace(/\\\//g, "/");
+  if (/^\/\//.test(url)) url = `https:${url}`;
+  if (/^http:\/\//i.test(url)) url = url.replace(/^http:/i, "https:");
+  if (/^(https?:|data:image\/)/i.test(url)) return url;
+  return "";
+}
+
+function productImageUrl(product = {}) {
+  const candidates = [
+    product.coverUrl,
+    product.image,
+    product.imageUrl,
+    product.thumbnail,
+    product.thumbnailUrl,
+    ...(Array.isArray(product.images) ? product.images : []),
+  ];
+  return candidates.map(normalizeImageUrl).find(Boolean) || "";
 }
 
 function initials(value = "") {
@@ -1449,27 +1477,34 @@ function renderProducts() {
       .map((product) => {
         const rate = product.views ? ((product.sales / product.views) * 100).toFixed(1).replace(".", ",") : "0";
         const issues = productReadiness(product);
+        const imageUrl = productImageUrl(product);
+        const variantSummary = Array.isArray(product.variants) && product.variants.length
+          ? product.variants.map((v) => `${v.name} (${(v.values || []).length})`).join(" · ")
+          : "";
+        const readyLabel = issues.length
+          ? escapeHtml(issues.join(" · "))
+          : (product.kind === "physique" ? "Livraison à configurer" : escapeHtml(accessTypeLabels[product.accessType] || "Lien privé"));
         return `
-          <article class="product-card" style="--product-color:${product.color}">
-            <div class="product-card-visual"${product.coverUrl ? ` style="background-image:linear-gradient(140deg, color-mix(in srgb, ${product.color} 80%, #111827), rgba(12,18,45,.24)), url('${escapeHtml(product.coverUrl)}')"` : ""}>
-              <span class="product-symbol">${initials(product.title)}</span>
-              <span class="status-badge ${product.status === "draft" ? "draft" : ""}">
-                ${product.status === "published" ? "Publié" : "Brouillon"}
-              </span>
-            </div>
+          <article class="product-card">
+            <button type="button" class="product-media${imageUrl ? "" : " is-empty"}" ${imageUrl ? `data-zoom-product="${product.id}"` : ""} aria-label="Agrandir l'image du produit">
+              ${imageUrl
+                ? `<img class="product-media-img" src="${escapeHtml(imageUrl)}" alt="${escapeHtml(product.title)}" loading="lazy" referrerpolicy="no-referrer" /><span class="product-media-zoom" aria-hidden="true">⤢</span>`
+                : `<span class="product-media-initials">${initials(product.title)}</span>`}
+              <span class="status-badge ${product.status === "draft" ? "draft" : ""}">${product.status === "published" ? "Publié" : "Brouillon"}</span>
+            </button>
             <div class="product-card-body">
-              <span class="kind-badge ${product.kind === "physique" ? "physique" : "digital"}">${product.kind === "physique" ? "📦 Physique" : "⬇ Digital"}</span>
-              <span>${escapeHtml(product.type)} · ${escapeHtml(offerRoleLabels[product.offerRole] || "Offre principale")}</span>
-              <h3>${escapeHtml(product.title)}</h3>
-              <p>${escapeHtml(product.description)}</p>
-              <div class="product-stats">
-                <div><span>Prix</span><strong>${product.price ? euro.format(product.price) : "Gratuit"}${product.compareAtPrice ? `<small class="strike-price">${euro.format(product.compareAtPrice)}</small>` : ""}</strong></div>
-                <div><span>Ventes</span><strong>${product.sales}</strong></div>
-                <div><span>Conversion</span><strong>${rate} %</strong></div>
+              <div class="pc-badges">
+                <span class="kind-badge ${product.kind === "physique" ? "physique" : "digital"}">${product.kind === "physique" ? "📦 Physique" : "⬇ Digital"}</span>
+                ${variantSummary ? `<span class="pc-variant-chip">${escapeHtml(variantSummary)}</span>` : ""}
+                ${product.source === "aliexpress" ? `<span class="pc-source">via AliExpress</span>` : ""}
               </div>
+              <h3>${escapeHtml(product.title)}</h3>
+              <div class="pc-price"><strong>${product.price ? euro.format(product.price) : "Gratuit"}</strong>${product.compareAtPrice ? ` <s>${euro.format(product.compareAtPrice)}</s>` : ""}</div>
+              ${product.description ? `<p class="pc-desc">${escapeHtml(product.description)}</p>` : ""}
+              ${product.views ? `<div class="pc-meta">${product.sales} vente${product.sales > 1 ? "s" : ""} · ${rate} % de conversion</div>` : ""}
               <div class="readiness-row ${issues.length ? "warning" : "ready"}">
                 <strong>${issues.length ? "À compléter" : "Prêt à vendre"}</strong>
-                <span>${issues.length ? escapeHtml(issues.join(" · ")) : (product.kind === "physique" ? "Livraison à configurer" : escapeHtml(accessTypeLabels[product.accessType] || "Lien privé"))}</span>
+                <span>${readyLabel}</span>
               </div>
               <div class="product-actions">
                 <button data-edit-product="${product.id}">Modifier</button>
@@ -2239,6 +2274,36 @@ function openProductModal(product = null) {
   setTimeout(() => form.elements.title.focus(), 50);
 }
 
+// Ouvre l'image du produit en grand (avec miniatures si plusieurs images).
+function openImageLightbox(product) {
+  if (!product) return;
+  const box = document.querySelector("#imgLightbox");
+  if (!box) return;
+  const images = (Array.isArray(product.images) && product.images.length ? product.images : [productImageUrl(product)])
+    .map(normalizeImageUrl)
+    .filter(Boolean);
+  if (!images.length) return;
+  const big = document.querySelector("#imgLightboxImg");
+  big.src = images[0];
+  big.alt = product.title || "";
+  document.querySelector("#imgLightboxCaption").textContent = product.title || "";
+  document.querySelector("#imgLightboxThumbs").innerHTML =
+    images.length > 1
+      ? images.map((u, i) => `<button type="button" class="lb-thumb ${i === 0 ? "active" : ""}" data-lightbox-thumb="${escapeHtml(u)}"><img src="${escapeHtml(u)}" alt="" referrerpolicy="no-referrer" /></button>`).join("")
+      : "";
+  box.hidden = false;
+  box.style.display = "";
+  document.body.style.overflow = "hidden";
+}
+
+function closeImageLightbox() {
+  const box = document.querySelector("#imgLightbox");
+  if (!box) return;
+  box.hidden = true;
+  box.style.display = "none";
+  document.body.style.overflow = "";
+}
+
 // Affiche les variantes (couleurs, tailles…) en lecture seule dans le formulaire produit.
 function renderProductVariants(variants) {
   const box = document.querySelector("#variantsDisplay");
@@ -2568,6 +2633,22 @@ document.addEventListener("click", (event) => {
   if (event.target.closest("[data-close-email-modal]") || event.target === document.querySelector("#emailModal")) closeEmailModal();
   if (event.target.closest("[data-close-drawer]") || event.target === document.querySelector("#drawerBackdrop")) closeChecklist();
   if (event.target.closest("[data-close-detail]") || event.target === document.querySelector("#detailPanel")) closeDetailPanel();
+
+  const zoomProduct = event.target.closest("[data-zoom-product]");
+  if (zoomProduct) {
+    openImageLightbox(state.products.find((product) => product.id === zoomProduct.dataset.zoomProduct));
+    return;
+  }
+  if (event.target.closest("[data-close-lightbox]") || event.target === document.querySelector("#imgLightbox")) {
+    closeImageLightbox();
+  }
+  const lightboxThumb = event.target.closest("[data-lightbox-thumb]");
+  if (lightboxThumb) {
+    const big = document.querySelector("#imgLightboxImg");
+    if (big) big.src = lightboxThumb.dataset.lightboxThumb;
+    document.querySelectorAll("#imgLightboxThumbs .lb-thumb").forEach((t) => t.classList.remove("active"));
+    lightboxThumb.classList.add("active");
+  }
 
   const editProduct = event.target.closest("[data-edit-product]");
   if (editProduct) {
@@ -2944,6 +3025,7 @@ document.querySelector("#settingsForm").addEventListener("input", (event) => {
 
 window.addEventListener("keydown", (event) => {
   if (event.key === "Escape") {
+    closeImageLightbox();
     closeProductModal();
     closePageModal();
     closeContactModal();

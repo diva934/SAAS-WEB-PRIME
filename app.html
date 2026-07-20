@@ -24,7 +24,7 @@
         marketingUrl: "%MARKETING_URL%"
       };
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="./assets/js/firebase-shim.js?v=1"></script>
   </head>
   <body class="auth-pending" data-surface="creator_dashboard">
     <div class="app-shell">
@@ -459,6 +459,15 @@
           </div>
         </form>
       </div>
+    </div>
+
+    <div class="img-lightbox" id="imgLightbox" hidden>
+      <button type="button" class="img-lightbox-close" data-close-lightbox aria-label="Fermer">×</button>
+      <figure class="img-lightbox-figure">
+        <img id="imgLightboxImg" src="" alt="" referrerpolicy="no-referrer" />
+        <figcaption id="imgLightboxCaption"></figcaption>
+      </figure>
+      <div class="img-lightbox-thumbs" id="imgLightboxThumbs"></div>
     </div>
 
     <div class="modal" id="pageModal" aria-hidden="true">

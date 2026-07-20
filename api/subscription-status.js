@@ -3,9 +3,10 @@ import {
   limitsForPlan,
   requireActiveSubscription,
   sendJson,
-  supabaseRequest,
+  upsertSubscription,
   userFromRequest,
 } from "./_shared.js";
+import { fsGet } from "./_firebase.js";
 
 // Formules disponibles (montants en centimes, mensuel EUR).
 const PLANS = {
@@ -13,11 +14,6 @@ const PLANS = {
   scale: { name: "Croissance", amount: 4900, description: "Produits illimites, emails automatises et IA." },
   studio: { name: "Studio", amount: 14900, description: "Tout Croissance + domaine et priorite support." },
 };
-
-// Affiliation influenceurs : commission versee UNE FOIS sur le 1er paiement d'un client.
-// Suivi + paiement manuel (aucune base : Stripe est la source de verite via les metadonnees).
-const ADMIN_EMAIL = "unknown35225+admin@gmail.com";
-const AFFILIATE_RATE = 0.20;
 
 // Cree une session Stripe Checkout (abonnement + essai) pour l'utilisateur connecte.
 async function createTrialCheckout({ user, planId, origin }) {
@@ -44,12 +40,6 @@ async function createTrialCheckout({ user, planId, origin }) {
     "subscription_data[metadata][expertly_plan]": planId,
     "subscription_data[trial_period_days]": "14",
   });
-  // Attribution influenceur : reportee dans les metadonnees de l'abonnement Stripe.
-  const ref = (user.user_metadata && user.user_metadata.referral_code) || "";
-  if (ref) {
-    form.set("metadata[referral_code]", ref);
-    form.set("subscription_data[metadata][referral_code]", ref);
-  }
   const response = await fetch("https://api.stripe.com/v1/checkout/sessions", {
     method: "POST",
     headers: {
@@ -63,42 +53,18 @@ async function createTrialCheckout({ user, planId, origin }) {
   return data.url;
 }
 
-// Retrouve un compte par son email (API admin GoTrue). Renvoie null si introuvable.
-async function findUserByEmail(email) {
-  const target = String(email || "").trim().toLowerCase();
-  if (!target) return null;
-  for (let page = 1; page <= 10; page += 1) {
-    const data = await supabaseRequest(`/auth/v1/admin/users?page=${page}&per_page=200`);
-    const users = (data && Array.isArray(data.users)) ? data.users : (Array.isArray(data) ? data : []);
-    if (!users.length) return null;
-    const hit = users.find((u) => String(u.email || "").toLowerCase() === target);
-    if (hit) return hit;
-    if (users.length < 200) return null;
-  }
-  return null;
-}
-
 // Upsert (insert si absent) de l'état d'abonnement — robuste même si aucune
 // ligne n'existe encore pour ce créateur.
 async function upsertStatus(userId, status, plan) {
-  await supabaseRequest(`/rest/v1/subscriptions?on_conflict=user_id`, {
-    method: "POST",
-    headers: { Prefer: "resolution=merge-duplicates,return=minimal" },
-    body: JSON.stringify([{ user_id: userId, status, plan: plan || "scale" }]),
-  });
+  await upsertSubscription(userId, { status, plan: plan || "scale" });
 }
 
 // Mémorise la liaison Stripe sur le compte pour accélérer les prochaines vérifs.
 async function saveBillingMetadata(userId, { plan, subscriptionId, customerId }) {
-  await supabaseRequest(`/auth/v1/admin/users/${encodeURIComponent(userId)}`, {
-    method: "PUT",
-    body: JSON.stringify({
-      app_metadata: {
-        expertly_plan: plan,
-        stripe_subscription_id: subscriptionId,
-        stripe_customer_id: customerId || "",
-      },
-    }),
+  await upsertSubscription(userId, {
+    plan,
+    stripe_subscription_id: subscriptionId,
+    stripe_customer_id: customerId || "",
   });
 }
 
@@ -135,33 +101,6 @@ async function findActiveStripeByEmail(email) {
   return null;
 }
 
-// Construit le rapport d'affiliation : chaque abonnement portant un referral_code,
-// avec la commission (20% du 1er paiement) et si elle est deja "gagnee" (1er paiement passe).
-async function affiliateReport() {
-  const res = await stripeGet("/subscriptions?status=all&limit=100&expand[]=data.customer");
-  if (!res.ok || !Array.isArray(res.data && res.data.data)) return [];
-  const rows = [];
-  for (const sub of res.data.data) {
-    const code = sub.metadata && sub.metadata.referral_code;
-    if (!code) continue;
-    const item = sub.items && sub.items.data && sub.items.data[0];
-    const amount = item && item.price ? (Number(item.price.unit_amount) || 0) : 0;
-    const plan = (sub.metadata && sub.metadata.expertly_plan) || "";
-    const earned = ["active", "past_due", "unpaid"].includes(sub.status); // 1er paiement encaisse (hors essai)
-    const email = (sub.customer && typeof sub.customer === "object" && sub.customer.email) || "";
-    rows.push({
-      code: String(code),
-      email: email,
-      plan: plan,
-      status: sub.status,
-      firstPaymentCents: amount,
-      commissionCents: Math.round(amount * AFFILIATE_RATE),
-      earned: earned
-    });
-  }
-  return rows;
-}
-
 export default async function handler(req, res) {
   if (req.method !== "GET" && req.method !== "POST") {
     sendJson(res, 405, { error: "Method not allowed" });
@@ -174,61 +113,7 @@ export default async function handler(req, res) {
     // POST : demarrage d'un essai payant (checkout Stripe) directement depuis le CRM.
     if (req.method === "POST") {
       const body = req.body && typeof req.body === "object" ? req.body : {};
-      const action = body.action || "";
-      // Revoque un abonnement (reserve a l'admin) : sert a rejouer le parcours d'un
-      // nouveau client (checkout d'essai) sans creer de compte supplementaire.
-      if (action === "revoke-access") {
-        if (String(user.email || "").toLowerCase() !== ADMIN_EMAIL) {
-          sendJson(res, 403, { error: "Acces reserve." });
-          return;
-        }
-        const email = String(body.email || "").trim();
-        if (!email) { sendJson(res, 400, { error: "Email requis." }); return; }
-        const target = await findUserByEmail(email);
-        if (!target) { sendJson(res, 404, { error: "Compte introuvable." }); return; }
-        await upsertStatus(target.id, "canceled", "launch");
-        sendJson(res, 200, { revoked: true, email: target.email, userId: target.id });
-        return;
-      }
-
-      // Acces de test offert (reserve a l'admin). Aucune trace cote Stripe :
-      // on marque le plan en base et on note "offert" dans les metadonnees du compte,
-      // pour pouvoir distinguer plus tard un acces offert d'un vrai client payant.
-      if (action === "grant-test-access") {
-        if (String(user.email || "").toLowerCase() !== ADMIN_EMAIL) {
-          sendJson(res, 403, { error: "Acces reserve." });
-          return;
-        }
-        const email = String(body.email || "").trim();
-        const plan = ["launch", "scale", "studio"].includes(String(body.plan || "")) ? String(body.plan) : "studio";
-        if (!email) { sendJson(res, 400, { error: "Email requis." }); return; }
-        const target = await findUserByEmail(email);
-        if (!target) {
-          sendJson(res, 404, { error: "Aucun compte avec cet email. Il doit d'abord s'inscrire sur /inscription." });
-          return;
-        }
-        await upsertStatus(target.id, "active", plan);
-        try {
-          await supabaseRequest(`/auth/v1/admin/users/${encodeURIComponent(target.id)}`, {
-            method: "PUT",
-            body: JSON.stringify({ app_metadata: { expertly_plan: plan, comp_access: true, comp_granted_at: new Date().toISOString() } }),
-          });
-        } catch { /* le marquage est un confort, pas un bloquant */ }
-        sendJson(res, 200, { granted: true, email: target.email, userId: target.id, plan });
-        return;
-      }
-
-      // Rapport d'affiliation (reserve a l'admin).
-      if (action === "affiliate-report") {
-        if (String(user.email || "").toLowerCase() !== ADMIN_EMAIL) {
-          sendJson(res, 403, { error: "Acces reserve." });
-          return;
-        }
-        if (!process.env.STRIPE_SECRET_KEY) { sendJson(res, 503, { error: "Stripe non configure." }); return; }
-        sendJson(res, 200, { rate: AFFILIATE_RATE, rows: await affiliateReport() });
-        return;
-      }
-      if (action !== "start-trial") {
+      if ((body.action || "") !== "start-trial") {
         sendJson(res, 400, { error: "Action inconnue." });
         return;
       }
@@ -247,12 +132,12 @@ export default async function handler(req, res) {
       return;
     }
 
-    const metadata = user.app_metadata || {};
+    const metadata = (await fsGet(`subscriptions/${user.id}`).catch(() => null)) || {};
 
     // 1. Déjà actif en base : réponse immédiate.
     try {
       const row = await requireActiveSubscription(user.id);
-      const plan = metadata.expertly_plan || row?.plan || "";
+      const plan = row?.plan || metadata.plan || "";
       sendJson(res, 200, { active: true, plan, limits: limitsForPlan(plan) });
       return;
     } catch {
@@ -269,7 +154,7 @@ export default async function handler(req, res) {
           found = {
             subscriptionId: sub.data.id,
             customerId: typeof sub.data.customer === "string" ? sub.data.customer : sub.data.customer?.id,
-            plan: planFromSubscription(sub.data, metadata.expertly_plan || "scale"),
+            plan: planFromSubscription(sub.data, metadata.plan || "scale"),
           };
         }
       }
@@ -294,5 +179,3 @@ export default async function handler(req, res) {
     sendJson(res, error.status || 500, { error: error.message || "Erreur interne." });
   }
 }
-
-// build 20260714T160654Z

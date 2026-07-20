@@ -2,9 +2,9 @@ import {
   readCreatorState,
   requireActiveSubscription,
   sendJson,
-  supabaseRequest,
   userFromRequest,
 } from "./_shared.js";
+import { fsGet, fsSet } from "./_firebase.js";
 
 const MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
 // RapidAPI Instagram actif : parseur robuste (edge_followed_by + aplati). Verifie live sur @nasa.
@@ -259,17 +259,19 @@ export default async function handler(req, res) {
     const user = await userFromRequest(req);
     await requireActiveSubscription(user.id);
 
+    // Limite de debit par utilisateur via un compteur Firestore (fenetre glissante simple).
     try {
-      await supabaseRequest("/rest/v1/rpc/assert_rate_limit", {
-        method: "POST",
-        body: JSON.stringify({ p_ip: `assistant:${user.id}`, p_bucket: "assistant", p_limit: RL_LIMIT, p_window_ms: RL_WINDOW_MS }),
-      });
-    } catch (e) {
-      if (/rate_limit_exceeded/i.test(String(e && e.message))) {
+      const rlKey = `ratelimits/assistant_${user.id}`;
+      const rl = (await fsGet(rlKey)) || { count: 0, windowStart: 0 };
+      const nowMs = Date.now();
+      if (nowMs - (rl.windowStart || 0) > RL_WINDOW_MS) { rl.count = 0; rl.windowStart = nowMs; }
+      rl.count += 1;
+      await fsSet(rlKey, rl);
+      if (rl.count > RL_LIMIT) {
         sendJson(res, 429, { error: "Trop de messages d'affilee. Reessaie dans quelques minutes." });
         return;
       }
-    }
+    } catch { /* limite indisponible : on laisse passer plutot que bloquer */ }
 
     const body = await readBody(req);
     const mode = String(body.mode || "").trim();
@@ -277,7 +279,6 @@ export default async function handler(req, res) {
     let question = "";
     let history = [];
     let socialStats = null;
-    let statsDebug = null;
 
     if (mode === "social") {
       const platform = String(body.platform || "Instagram").slice(0, 24).trim();
@@ -285,7 +286,6 @@ export default async function handler(req, res) {
       const objective = String(body.objective || "").slice(0, 500).trim();
       if (!handle) { sendJson(res, 400, { error: "Pseudo requis." }); return; }
       const dbg = [];
-      statsDebug = dbg;
       try { socialStats = await fetchSocialStats(platform, handle, dbg); } catch (e) { socialStats = null; dbg.push("throw=" + String(e && e.message).slice(0, 120)); }
       console.log("[assistant] stats " + platform + " @" + handle + " -> " + (socialStats ? "OK" : "ECHEC") + " | " + dbg.join(" | "));
       const dataRule = socialStats
@@ -350,10 +350,7 @@ export default async function handler(req, res) {
     const parts = data && data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts;
     const text = Array.isArray(parts) ? parts.map((p) => p.text || "").join("").trim() : "";
     if (!text) { sendJson(res, 502, { error: "assistant_empty" }); return; }
-    const isAdmin = String((user && user.email) || "").toLowerCase() === "unknown35225+admin@gmail.com";
-    sendJson(res, 200, mode === "social"
-      ? { answer: text, stats: socialStats, ...(isAdmin && statsDebug ? { statsDebug } : {}) }
-      : { answer: text });
+    sendJson(res, 200, mode === "social" ? { answer: text, stats: socialStats } : { answer: text });
   } catch (error) {
     sendJson(res, error && error.status ? error.status : 500, { error: (error && error.message) || "Erreur interne." });
   }

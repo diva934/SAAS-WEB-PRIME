@@ -1,4 +1,5 @@
-import { normalizeState, sendJson, slugify, supabaseRequest } from "../_shared.js";
+import { normalizeState, sendJson, slugify } from "../_shared.js";
+import { fsQuery, fsSet } from "../_firebase.js";
 
 // POST /api/events/visit { slug } -> incrémente les visites de la boutique.
 export default async function handler(req, res) {
@@ -13,15 +14,13 @@ export default async function handler(req, res) {
       sendJson(res, 400, { error: "Boutique requise." });
       return;
     }
-    const rows = await supabaseRequest(
-      `/rest/v1/creator_states?select=user_id,state&slug=eq.${encodeURIComponent(slug)}&limit=1`,
-    );
-    if (!Array.isArray(rows) || !rows[0]) {
+    const rows = await fsQuery("creators", "slug", slug, 1);
+    if (!rows.length || !rows[0].data?.state) {
       sendJson(res, 404, { error: "Boutique introuvable." });
       return;
     }
-    const row = rows[0];
-    const state = normalizeState(row.state);
+    const row = { user_id: rows[0].id };
+    const state = normalizeState(rows[0].data.state);
     const prevTotal = state.analytics.visits || 0;
     state.analytics.visits = prevTotal + 1;
     // Historique mensuel des visites (graphique Acquisition : orange = visites/mois).
@@ -46,13 +45,7 @@ export default async function handler(req, res) {
       .forEach((product) => {
         product.views = (product.views || 0) + 1;
       });
-    await supabaseRequest(`/rest/v1/creator_states?on_conflict=user_id`, {
-      method: "POST",
-      headers: { Prefer: "resolution=merge-duplicates,return=minimal" },
-      body: JSON.stringify([
-        { user_id: row.user_id, slug, state, updated_at: new Date().toISOString() },
-      ]),
-    });
+    await fsSet(`creators/${row.user_id}`, { slug, state, updated_at: new Date().toISOString() });
     sendJson(res, 200, { visits: state.analytics.visits });
   } catch (error) {
     sendJson(res, error.status || 500, { error: error.message || "Erreur interne." });

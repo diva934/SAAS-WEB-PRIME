@@ -10,7 +10,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <style>
-      :root { --ink:#15161c; --muted:#6b7280; --line:#e6e8ee; --lime:#6558f5; --dark:#16171e; --red:#c0334e; --purple:#6558f5; }
+      :root { --ink:#15161c; --muted:#6b7280; --line:#e6e8ee; --lime:#c6f24e; --dark:#16171e; --red:#c0334e; --purple:#6558f5; }
       * { box-sizing: border-box; }
       html, body { height: 100%; }
       body {
@@ -37,7 +37,7 @@
       form { display: grid; gap: 13px; }
       label { display: grid; gap: 6px; font-size: 12.5px; font-weight: 700; color: #4a4f5c; }
       input { width: 100%; border: 1px solid var(--line); border-radius: 12px; padding: 12px 13px; font: inherit; font-size: 14px; color: var(--ink); background: #fff; outline: none; }
-      input:focus { border-color: var(--lime); box-shadow: 0 0 0 3px rgba(101,88,245,.30); }
+      input:focus { border-color: var(--lime); box-shadow: 0 0 0 3px rgba(198,242,78,.35); }
       .in-btn { margin-top: 4px; border: 0; border-radius: 13px; padding: 14px 18px; background: var(--dark); color: #fff; font: inherit; font-weight: 800; font-size: 15px; cursor: pointer; box-shadow: 0 12px 26px rgba(16,17,26,.18); }
       .in-btn:disabled { opacity: .6; cursor: wait; }
       .in-fine { font-size: 11.5px; color: #9aa0ad; text-align: center; margin-top: 10px; line-height: 1.45; }
@@ -88,11 +88,10 @@
         </form>
         <p class="in-fine">En créant ton compte, tu pourras lancer ton essai gratuit de 14 jours (carte demandée à ce moment-là, 0 € pendant l'essai, annulable à tout moment).</p>
         <p class="in-foot">Déjà un compte ? <a href="/connexion">Se connecter</a></p>
-        <p style="text-align:center;margin-top:14px;font-size:11.5px"><a href="/mentions-legales" style="color:#9aa0ad;text-decoration:none">Mentions légales</a> · <a href="/cgv" style="color:#9aa0ad;text-decoration:none">CGV</a> · <a href="/confidentialite" style="color:#9aa0ad;text-decoration:none">Confidentialité</a></p>
       </section>
     </main>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="./assets/js/firebase-shim.js?v=1"></script>
     <script>
       (function () {
         "use strict";
@@ -101,8 +100,6 @@
         var submit = document.getElementById("inSubmit");
         var feedback = document.getElementById("inFeedback");
         var sb = null;
-        var REF = "";
-        try { REF = (new URLSearchParams(location.search).get("ref") || "").replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 40); } catch (e) {}
 
         function setFeedback(msg, type, html) {
           if (html) { feedback.innerHTML = msg || ""; } else { feedback.textContent = msg || ""; }
@@ -149,7 +146,7 @@
           fetch("/api/config", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ action: "signup", email: email, password: password, firstName: firstName, referralCode: REF })
+            body: JSON.stringify({ action: "signup", email: email, password: password, firstName: firstName })
           }).then(function (r) {
             return r.json().then(function (j) { return { ok: r.ok, status: r.status, j: j }; });
           }).then(function (res) {

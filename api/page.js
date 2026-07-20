@@ -1,4 +1,5 @@
-import { normalizeState, sendJson, slugify, supabaseRequest } from "./_shared.js";
+import { normalizeState, sendJson, slugify } from "./_shared.js";
+import { fsList } from "./_firebase.js";
 
 function publicPayload(state, page, product) {
   const strip = (item) => { const { fileName, ...rest } = item; return rest; };
@@ -26,44 +27,9 @@ function publicPayload(state, page, product) {
 // Récupère les états créateurs susceptibles de contenir une page avec ce slug :
 // containment JSONB (efficace) puis scan borné (robuste).
 async function collectStates(slug) {
-  const states = [];
-  try {
-    const filter = encodeURIComponent(JSON.stringify({ pages: [{ slug }] }));
-    const rows = await supabaseRequest(
-      `/rest/v1/creator_states?select=state&state=cs.${filter}&limit=5`,
-    );
-    for (const row of Array.isArray(rows) ? rows : []) states.push(normalizeState(row.state));
-  } catch {
-    // containment indisponible : on bascule sur le scan.
-  }
-  if (states.length === 0) {
-    // Repli econome : on ne lit QUE la liste des pages (quelques octets par createur),
-    // au lieu d'aspirer l'etat complet de tout le monde (images base64 comprises).
-    let owners = null;
-    try {
-      const light = await supabaseRequest(
-        `/rest/v1/creator_states?select=user_id,pages:state->pages&limit=1000`,
-      );
-      owners = (Array.isArray(light) ? light : [])
-        .filter((row) => Array.isArray(row.pages) && row.pages.some((pg) => pg && pg.slug === slug))
-        .map((row) => row.user_id)
-        .slice(0, 5);
-    } catch {
-      owners = null; // syntaxe non supportee : on retombe sur l'ancien comportement.
-    }
-    if (owners) {
-      for (const uid of owners) {
-        const rows = await supabaseRequest(
-          `/rest/v1/creator_states?select=state&user_id=eq.${encodeURIComponent(uid)}&limit=1`,
-        );
-        if (Array.isArray(rows) && rows[0]) states.push(normalizeState(rows[0].state));
-      }
-    } else {
-      const all = await supabaseRequest(`/rest/v1/creator_states?select=state&limit=1000`);
-      for (const row of Array.isArray(all) ? all : []) states.push(normalizeState(row.state));
-    }
-  }
-  return states;
+  // Firestore : scan borne des createurs (le volume reste faible ; a indexer plus tard).
+  const all = await fsList("creators", 1000);
+  return all.filter((row) => row.data?.state).map((row) => normalizeState(row.data.state));
 }
 
 // Résout la page et explique précisément pourquoi elle n'est pas affichable.
