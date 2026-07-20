@@ -46,7 +46,7 @@
       "use": "@vercel/node"
     },
     {
-      "src": "api/social/connect.js",
+      "src": "api/billing-portal.js",
       "use": "@vercel/node"
     },
     {
@@ -92,10 +92,6 @@
       "dest": "/inscription.html"
     },
     {
-      "src": "/affiliation",
-      "dest": "/affiliation.html"
-    },
-    {
       "src": "/b/([^/]+)",
       "dest": "/store.html"
     },
@@ -106,18 +102,6 @@
     {
       "src": "/p/(.*)",
       "dest": "/sales.html"
-    },
-    {
-      "src": "/mentions-legales",
-      "dest": "/mentions-legales.html"
-    },
-    {
-      "src": "/cgv",
-      "dest": "/cgv.html"
-    },
-    {
-      "src": "/confidentialite",
-      "dest": "/confidentialite.html"
     },
     {
       "src": "/(.*)",
