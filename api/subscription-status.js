@@ -8,6 +8,12 @@ import {
 } from "./_shared.js";
 import { fsGet } from "./_firebase.js";
 
+// Comptes administrateurs : acces Studio automatique, sans paiement.
+const ADMIN_EMAILS = ["unknown35225@gmail.com"];
+function isAdminEmail(email) {
+  return ADMIN_EMAILS.includes(String(email || "").trim().toLowerCase());
+}
+
 // Formules disponibles (montants en centimes, mensuel EUR).
 const PLANS = {
   launch: { name: "Lancement", amount: 1900, description: "Boutique, CRM et tunnels pour demarrer." },
@@ -129,6 +135,13 @@ export default async function handler(req, res) {
       } catch { /* pas encore actif : on peut demarrer l'essai */ }
       const url = await createTrialCheckout({ user, planId: body.plan || "scale", origin: appOrigin(req) });
       sendJson(res, 200, { url });
+      return;
+    }
+
+    // Admin : acces Studio garanti, active automatiquement au premier passage.
+    if (isAdminEmail(user.email)) {
+      await upsertSubscription(user.id, { status: "active", plan: "studio", admin: true }).catch(() => {});
+      sendJson(res, 200, { active: true, plan: "studio", admin: true, limits: limitsForPlan("studio") });
       return;
     }
 
