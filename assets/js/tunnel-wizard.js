@@ -161,10 +161,10 @@
       else if (isCurrent || stripeOpen) badge = '<span class="tw-badge tw-badge-current">' + (i + 1) + '</span>';
       else badge = '<span class="tw-badge tw-badge-lock">' + LOCK_SVG + '</span>';
 
-      var meta = isDone ? '<span class="tw-tag tw-tag-done">Termine</span>'
+      var meta = isDone ? '<span class="tw-tag tw-tag-done">Terminé</span>'
         : (isCurrent ? '<span class="tw-tag tw-tag-now">À faire maintenant</span>'
           : (stripeOpen ? '<span class="tw-tag tw-tag-now">Disponible maintenant</span>'
-            : '<span class="tw-tag tw-tag-soon">Etape ' + (i + 1) + '</span>'));
+            : '<span class="tw-tag tw-tag-soon">Étape ' + (i + 1) + '</span>'));
 
       var actions = "";
       if (isDone) {
@@ -359,7 +359,7 @@
       '.tw-step-desc{margin:6px 0 0;font-size:13.5px;line-height:1.5;color:#6b7280}' +
       '.tw-tag{font-size:11px;font-weight:700;border-radius:999px;padding:3px 9px}' +
       '.tw-tag-done{background:#e4f7ee;color:#1a8a5f}' +
-      '.tw-tag-now{background:#f2fbd6;color:#5c7a12}' +
+      '.tw-tag-now{background:#efeaff;color:#5749e8}' +
       '.tw-tag-soon{background:#eef0f4;color:#8a8f9c}' +
       '.tw-step-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}' +
       '.tw-cta{text-decoration:none;display:inline-flex;align-items:center}' +

@@ -77,26 +77,26 @@
   }
 
   function pill() {
-    if (!status) return '<span class="scc-pill wait">Verification…</span>';
-    if (status.chargesEnabled) return '<span class="scc-pill on">Connecte ✓</span>';
-    if (status.connected) return '<span class="scc-pill wait">A terminer</span>';
-    return '<span class="scc-pill off">Non connecte</span>';
+    if (!status) return '<span class="scc-pill wait">Vérification…</span>';
+    if (status.chargesEnabled) return '<span class="scc-pill on">Connecté ✓</span>';
+    if (status.connected) return '<span class="scc-pill wait">À terminer</span>';
+    return '<span class="scc-pill off">Non connecté</span>';
   }
 
   function body() {
     if (status && status.chargesEnabled) {
-      return '<p class="scc-desc">Ton compte Stripe est connecte. L\'argent de tes ventes arrive directement dessus (verse par Stripe selon ton calendrier de virement).</p>' +
-        '<button type="button" class="scc-link" data-scc-manage>Mettre a jour mes informations Stripe</button>';
+      return '<p class="scc-desc">Ton compte Stripe est connecté. L\'argent de tes ventes arrive directement dessus (versé par Stripe selon ton calendrier de virement).</p>' +
+        '<button type="button" class="scc-link" data-scc-manage>Mettre à jour mes informations Stripe</button>';
     }
     var steps =
       '<ol class="scc-steps">' +
         '<li>Clique sur « Connecter Stripe ».</li>' +
-        '<li>Connecte-toi a ton compte Stripe existant, ou cree-en un (gratuit).</li>' +
-        '<li>Renseigne les informations demandees par Stripe (identite, IBAN).</li>' +
-        '<li>Tu reviens automatiquement ici, compte connecte.</li>' +
+        '<li>Connecte-toi à ton compte Stripe existant, ou crée-en un (gratuit).</li>' +
+        '<li>Renseigne les informations demandées par Stripe (identité, IBAN).</li>' +
+        '<li>Tu reviens automatiquement ici, compte connecté.</li>' +
       '</ol>';
     var label = status && status.connected ? "Terminer la configuration" : "Connecter Stripe";
-    return '<p class="scc-desc">Connecte ton compte Stripe pour recevoir l\'argent de tes ventes directement, sans intermediaire.</p>' +
+    return '<p class="scc-desc">Connecte ton compte Stripe pour recevoir l\'argent de tes ventes directement, sans intermédiaire.</p>' +
       steps +
       '<button type="button" class="scc-btn" data-scc-connect>' + label + '</button>';
   }
@@ -107,7 +107,7 @@
       '<div class="scc-head">' +
         '<span class="scc-icon">S</span>' +
         '<span class="scc-title">Encaissement — Mon compte Stripe' +
-          '<small>Recois l\'argent de tes ventes</small>' +
+          '<small>Reçois l\'argent de tes ventes</small>' +
         '</span>' +
         pill() +
       '</div>' +

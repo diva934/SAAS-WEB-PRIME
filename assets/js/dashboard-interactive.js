@@ -26,7 +26,7 @@
       ".dic-tip.on{opacity:1;}",
       ".dic-tip b{color:#6558f5;}",
       ".dic-tip small{display:block;color:#b9bdca;font-weight:600;font-size:10.5px;margin-bottom:1px;}",
-      ".dic-dot{position:fixed;z-index:1399;width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid #62c600;transform:translate(-50%,-50%);pointer-events:none;opacity:0;transition:opacity .1s;box-shadow:0 3px 8px rgba(20,22,40,.25);}",
+      ".dic-dot{position:fixed;z-index:1399;width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid #6558f5;transform:translate(-50%,-50%);pointer-events:none;opacity:0;transition:opacity .1s;box-shadow:0 3px 8px rgba(20,22,40,.25);}",
       ".dic-dot.on{opacity:1;}",
       ".dic-modal{position:fixed;inset:0;z-index:2000;display:none;align-items:center;justify-content:center;background:rgba(16,17,26,.55);backdrop-filter:blur(4px);}",
       ".dic-modal.open{display:flex;}",
@@ -173,7 +173,7 @@
       var h = Math.max(4, (Number(v) / max) * plot);
       var x = 20 + slot * i + slot / 2 - bw / 2;
       var y = top + plot - h;
-      return '<rect class="dic-brect" data-i="' + i + '" x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + h.toFixed(1) + '" rx="9" fill="#8fd14f"/>' +
+      return '<rect class="dic-brect" data-i="' + i + '" x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + h.toFixed(1) + '" rx="9" fill="#6558f5"/>' +
         '<text x="' + (x + bw / 2).toFixed(1) + '" y="' + (H - 16) + '" text-anchor="middle" fill="#9aa0ad" font-size="13">' + (labels[i] || "") + '</text>';
     }).join("");
     var big = modal.querySelector("#dicBig");

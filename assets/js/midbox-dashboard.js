@@ -22,7 +22,7 @@
     ".mb-wallet{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0 14px;padding:11px 16px;border:1px dashed rgba(21,22,17,.55);border-radius:22px;}",
     ".mb-wallet div{display:grid;grid-template-columns:20px 1fr;column-gap:8px;align-items:center;}.mb-wallet svg{grid-row:1/3;width:18px;height:18px;}.mb-wallet strong{font-size:16px;font-weight:500;line-height:1;}.mb-wallet span{color:#777970;font-size:11px;}",
     ".mb-mini-labels{position:absolute;left:29px;right:24px;bottom:18px;display:flex;justify-content:space-between;color:#9ca096;font-size:14px;}.mb-day{padding:4px 12px;border-radius:6px;background:#75766e;color:#fff;}",
-    ".mb-gauge-wrap{height:228px;position:relative;display:grid;place-items:center;margin-top:5px;}.mb-gauge-value{position:absolute;inset:62px 0 auto;text-align:center;font-size:54px;font-weight:500;letter-spacing:0;color:#030402;}.mb-gauge-delta{position:absolute;top:137px;left:50%;transform:translateX(-50%);padding:4px 10px;border-radius:16px;background:#d9ffc4;color:#2fac1c;font-size:13px;}.mb-note{margin:0 auto;color:#6f7168;text-align:center;font-size:14px;line-height:1.25;max-width:230px;}",
+    ".mb-gauge-wrap{height:228px;position:relative;display:grid;place-items:center;margin-top:5px;}.mb-gauge-value{position:absolute;inset:62px 0 auto;text-align:center;font-size:54px;font-weight:500;letter-spacing:0;color:#030402;}.mb-gauge-delta{position:absolute;top:137px;left:50%;transform:translateX(-50%);padding:4px 10px;border-radius:16px;background:#e7f5ef;color:#0f7a54;font-size:13px;}.mb-note{margin:0 auto;color:#6f7168;text-align:center;font-size:14px;line-height:1.25;max-width:230px;}",
     ".mb-order-body{display:grid;grid-template-columns:132px 1fr;gap:10px;align-items:center;height:292px;}.mb-donut{width:126px;height:126px;position:relative;margin:0 auto;}.mb-donut-center{position:absolute;inset:0;display:grid;place-items:center;text-align:center;font-size:20px;font-weight:700;line-height:1.05;}.mb-donut-center small{display:block;color:#777970;font-size:12px;font-weight:400;}",
     ".mb-cat-list{display:grid;gap:14px;min-width:0;}.mb-cat{display:grid;grid-template-columns:36px minmax(0,1fr) auto;gap:10px;align-items:center;cursor:pointer;}.mb-cat i{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-style:normal;color:#151611;}.mb-cat strong{display:block;font-size:15px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}.mb-cat span{display:block;color:#7d8077;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}.mb-cat b{font-size:15px;font-weight:600;}",
     ".mb-acq-metrics{display:flex;gap:26px;margin:26px 0 2px 4px;}.mb-acq-metrics div{display:grid;grid-template-columns:20px 1fr;gap:0 8px;align-items:center;}.mb-acq-metrics svg{grid-row:1/3;width:18px;height:18px;}.mb-acq-metrics strong{font-size:16px;font-weight:500;}.mb-acq-metrics span{grid-column:2;color:#777970;font-size:11px;}",
@@ -215,7 +215,7 @@
 
   function balanceCard(d) {
     var body = '<div class="mb-wallet"><div>' + icon("wallet") + '<strong>' + formatInt(d.wallet) + '</strong><span>Wallet</span></div><div>' + icon("dollar") + '<strong>' + formatInt(d.paypal) + '</strong><span>PayPal</span></div></div>'
-      + '<div style="height:158px;margin-top:7px">' + smoothArea(d.series, "#62c600", "mbBalanceFill", 260, 140) + '</div>'
+      + '<div style="height:158px;margin-top:7px">' + smoothArea(d.series, "#6558f5", "mbBalanceFill", 260, 140) + '</div>'
       + '<div class="mb-mini-labels"><span>N</span><span class="mb-day">D</span><span>J</span><span>F</span><span>M</span><span>A</span></div>';
     return shell("Balance", "", "dollar", body, '<button class="mb-menu" aria-label="Ouvrir Finance" data-mb-view="finance">...</button>', "mb-balance");
   }
@@ -235,7 +235,7 @@
     var productSales = d.products.slice().sort(function (a, b) {
       return (Number(b.sales) || 0) - (Number(a.sales) || 0);
     }).slice(0, 4);
-    var colors = ["#d8f8ff", "#e1ffd7", "#6558f5", "#f1f3ed"];
+    var colors = ["#c9c2fb", "#e1ddfb", "#6558f5", "#f1f3ed"];
     var list = productSales.length ? productSales.map(function (product, index) {
       return '<div class="mb-cat"><i style="background:' + colors[index % colors.length] + '">' + ["□", "◇", "◎", "◌"][index % 4] + '</i><div><strong>' + esc(product.type || product.title || "Produit") + '</strong><span>' + esc(product.title || "Produit") + '</span></div><b>' + formatInt(product.sales || 0) + '</b></div>';
     }).join("") : '<div class="mb-cat"><i style="background:#6558f5">◎</i><div><strong>Aucun produit</strong><span>Ajoute un produit</span></div><b>0</b></div>';
@@ -253,13 +253,13 @@
     });
     var body = '<div class="mb-acq-metrics"><div>' + icon("bars") + '<strong>' + pct(bounce) + '%</strong><span>Bounce Rate</span></div><div>' + icon("page") + '<strong>' + formatInt(sessions) + '</strong><span>Page Session</span></div></div>'
       + '<div style="height:214px;margin-top:2px;position:relative">' + smoothArea(acqSeries, "#ff9f20", "mbAcqOrange", 300, 178)
-      + '<div style="position:absolute;inset:0">' + smoothArea(d.series, "#62c600", "mbAcqGreen", 300, 178) + '</div></div>'
+      + '<div style="position:absolute;inset:0">' + smoothArea(d.series, "#6558f5", "mbAcqGreen", 300, 178) + '</div></div>'
       + '<div class="mb-mini-labels" style="left:38px;right:34px">' + DAYS.map(function (day) { return '<span>' + day + '</span>'; }).join("") + '</div>';
     return shell("Acquisition", "", "grid", body, '<button class="mb-menu" aria-label="Ouvrir Analytics" data-mb-view="analytics">...</button>', "mb-acq");
   }
 
   function bestSellersCard(d) {
-    var palette = ["#20231e", "#e6c6ba", "#23a878", "#9ea09b", "#6558f5"];
+    var palette = ["#20231e", "#e6c6ba", "#4b3fd4", "#9ea09b", "#6558f5"];
     var sorted = d.products.slice().sort(function (a, b) {
       return (Number(b.sales) || 0) * (Number(b.price) || 0) - (Number(a.sales) || 0) * (Number(a.price) || 0);
     }).slice(0, 5);
@@ -297,6 +297,10 @@
   }
 
   function renderMetricPage(view) {
+    // Midbox ne pilote QUE la Vue d'ensemble. Les vues Commandes, Finance,
+    // Analytics et Emails gardent leur rendu natif (francais). On ne detourne plus.
+    return false;
+    // eslint-disable-next-line no-unreachable
     var section = document.querySelector("#" + view + "View");
     if (!section) return false;
     if (view === "emails") return renderDeniedPage(section);

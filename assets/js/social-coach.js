@@ -11,12 +11,12 @@
     ".sc-card{background:#fff;border:1px solid #edeff3;border-radius:22px;box-shadow:0 12px 30px rgba(20,22,40,.05);padding:22px;}",
     ".sc-plat{display:flex;gap:8px;margin-bottom:16px;}",
     ".sc-plat-btn{flex:1;padding:10px;border-radius:12px;border:1px solid #e6e8ee;background:#fff;font:inherit;font-weight:600;color:#4a4f5c;cursor:pointer;}",
-    ".sc-plat-btn.is-on{background:#16171e;color:#fff;border-color:#16171e;}",
+    ".sc-plat-btn.is-on{background:#6558f5;color:#fff;border-color:#6558f5;}",
     ".sc-label{display:block;font-size:12px;font-weight:600;color:#8a8f9c;margin:10px 0 6px;}",
     ".sc-input{width:100%;box-sizing:border-box;border:1px solid #e2e4ec;border-radius:12px;padding:11px 12px;font:inherit;font-size:14px;color:#16171e;outline:none;}",
     ".sc-input:focus{border-color:#6558f5;}",
     ".sc-textarea{min-height:74px;resize:vertical;line-height:1.4;}",
-    ".sc-go{width:100%;margin-top:16px;padding:12px;border:0;border-radius:14px;background:#16171e;color:#fff;font:inherit;font-weight:700;cursor:pointer;}",
+    ".sc-go{width:100%;margin-top:16px;padding:12px;border:0;border-radius:14px;background:#6558f5;color:#fff;font:inherit;font-weight:700;cursor:pointer;}",
     ".sc-go:disabled{opacity:.6;cursor:default;}",
     ".sc-note{font-size:11px;color:#9aa0ad;margin-top:12px;line-height:1.45;}",
     ".sc-result{min-height:220px;}",
@@ -52,24 +52,24 @@
     var btn = document.createElement("button");
     btn.className = "nav-item";
     btn.id = "socialNavItem";
-    btn.title = "Reseaux sociaux";
-    btn.innerHTML = '<span class="nav-icon">✦</span><span>Reseaux sociaux</span>';
+    btn.title = "Réseaux sociaux";
+    btn.innerHTML = '<span class="nav-icon">✦</span><span>Réseaux sociaux</span>';
     nav.appendChild(btn);
 
     var view = document.createElement("section");
     view.className = "view";
     view.id = "socialView";
     view.innerHTML =
-      '<div class="page-heading"><div><p class="eyebrow">Croissance</p><h1>Reseaux sociaux</h1><p>Audit IA de ton compte + plan de contenu oriente vente.</p></div></div>' +
+      '<div class="page-heading"><div><p class="eyebrow">Croissance</p><h1>Réseaux sociaux</h1><p>Audit IA de ton compte + plan de contenu orienté vente.</p></div></div>' +
       '<div class="sc-wrap">' +
         '<div class="sc-card">' +
           '<div class="sc-plat"><button type="button" class="sc-plat-btn is-on" data-p="Instagram">Instagram</button><button type="button" class="sc-plat-btn" data-p="TikTok">TikTok</button></div>' +
           '<label class="sc-label">Ton pseudo (@)</label><input id="scHandle" class="sc-input" placeholder="@ton_compte" autocomplete="off"/>' +
-          '<label class="sc-label">Ton objectif / theme (optionnel)</label><textarea id="scObj" class="sc-input sc-textarea" placeholder="Ex: vendre mon accompagnement, cible entrepreneurs debutants"></textarea>' +
+          '<label class="sc-label">Ton objectif / thème (optionnel)</label><textarea id="scObj" class="sc-input sc-textarea" placeholder="Ex : vendre mon accompagnement, cible entrepreneurs débutants"></textarea>' +
           '<button id="scGo" class="sc-go" type="button">Analyser mon compte</button>' +
-          '<p class="sc-note">L\'IA n\'a pas acces a tes vraies stats : elle te donne une strategie et des idees concretes, sans inventer de chiffres.</p>' +
+          '<p class="sc-note">L\'IA n\'a pas accès à tes vraies stats : elle te donne une stratégie et des idées concrètes, sans inventer de chiffres.</p>' +
         '</div>' +
-        '<div class="sc-card sc-result"><div class="sc-res-head"><strong>Ton audit apparaitra ici</strong></div><p class="sc-empty">Renseigne ton pseudo et lance l\'analyse : tu recevras un positionnement, 5 idees de contenu, 3 accroches, un rythme de publication et comment convertir en ventes.</p></div>' +
+        '<div class="sc-card sc-result"><div class="sc-res-head"><strong>Ton audit apparaîtra ici</strong></div><p class="sc-empty">Renseigne ton pseudo et lance l\'analyse : tu recevras un positionnement, 5 idées de contenu, 3 accroches, un rythme de publication et comment convertir en ventes.</p></div>' +
       '</div>';
     content.appendChild(view);
 
@@ -87,7 +87,7 @@
       document.querySelectorAll(".nav-item").forEach(function (n) { n.classList.remove("active"); });
       view.classList.add("active");
       btn.classList.add("active");
-      var vt = document.querySelector("#viewTitle"); if (vt) vt.textContent = "Reseaux sociaux";
+      var vt = document.querySelector("#viewTitle"); if (vt) vt.textContent = "Réseaux sociaux";
     });
 
     var go = view.querySelector("#scGo");
@@ -97,7 +97,7 @@
       var objective = view.querySelector("#scObj").value.trim();
       if (!handle) { view.querySelector("#scHandle").focus(); return; }
       go.disabled = true; go.textContent = "Analyse en cours...";
-      result.innerHTML = '<div class="sc-res-head"><strong>Analyse en cours...</strong><span>' + platform + '</span></div><p class="sc-empty">L\'IA prepare ton audit et ton plan de contenu pour ' + handle + '...</p>';
+      result.innerHTML = '<div class="sc-res-head"><strong>Analyse en cours...</strong><span>' + platform + '</span></div><p class="sc-empty">L\'IA prépare ton audit et ton plan de contenu pour ' + handle + '...</p>';
       analyze(handle, objective).then(function (out) {
         if (out.ok) {
           var raw = out.text;
@@ -134,7 +134,7 @@
           go.textContent = "Relancer l'analyse";
         } else {
           result.innerHTML = '<div class="sc-res-head"><strong>Oups</strong></div><p class="sc-empty">' + out.text + '</p>';
-          go.textContent = "Reessayer";
+          go.textContent = "Réessayer";
         }
         go.disabled = false;
       });
@@ -149,10 +149,10 @@
           body: JSON.stringify({ mode: "social", platform: platform, handle: handle, objective: objective })
         });
         if (r.ok) { var d = await r.json().catch(function () { return null; }); if (d && d.answer) return { ok: true, text: d.answer, stats: d.stats || null }; }
-        if (r.status === 429) return { ok: false, text: "Tu vas un peu vite, reessaie dans quelques minutes." };
-        if (r.status === 503) return { ok: false, text: "L'IA n'est pas encore configuree." };
-        return { ok: false, text: "L'analyse a echoue, reessaie dans un instant." };
-      } catch (e) { return { ok: false, text: "Erreur reseau, reessaie." }; }
+        if (r.status === 429) return { ok: false, text: "Tu vas un peu vite, réessaie dans quelques minutes." };
+        if (r.status === 503) return { ok: false, text: "L'IA n'est pas encore configurée." };
+        return { ok: false, text: "L'analyse a échoué, réessaie dans un instant." };
+      } catch (e) { return { ok: false, text: "Erreur réseau, réessaie." }; }
     }
   }
 
