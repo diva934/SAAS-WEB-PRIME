@@ -88,6 +88,7 @@
       view.classList.add("active");
       btn.classList.add("active");
       var vt = document.querySelector("#viewTitle"); if (vt) vt.textContent = "Réseaux sociaux";
+      var sb = document.querySelector("#sidebar"); if (sb) sb.classList.remove("open");
     });
 
     var go = view.querySelector("#scGo");
