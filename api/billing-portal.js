@@ -1,4 +1,5 @@
 import { requireActiveSubscription, sendJson, userFromRequest } from "./_shared.js";
+import { fsGet } from "./_firebase.js";
 
 function appOrigin(req) {
   if (process.env.APP_URL?.startsWith("http")) return new URL(process.env.APP_URL).origin;
@@ -13,8 +14,9 @@ async function stripeGet(path) {
 }
 
 async function findCustomerId(user) {
-  const fromMeta = user.app_metadata?.stripe_customer_id;
-  if (fromMeta) return fromMeta;
+  // Firebase : l'id client Stripe est stocke dans le doc subscriptions (pas d'app_metadata).
+  const sub = await fsGet(`subscriptions/${user.id}`).catch(() => null);
+  if (sub?.stripe_customer_id) return sub.stripe_customer_id;
   if (!user.email) return null;
   const customers = await stripeGet(`/customers?email=${encodeURIComponent(user.email)}&limit=1`);
   return customers.ok ? customers.data?.data?.[0]?.id || null : null;
