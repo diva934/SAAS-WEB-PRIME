@@ -407,6 +407,12 @@
   }
 
   document.addEventListener("click", function (event) {
+    // MOBILE uniquement : les cartes du dashboard ne redirigent pas et ne
+    // s'agrandissent pas. L'utilisateur fait juste glisser son doigt (scroll)
+    // pour parcourir les stats.
+    if (window.innerWidth <= 640 && event.target.closest(".mb-card")) {
+      return;
+    }
     var midboxTarget = event.target.closest("[data-mb-view]");
     if (midboxTarget) {
       event.preventDefault();
@@ -417,11 +423,9 @@
     }
     var focusCard = event.target.closest(".mb-card[data-mb-focus]");
     if (focusCard) {
+      // Desktop (version figee) : agrandissement au clic conserve.
       event.preventDefault();
-      // Plus d'agrandissement au clic : on ouvre directement la vue detaillee
-      // correspondante (Analytics, Finance, Commandes...).
-      var mv = focusCard.getAttribute("data-mb-focus");
-      if (mv && typeof setView === "function") { setView(mv); return; }
+      openFocus(focusCard);
       return;
     }
     if (event.target.closest(".mb-focus-close") || event.target.classList.contains("mb-focus")) {
