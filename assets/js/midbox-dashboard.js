@@ -54,7 +54,8 @@
     "@media(max-width:720px){.mb-denied{min-height:calc(100vh - 94px);}.mb-denied-robot{width:min(300px,78vw);}.mb-denied-footer{align-items:flex-start;flex-direction:column;}.mb-denied-links{gap:16px;}}",
     "@media(max-width:900px){.mb-drill-grid.two{grid-template-columns:1fr;}}",
     "@media(max-width:1180px){.mb-grid{grid-template-columns:1fr 1fr;grid-template-rows:auto;}.mb-earn,.mb-balance,.mb-expenses,.mb-orders,.mb-acq,.mb-best{grid-column:auto;grid-row:auto;}.mb-earn,.mb-best{grid-column:1/-1;}.mb-card{min-height:300px;}}",
-    "@media(max-width:720px){.mb-grid{grid-template-columns:1fr;}.mb-earn,.mb-best{grid-column:auto;}.mb-order-body{grid-template-columns:1fr;height:auto;}.mb-card{border-radius:24px;padding:16px;}.mb-table{font-size:12px;}.mb-table th:nth-child(4),.mb-table td:nth-child(4){display:none;}}"
+    "@media(max-width:720px){.mb-grid{grid-template-columns:1fr;}.mb-earn,.mb-best{grid-column:auto;}.mb-order-body{grid-template-columns:1fr;height:auto;}.mb-card{border-radius:24px;padding:16px;}.mb-table{font-size:12px;}.mb-table th:nth-child(4),.mb-table td:nth-child(4){display:none;}}",
+    "@media(max-width:640px){.mb-earn-chart{height:210px;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;}.mb-earn-chart .mb-svg{min-width:520px;height:100%;}.mb-focus{padding:12px;}.mb-focus-panel{width:calc(100vw - 24px);}.mb-focus-panel .mb-card,.mb-focus-panel .mb-earn,.mb-focus-panel .mb-best{min-height:0;}}"
   ].join("");
 
   var style = document.createElement("style");
@@ -192,7 +193,7 @@
       return '<rect x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="24" height="' + h.toFixed(1) + '" rx="10" fill="' + fill + '"/>' + tip
         + '<text x="' + (x + 12).toFixed(1) + '" y="246" text-anchor="middle" fill="#999b91" font-size="14">' + MONTHS[index] + '</text>';
     }).join("");
-    return '<div style="height:244px;margin-top:10px"><svg class="mb-svg" viewBox="0 0 760 260">'
+    return '<div class="mb-earn-chart" style="height:244px;margin-top:10px"><svg class="mb-svg" viewBox="0 0 760 260">'
       + '<defs><pattern id="mbHatch" width="8" height="8" patternTransform="rotate(45)" patternUnits="userSpaceOnUse"><rect width="8" height="8" fill="#e9ebe3"/><line x1="0" y1="0" x2="0" y2="8" stroke="#bfc3b7" stroke-width="4"/></pattern><pattern id="mbActiveHatch" width="8" height="8" patternTransform="rotate(45)" patternUnits="userSpaceOnUse"><rect width="8" height="8" fill="#f7f8f1"/><line x1="0" y1="0" x2="0" y2="8" stroke="#70736b" stroke-width="4"/></pattern></defs>'
       + '<text class="mb-y" x="51" y="222">0</text>' + grid + bars + '</svg></div>';
   }
@@ -417,6 +418,12 @@
     var focusCard = event.target.closest(".mb-card[data-mb-focus]");
     if (focusCard) {
       event.preventDefault();
+      // Mobile : pas de superposition "zoom" (mal adaptee au portrait) ; on ouvre
+      // directement la vue native responsive correspondante.
+      if (window.innerWidth <= 640) {
+        var mv = focusCard.getAttribute("data-mb-focus");
+        if (mv && typeof setView === "function") { setView(mv); return; }
+      }
       openFocus(focusCard);
       return;
     }
