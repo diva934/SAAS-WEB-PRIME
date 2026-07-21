@@ -418,13 +418,10 @@
     var focusCard = event.target.closest(".mb-card[data-mb-focus]");
     if (focusCard) {
       event.preventDefault();
-      // Mobile : pas de superposition "zoom" (mal adaptee au portrait) ; on ouvre
-      // directement la vue native responsive correspondante.
-      if (window.innerWidth <= 640) {
-        var mv = focusCard.getAttribute("data-mb-focus");
-        if (mv && typeof setView === "function") { setView(mv); return; }
-      }
-      openFocus(focusCard);
+      // Plus d'agrandissement au clic : on ouvre directement la vue detaillee
+      // correspondante (Analytics, Finance, Commandes...).
+      var mv = focusCard.getAttribute("data-mb-focus");
+      if (mv && typeof setView === "function") { setView(mv); return; }
       return;
     }
     if (event.target.closest(".mb-focus-close") || event.target.classList.contains("mb-focus")) {
