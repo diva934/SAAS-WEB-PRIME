@@ -26,6 +26,7 @@ body,
 }
 
 .app-shell {
+  display: grid !important;
   grid-template-columns: var(--sidebar-width) 1fr !important;
   min-height: 100vh !important;
   gap: 0 !important;
