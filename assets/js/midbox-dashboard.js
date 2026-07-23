@@ -284,17 +284,87 @@
     var overview = document.querySelector("#overviewView");
     if (!overview) return;
     var d = metrics();
+    var s = d.s || {};
     var title = document.querySelector("#viewTitle");
     if (title) title.textContent = "Dashboard";
     document.body.classList.add("midbox-overview");
-    overview.innerHTML = '<div class="mb-page"><div class="mb-crumb"><b>Home</b><span>/</span><b>Dashboard</b></div><div class="mb-grid">'
-      + shell("Earning Reports", "Yearly Earnings Overview", "trend", earningChart(d.series), '<button class="mb-pill" data-mb-view="analytics">Last Year⌄</button><button class="mb-menu" aria-label="Ouvrir Analytics" data-mb-view="analytics">...</button>', "mb-earn")
-      + balanceCard(d)
-      + expensesCard(d)
-      + ordersCard(d)
-      + acquisitionCard(d)
-      + bestSellersCard(d)
-      + '</div></div>';
+
+    function esc(x){ return String(x==null?"":x).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+    function timeAgo(dt){ var m=Math.max(0,Math.round((Date.now()-dt.getTime())/60000)); if(m<1)return "à l'instant"; if(m<60)return "il y a "+m+" min"; var h=Math.round(m/60); if(h<24)return "il y a "+h+" h"; var j=Math.round(h/24); return "il y a "+j+" j"; }
+    var eur = new Intl.NumberFormat("fr-FR", { style:"currency", currency:"EUR", maximumFractionDigits:0 });
+    var prof = s.profile || {};
+    var name = String(prof.firstName || prof.creatorName || prof.name || (s.account&&s.account.name) || "créateur").split(" ")[0];
+
+    var orders = d.orders || [];
+    var now = new Date();
+    function odate(o){ return new Date(o.date || o.createdAt || o.created_at || Date.now()); }
+    var prodById = {}; (d.products||[]).forEach(function(p){ prodById[p.id]=p; });
+    var todayRev=0, monthRev=0, recurRev=0;
+    orders.forEach(function(o){
+      var amt=Number(o.amount)||0, dt=odate(o);
+      if (dt.toDateString()===now.toDateString()) todayRev+=amt;
+      if (dt.getMonth()===now.getMonth() && dt.getFullYear()===now.getFullYear()) monthRev+=amt;
+      var p=prodById[o.productId]; if (p && /abonn/i.test((p.type||"")+(p.kind||""))) recurRev+=amt;
+    });
+    var series=d.series||[], deltaHtml="";
+    if (series.length>=2 && series[1]>0){ var dv=Math.round(((series[0]-series[1])/series[1])*100); deltaHtml='<span class="dx-kpi-delta '+(dv>=0?"up":"down")+'">'+(dv>=0?"+":"")+dv+"%</span>"; }
+
+    function spark(vals){
+      var v=(vals&&vals.length)?vals.slice().reverse():[1,1,1,1,1,1];
+      var max=Math.max.apply(null,v.concat([1])), min=Math.min.apply(null,v), n=v.length, w=100, h=30;
+      var pts=v.map(function(val,i){ return [(i/(n-1||1))*w, h-2-((val-min)/((max-min)||1))*(h-6)]; });
+      var line="M "+pts.map(function(p){return p[0].toFixed(1)+" "+p[1].toFixed(1);}).join(" L ");
+      var area=line+" L "+w+" "+h+" L 0 "+h+" Z";
+      var id="sp"+Math.random().toString(36).slice(2,7);
+      return '<svg viewBox="0 0 100 30" preserveAspectRatio="none"><defs><linearGradient id="'+id+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#7b61ff" stop-opacity=".18"/><stop offset="100%" stop-color="#7b61ff" stop-opacity="0"/></linearGradient></defs><path d="'+area+'" fill="url(#'+id+')"/><path d="'+line+'" fill="none" stroke="#7b61ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    }
+    function kpi(label,value,ic,delta){
+      return '<div class="dx-kpi"><div class="dx-kpi-top"><span class="dx-kpi-label">'+label+'</span><span class="dx-kpi-ic">'+ic+'</span></div><div class="dx-kpi-val">'+value+'</div>'+(delta||"")+'<div class="dx-kpi-spark">'+spark(series)+'</div></div>';
+    }
+    var kpis='<div class="dx-kpis">'
+      + kpi("Revenus du jour", eur.format(todayRev), "€", "")
+      + kpi("Revenus du mois", eur.format(monthRev||d.revenue), "▤", deltaHtml)
+      + kpi("Taux de conversion", (d.conversion||0).toFixed(1).replace(".",",")+" %", "◎", "")
+      + kpi("Commandes", String(orders.length), "↗", "")
+      + kpi("Revenu récurrent", eur.format(recurRev), "↻", "")
+      + '</div>';
+
+    var actions=[
+      ["Créer un produit","＋",'data-action="new-product"',"is-active"],
+      ["Lancer un tunnel","⇄",'data-dx-view="tunnel"',""],
+      ["Lien en bio","◫",'data-dx-view="pages"',""],
+      ["Assistant IA","✦",'data-dx-ai="1"',"is-active"],
+      ["Emails","✉",'data-dx-view="emails"',""],
+      ["Analytics","▦",'data-dx-view="analytics"',""]
+    ];
+    var quick='<div class="dx-section-title">Actions rapides</div><div class="dx-quick">'
+      + actions.map(function(a){ return '<button class="dx-qa '+(a[3]||"")+'" type="button" '+a[2]+'><span class="dx-qa-ic">'+a[1]+'</span><span>'+a[0]+'</span></button>'; }).join("")
+      + '</div>';
+
+    var products=(d.products||[]).slice(0,3), prodHtml;
+    if (products.length){
+      prodHtml=products.map(function(p){
+        var img=(typeof productImageUrl==="function")?productImageUrl(p):(p.coverUrl||p.image||"");
+        var visual=img?'<div class="dx-prod-img" style="background-image:url(\''+String(img).replace(/'/g,"%27")+'\')"></div>':'<div class="dx-prod-img">'+(typeof initials==="function"?initials(p.title||"P"):"P")+'</div>';
+        var rev=eur.format((Number(p.price)||0)*(Number(p.sales)||0)), on=(p.status==="published");
+        return '<div class="dx-prod">'+visual+'<div class="dx-prod-b"><h4>'+esc(p.title||"Produit")+'</h4><div class="dx-prod-stats"><div><span>Revenu</span><b>'+rev+'</b></div><div><span>Ventes</span><b>'+(Number(p.sales)||0)+'</b></div></div><span class="dx-badge '+(on?"on":"off")+'">'+(on?"Publié":"Brouillon")+'</span></div></div>';
+      }).join("");
+    } else { prodHtml='<div class="dx-empty">Aucun produit pour le moment. Clique sur « Créer un produit ».</div>'; }
+
+    var contacts=d.contacts||[], cById={}; contacts.forEach(function(c){ cById[c.id]=c; });
+    var recent=orders.slice().sort(function(a,b){ return odate(b)-odate(a); }).slice(0,6), salesHtml;
+    if (recent.length){
+      salesHtml=recent.map(function(o){
+        var c=cById[o.contactId]||{}, nm=c.name||"Client";
+        var ini=(typeof initials==="function")?initials(nm):String(nm).slice(0,2);
+        return '<div class="dx-sale"><span class="dx-sale-av">'+esc(ini)+'</span><div class="dx-sale-meta"><strong>'+esc(nm)+'</strong><span>'+timeAgo(odate(o))+'</span></div><span class="dx-sale-amt">'+eur.format(Number(o.amount)||0)+'</span></div>';
+      }).join("");
+    } else { salesHtml='<div class="dx-empty">Aucune vente récente.</div>'; }
+
+    overview.innerHTML='<div class="dx-home"><div class="dx-welcome"><h1>Bon retour '+esc(name)+' 👋</h1></div>'
+      + kpis + quick
+      + '<div class="dx-cols"><div class="dx-col-main"><div class="dx-section-title">Tes produits</div><div class="dx-products">'+prodHtml+'</div></div>'
+      + '<div class="dx-col-side"><div class="dx-section-title">Ventes récentes</div><div class="dx-sales">'+salesHtml+'</div></div></div></div>';
   }
 
   function renderMetricPage(view) {
@@ -405,6 +475,16 @@
     overlay.querySelector(".mb-focus-panel").appendChild(clone);
     document.body.appendChild(overlay);
   }
+
+  // Dashboard "Creator OS" : Actions rapides + cartes produit.
+  document.addEventListener("click", function (event) {
+    var qv = event.target.closest("[data-dx-view]");
+    if (qv) { event.preventDefault(); if (typeof setView === "function") setView(qv.getAttribute("data-dx-view")); return; }
+    var qa = event.target.closest("[data-dx-ai]");
+    if (qa) { event.preventDefault(); var sn = document.querySelector("#socialNavItem"); if (sn) sn.click(); return; }
+    var pc = event.target.closest(".dx-prod");
+    if (pc && typeof setView === "function") { setView("products"); return; }
+  });
 
   document.addEventListener("click", function (event) {
     // MOBILE uniquement : les cartes du dashboard ne redirigent pas et ne
